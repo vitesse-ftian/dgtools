@@ -1,0 +1,180 @@
+syntax = "proto3";
+
+package xdrive;
+
+message ColumnDesc {
+    string     name = 1;
+    int32      type = 2;       // use spq column type
+}
+   
+message Filter {
+    string op = 1;
+    string column = 2;
+    repeated string args = 3;
+}
+
+message CSVSpec {
+    string  delimiter = 1;
+    string  nullstr = 2;
+    bool    header = 3;
+    string  quote = 4;
+    string  escape = 5;
+}
+
+message FileSpec {
+    string   path    = 1;
+    string   format  = 2;         // "csv", "spq", "par", ...
+    CSVSpec  csvspec = 3;         // only applies to CSV format
+}
+
+message StringList {
+    repeated string str = 1;
+}
+
+message KeyValue {
+    string key = 1;
+    string value = 2;
+}
+
+message KeyValueList {
+    repeated KeyValue kv = 1;
+}
+
+message RmgrInfo {
+    string       scheme = 1;
+    string       format = 2;
+    string       rpath = 3;
+    KeyValueList conf = 4;
+    string       pluginop = 5;
+}
+
+enum SpqType {
+    UNKNOWN  = 0;
+    BOOL     = 0x0001;      /* protobuf type int32 */
+    INT16    = 0x0002;      /* protobuf type int32 */
+    INT32    = 0x0003;      /* protobuf type int32 */
+    INT64    = 0x0004;      /* protobuf type int64 */
+    INT128   = 0x0005;      /* protobuf type int64 x2 */ 
+    FLOAT    = 0x0006;      /* protobuf type float */
+    DOUBLE   = 0x0007;      /* protobuf type double */
+    /* BYTEA    = 0x0008;   not supported. */
+    CSTR     = 0x0009;      /* protobuf type string */
+    DEC64    = 0x000A;      /* protobuf type int64 */
+    DEC128   = 0x000B;      /* protobuf type int64 x2 */
+    /* UTF8     = 0x000D,*/
+    /* INTERNAL = 0xFFFF; */
+
+    DATE             = 0x010003;        /* protobuf type int32 */
+    TIME_MILLIS      = 0x020003;        /* protobuf type int32 */
+    TIMESTAMP_MILLIS = 0x030004;        /* protobuf type int64 */
+    TIME_MICROS      = 0x040004;        /* protobuf type int64 */
+    TIMESTAMP_MICROS = 0x050004;        /* protobuf type int64 */
+    JSON             = 0x060009;        /* protobuf type string */
+}
+
+message ReadRequest {
+    // Which file(s)
+    FileSpec   filespec = 1;
+
+    // Table Schema
+    repeated ColumnDesc columndesc = 2;
+
+    // Names of required columns
+    repeated string columnlist = 3;
+
+    // Filters
+    repeated Filter filter = 4;
+
+    // Fragment
+    int32    frag_id    = 5;
+    int32    frag_cnt   = 6;
+}
+
+message SampleRequest {
+    // Which file(s)
+    FileSpec   filespec = 1;
+
+    // Table Schema
+    repeated ColumnDesc columndesc = 2;
+
+    // Fragment
+    int32    frag_id = 3;
+    int32    frag_cnt = 4;
+
+    // Sample size
+    int32    nrow = 5;
+}
+
+message DataReply {
+    bytes  data = 1;
+}
+
+message XCol {
+    string colname = 1; 
+    int32 nrow = 2;
+    repeated bool nullmap = 3;
+    repeated string sdata = 4;
+    repeated int32 i32data = 5;
+    repeated int64 i64data = 6;
+    repeated float f32data = 7;
+    repeated double f64data = 8;
+}
+
+message XRowSet {
+    int32 tag       = 1;
+    int32 round     = 2;
+    repeated XCol columns = 3;
+}
+
+message PluginDataReply {
+    int32 errcode = 1;
+    string errmsg = 2;
+    XRowSet rowset = 3;
+}
+
+message SizeMetaRequest {
+    // Which file(s)
+    FileSpec  filespec = 1;
+
+    // Table Schema
+    repeated ColumnDesc columndesc = 2;
+    
+    // Fragment
+    int32    frag_id = 3;
+    int32    frag_cnt = 4;
+}
+     
+message SizeMetaReply {
+    int64 nrow = 1;
+    int64 nbyte = 2;
+}
+
+message PluginSizeMetaReply {
+    int32 errcode = 1;
+    string errmsg = 2;
+    SizeMetaReply sizemeta = 3;
+}
+
+message PageData {
+    bytes data = 1;
+}
+
+message WriteRequest { 
+    FileSpec filespec = 1;
+    repeated ColumnDesc columndesc = 2;
+    repeated PageData page = 3;
+}
+
+message PluginWriteRequest {
+    FileSpec filespec = 1;
+    repeated ColumnDesc columndesc = 2;
+    XRowSet rowset = 3;
+}
+
+message WriteReply {
+}
+
+message PluginWriteReply {
+    int32 errcode = 1;
+    string errmsg = 2;
+}

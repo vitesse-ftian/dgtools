@@ -4,7 +4,7 @@ Random tools to manage deepgreen cluster.
 ## zabbix/dgza
 A zabbix agent for deepgreen.
 
-## dgdiag
+## dgdg 
 Quick diagnotic tool for deepgreen system.
 
 ## fsplugin\_csv
