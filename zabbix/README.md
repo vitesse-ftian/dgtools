@@ -5,6 +5,16 @@ User must have a Zabbix Server installed somewhere.  On DeepGreen master node us
 must have installed zabbix\_agent and zabbix\_sender.   There are several docker
 files in vitesse-ftian/dockers reposity that will set up a working dev environment.
 
+Design
+------
+Zabbix can (and should) monitor the OS level events on master and all segments.  
+This agent should be installed/enabled on Master, to monitor the database related
+activities/events.  While we can implement a segment agent running on each segement
+and get database events using utility mode, we choose not to do so.  Instead we only
+implement an agent on master and use management views, for example, those in gp\_toolkit
+to read information.  This way, we can get better correlation of the state of the 
+whole system.   
+
 Build
 -----
 Check the Makefile.   Basically,
@@ -38,6 +48,13 @@ To Enable Monitoring On Zabbix Server
 
 Step 2 need some browsing and clicking -- check Zabbix doc.
 
+To Add/Change Zabbix Items
+--------------------------
+First, import the zbx\_deepgreen\_templates.xml into Zabbix web UI.  Make proper changes
+to the template, then export.
 
+If need to add a new application, change userparameter\_dgza.conf
 
+Change golang code to implement the application and item.   Hopefully all you need is
+to write SQL.
 

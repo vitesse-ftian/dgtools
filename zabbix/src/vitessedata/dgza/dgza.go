@@ -29,6 +29,9 @@ func main() {
 	} else if cmd == "activity" {
 		dgza.GetSegStatus(db)
 		dgza.GetActivity(db)
+	} else if cmd == "storage" {
+		dgza.GetMasterStorage(db)
+		dgza.GetSegStorage(db)
 	} else {
 		panic("Unknown command: " + cmd)
 	}
