@@ -1,9 +1,5 @@
 #!/bin/bash 
 
-#
-# Bash.  Must be bash.   In listdb, we use IFS, which is a bash thing.
-#
-
 # 
 # DeepGreen connection configuration.
 #
