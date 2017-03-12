@@ -1,11 +1,8 @@
-prefix ?= ${TOOLCHAIN_DIR}/installed
+prefix ?= /usr/local
 
 build:
 ifndef GOPATH
 	$(error GOPATH is undefined)
-endif
-ifndef TOOLCHAIN_DIR
-	$(error TOOLCHAIN_DIR is undefined)
 endif
 	cd src/vitessedata/dgza && go get . && go install
 
@@ -14,5 +11,3 @@ install:
 	install scripts/* ${prefix}/dgza/
 	install bin/dgza ${prefix}/dgza/
 	install README.md ${prefix}/dgza/
-
-
