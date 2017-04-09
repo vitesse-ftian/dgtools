@@ -1,10 +1,6 @@
 DeepGreen Zabbix Agent
 ======================
 
-User must have a Zabbix Server installed somewhere.  On DeepGreen master node user
-must have installed zabbix\_agent and zabbix\_sender.   There are several docker
-files in vitesse-ftian/dockers reposity that will set up a working dev environment.
-
 Design
 ------
 Zabbix can (and should) monitor the OS level events on master and all segments.  
@@ -17,6 +13,7 @@ whole system.
 
 Build
 -----
+Install golang from http://www.golang.org/ 
 Check the Makefile.   Basically,
 ```
 cd src/vitessedata/dgza && go get . && go install
@@ -24,6 +21,21 @@ install -d dest_dir
 install scripts/* dest_dir
 install bin/dgza dest_dir
 install README.md dest_dir
+```
+
+
+Install Zabbix
+--------------
+User must have a Zabbix Server installed somewhere.  There are plenty of docs
+on the web on how to install zabbix server.  https://www.zabbix.org/wiki contains
+very detailed instructions.   We have a simple scritp to run a dockerized zabbix
+server for dev and test, see https://github.com/vitesse-ftian/dockers/tree/master/zabbixserver
+
+User also need to install zabbix_agent and zabbix_sender on DeepGreen master node.
+Use CentOS as example,
+```
+# rpm -ivh http://repo.zabbix.com/zabbix/3.2/rhel/6/x86_64/zabbix-release-3.2-1.el6.noarch.rpm
+# yum install --nogpgcheck -y zabbix zabbix-agent zabbix-sender 
 ```
 
 To install DeepGreen Zabbix Agent 
@@ -38,7 +50,26 @@ To install DeepGreen Zabbix Agent
 3. Edit userparameter\_dgza.conf, pointing to dgza.sh and zabbix\_agentd.conf
 4. Restart zabbix-agent
 
-The docker file has done 1-3, but user need to start agent. 
+Step 1-3 can be found at https://github.com/vitesse-ftian/dockers/tree/master/deepgreen.
+Here is the scripts, suppose zabbix server is running at 172.20.0.6
+
+```
+# Configure, on DeepGreen master node.
+sudo mkdir -p /usr/local/dgza
+sudo sed -i 's/^Server=.*$/Server=172.20.0.6/g' /etc/zabbix/zabbix_agentd.conf
+sudo sed -i 's/^ServerActive=.*$/ServerActive=172.20.0.6/g' /etc/zabbix/zabbix_agentd.conf
+sudo sed -i 's/^Hostname=.*$/Hostname=dg/g' /etc/zabbix/zabbix_agentd.conf
+
+# Build dgza, install into /usr/local/dgza, this is the default location.
+# If user does not want to build on DeepGreen Master node, build it anywhere, then
+# copy /usr/local/dgza dir to DeepGreen master and copy userparameter_dgza.conf to
+# zabbix_agentd.d
+cd dgtools/zabbix
+make
+sudo make install
+sudo cp /usr/local/dgza/userparameter_dgza.conf /etc/zabbix/zabbix_agentd.d/
+```
+
 
 To Enable Monitoring On Zabbix Server
 -------------------------------------
