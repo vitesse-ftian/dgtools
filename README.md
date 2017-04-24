@@ -14,3 +14,6 @@ Quick diagnotic tool for deepgreen system.
 
 ## fsplugin\_csv
 Deepgreen/XDrive plugin example (csv files in local filesystem).
+
+## phi
+Data science tools.  Work in progress, experimental.
