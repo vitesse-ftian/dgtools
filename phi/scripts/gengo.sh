@@ -3,7 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 PHIHOME=$(dirname "$DIR")
 
-source $PHIHOME/scripts/env.sh
+export GOPATH=$HOME/go:$PHIHOME/go
 
 cd $1
 $PHIHOME/go/bin/phi codegen -input=phi_main.go > phi_gen.go 
