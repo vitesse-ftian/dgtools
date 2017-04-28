@@ -89,5 +89,7 @@ func main() {
 		do_x()
 	case "o":
 		do_o()
+	default:
+		Log("Invalid arg %s", os.Args[1])
 	}
 }
