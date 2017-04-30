@@ -15,6 +15,8 @@ tf.app.flags.DEFINE_string('test', 'simdata/linear_data_eval.csv',
 tf.app.flags.DEFINE_string('job_name', None, 'Job, ps or worker')
 tf.app.flags.DEFINE_integer('task_index', 0, 'Task idx')
 tf.app.flags.DEFINE_integer('workers', 2, 'Number of max workers')
+tf.app.flags.DEFINE_integer('num_hidden', 3, 'Size of hidden layer')
+tf.app.flags.DEFINE_integer('num_epochs', 20, 'Number of epochs') 
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -61,6 +63,18 @@ def extract_data(filename):
     # Return a pair of the feature matrix and the one-hot label matrix.
     return fvecs_np,labels_onehot
 
+# Init weights method. (Lifted from Delip Rao: http://deliprao.com/archives/100)
+def init_weights(shape, init_method='xavier', xavier_params = (None, None)):
+    if init_method == 'zeros':
+        return tf.Variable(tf.zeros(shape, dtype=tf.float32))
+    elif init_method == 'uniform':
+        return tf.Variable(tf.random_normal(shape, stddev=0.01, dtype=tf.float32))
+    else: #xavier
+        (fan_in, fan_out) = xavier_params
+        low = -4*np.sqrt(6.0/(fan_in + fan_out)) # {sigmoid:4, tanh:1} 
+        high = 4*np.sqrt(6.0/(fan_in + fan_out))
+        return tf.Variable(tf.random_uniform(shape, minval=low, maxval=high, dtype=tf.float32))
+    
 def main(_): 
     # cluster and server stuff 
     ps_hosts = FLAGS.ps_hosts.split(",")
@@ -78,22 +92,21 @@ def main(_):
             print("ps %d received done %d" % (FLAGS.task_index, i))
         print("ps %d: quitting"%(FLAGS.task_index))
     elif FLAGS.job_name == "worker":
-        # chief worker reset graph...
-        # if FLAGS.task_index == 0:
-        #      tf.reset_default_graph()
-
         # Get the data.
         train_data_filename = FLAGS.train
         test_data_filename = FLAGS.test
-        # Extract it into numpy matrices.
+
+        # Extract it into numpy arrays.
         train_data,train_labels = extract_data(train_data_filename)
         test_data, test_labels = extract_data(test_data_filename)
 
         # Get the shape of the training data.
         train_size,num_features = train_data.shape
 
-        # For the test data, hold the entire dataset in one constant node.
-        test_data_node = tf.constant(test_data)
+        # Get the number of epochs for training.
+        num_epochs = FLAGS.num_epochs
+        # Get the size of layer one.
+        num_hidden = FLAGS.num_hidden
 
         # Assigns ops to the local worker by default.
         with tf.device(tf.train.replica_device_setter(
@@ -101,22 +114,43 @@ def main(_):
             cluster=cluster)):
             global_step = tf.Variable(0, trainable=False) 
 
+
             # This is where training samples and labels are fed to the graph.
             # These placeholder nodes will be fed a batch of training data at each
             # training step using the {feed_dict} argument to the Run() call below.
             x = tf.placeholder("float", shape=[None, num_features])
             y_ = tf.placeholder("float", shape=[None, NUM_LABELS])
+    
+            # For the test data, hold the entire dataset in one constant node.
+            test_data_node = tf.constant(test_data)
 
-            # These are the weights that inform how much each feature contributes to
-            # the classification.
-            W = tf.Variable(tf.zeros([num_features,NUM_LABELS]))
-            b = tf.Variable(tf.zeros([NUM_LABELS]))
-            y = tf.nn.softmax(tf.matmul(x,W) + b)
+            # Define and initialize the network.
+            # Initialize the hidden weights and biases.
+            w_hidden = init_weights(
+                [num_features, num_hidden],
+                'xavier',
+                xavier_params=(num_features, num_hidden))
 
+            b_hidden = init_weights([1,num_hidden],'zeros')
+
+            # The hidden layer.
+            hidden = tf.nn.tanh(tf.matmul(x,w_hidden) + b_hidden)
+
+            # Initialize the output weights and biases.
+            w_out = init_weights(
+                    [num_hidden, NUM_LABELS],
+                    'xavier',
+                    xavier_params=(num_hidden, NUM_LABELS))
+    
+            b_out = init_weights([1,NUM_LABELS],'zeros')
+
+            # The output layer.
+            y = tf.nn.softmax(tf.matmul(hidden, w_out) + b_out)
+    
             # Optimization.
             cross_entropy = -tf.reduce_sum(y_*tf.log(y))
             train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy, global_step=global_step)
-
+    
             # Evaluation.
             predicted_class = tf.argmax(y,1);
             correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
@@ -130,7 +164,7 @@ def main(_):
 
         # Create a "supervisor", which oversees the training process.
         sv = tf.train.Supervisor(is_chief=(FLAGS.task_index == 0),
-                             logdir="./logs_%d" % FLAGS.task_index,
+                             logdir="./logh_%d" % FLAGS.task_index,
                              init_op=init_op,
                              # summary_op=summary_op,
                              # saver=saver,
@@ -142,27 +176,22 @@ def main(_):
         sess_config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True,
                                  device_filters=["/job:ps", "/job:worker/task:%d" % FLAGS.task_index])
         with sv.prepare_or_wait_for_session(server.target, config=sess_config) as sess:
-            # Iterate and train.
-            for step in xrange(train_size // BATCH_SIZE):
-                offset = (step * BATCH_SIZE) % train_size
+    	    # Iterate and train.
+    	    for step in xrange(num_epochs * train_size // BATCH_SIZE):
+    	        offset = (step * BATCH_SIZE) % train_size
+    	        batch_data = train_data[offset:(offset + BATCH_SIZE), :]
+    	        batch_labels = train_labels[offset:(offset + BATCH_SIZE)]
 
-                # get a batch of data
-                batch_data = train_data[offset:(offset + BATCH_SIZE), :]
-                batch_labels = train_labels[offset:(offset + BATCH_SIZE)]
-
-                # feed data into the model
-                print "Worker main ", FLAGS.job_name, " task idx ", FLAGS.task_index, " step ", step
-                _, gstep = sess.run([train_step, global_step], feed_dict={x: batch_data, y_: batch_labels})
-                print "Worker main ", FLAGS.job_name, " task idx ", FLAGS.task_index, " global step ", gstep
+    	        _, gstep = sess.run([train_step, global_step], feed_dict={x: batch_data, y_: batch_labels})
 
             a, gstep = sess.run([accuracy, global_step], feed_dict={x: test_data, y_: test_labels})
             print "Global step: ", gstep, " Accuracy: ", a 
 
             for op in enq_ops:
                 sess.run(op)
-    
+
         sv.stop()
         print("Done!")
-
+            
 if __name__ == '__main__':
     tf.app.run()
