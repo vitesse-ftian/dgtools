@@ -1,4 +1,5 @@
 import tensorflow.python.platform
+import time
 
 import numpy as np
 import tensorflow as tf
@@ -133,8 +134,8 @@ def main(_):
                              logdir="./logs_%d" % FLAGS.task_index,
                              init_op=init_op,
                              # summary_op=summary_op,
-                             # saver=saver,
-                             # save_model_secs=60,
+                             saver=tf.train.Saver(), 
+                             save_model_secs=2,
                              global_step=global_step)
 
         # on a localhost with mulitple workers, there is a race condition that hangs non chief 
@@ -151,6 +152,7 @@ def main(_):
                 batch_labels = train_labels[offset:(offset + BATCH_SIZE)]
 
                 # feed data into the model
+                time.sleep(1)
                 print "Worker main ", FLAGS.job_name, " task idx ", FLAGS.task_index, " step ", step
                 _, gstep = sess.run([train_step, global_step], feed_dict={x: batch_data, y_: batch_labels})
                 print "Worker main ", FLAGS.job_name, " task idx ", FLAGS.task_index, " global step ", gstep
