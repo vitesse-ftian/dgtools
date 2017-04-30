@@ -75,8 +75,9 @@ def main(_):
         print "Error: cannot restore ckpt" 
         return
 
-    a, gstep = session.run([accuracy, global_step], feed_dict={x: test_data, y_: test_labels})
+    p, a, gstep = session.run([predicted_class, accuracy, global_step], feed_dict={x: test_data, y_: test_labels})
     print "Global step: ", gstep, " Accuracy: ", a 
+    print "Predicted class: ", p
 
 if __name__ == '__main__':
     tf.app.run()
