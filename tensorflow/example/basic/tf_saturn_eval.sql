@@ -6,6 +6,7 @@ import tensorflow.python.platform
 import time
 import numpy as np
 import tensorflow as tf
+import logging
 
 vitessedata.phi.DeclareTypes('''
 //
@@ -46,6 +47,7 @@ def nextbatch():
         recs.append(rec)
 
     if cnt == 0:
+        logging.info("nextbach return a empty batch.") 
         return cnt, None, None, None
     else:
         # Convert the array of float arrays into a numpy float matrix.
@@ -56,6 +58,7 @@ def nextbatch():
 
         # Convert the int numpy array into a one-hot matrix.
         labels_onehot = (np.arange(NUM_LABELS) == labels_np[:, None]).astype(np.float32)
+        logging.info("nextbach return a batch of size %d", cnt)
         return cnt, recs, fvecs_np, labels_onehot
 
 def main(_): 
@@ -86,7 +89,7 @@ def main(_):
     sess_config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
     saver = tf.train.Saver()
     sess = tf.Session(config=sess_config)
-    ckpt = tf.train.get_checkpoint_state("/home/ftian/oss/dgtools/tensorflow/example/basic/logs_0/")
+    ckpt = tf.train.get_checkpoint_state("/home/ftian/oss/dgtools/tensorflow/example/basic/logsat_0/")
     if ckpt:
         saver.restore(sess, ckpt.model_checkpoint_path) 
     else:
@@ -95,6 +98,7 @@ def main(_):
     while True:
         cnt, inrecs, test_data, test_labels = nextbatch()
         if cnt == 0:
+            logging.info("empty batch, done.")
             break
         else:
             p, gstep = sess.run([predicted_class, global_step], feed_dict={x: test_data, y_: test_labels})
@@ -103,6 +107,7 @@ def main(_):
                 outrec = [p[i], rec[0], rec[1], rec[2]]
                 vitessedata.phi.WriteOutput(outrec)
 
+    logging.info("Flushing ...")
     vitessedata.phi.WriteOutput(None)
 
 if __name__ == '__main__':
@@ -114,7 +119,7 @@ dg_utils.transducer_column_int4(1) as prediction,
 dg_utils.transducer_column_int4(2) as tag, 
 dg_utils.transducer_column_float4(3) as x, 
 dg_utils.transducer_column_float4(4) as y 
-from ( select tag::int4, x::float4, y::float4 from linear_eval ) tworker
+from ( select tag::int4, x::float4, (x*x + y*y)::float4 from saturn_eval) tworker
 ) tf 
 where prediction <> tag
 ;

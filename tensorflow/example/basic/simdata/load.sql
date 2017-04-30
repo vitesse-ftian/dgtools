@@ -18,3 +18,16 @@ create table saturn_train (tag int, x float, y float) distributed randomly;
 create table saturn_eval (tag int, x float, y float) distributed randomly;
 \copy saturn_train from './saturn_data_train.csv' with csv;
 \copy saturn_eval from './saturn_data_eval.csv' with csv;
+
+create table tf_train(cat text, tag int, x float4, y float4) distributed randomly;
+insert into tf_train 
+select 'linear', tag, x::float4, y::float4 from linear_train
+union all select 'moon', tag, x::float4, y::float4 from moon_train
+union all select 'saturn', tag, x::float4, y::float4 from saturn_train;
+
+create table tf_eval(cat text, tag int, x float4, y float4) distributed randomly;
+insert into tf_eval 
+select 'linear', tag, x::float4, y::float4 from linear_eval
+union all select 'moon', tag, x::float4, y::float4 from moon_eval
+union all select 'saturn', tag, x::float4, y::float4 from saturn_eval;
+

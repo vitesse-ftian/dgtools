@@ -11,6 +11,8 @@ import (
 	"vitessedata/phi/proto/xdrive"
 )
 
+var logtag = ""
+
 func Log(msg string, args ...interface{}) {
 	phirun.Log(msg, args...)
 }
@@ -199,9 +201,11 @@ func NextInput() *InRecord {
 	if phirt.inRecs == nil {
 		inMsg, err := phirun.ReadXMsg()
 		if err != nil || inMsg == nil || inMsg.Flag == -1 {
+			Log(logtag + " NextInput EOS.\n")
 			// End of input stream.
 			return nil
 		} else if inMsg.Rowset == nil {
+			Log(logtag + " NextInput Empty RS.\n")
 			phirt.inRecs = nil
 			return NextInput()
 		}
@@ -215,7 +219,7 @@ func NextInput() *InRecord {
 		return ret
 	} else {
 		// All InRec from inMsg exhausted.  We will flush outRec.
-		Log("Flush Output Because We Need More Input.\n")
+		Log(logtag + " Flush Output Because We Need More Input.\n")
 		FlushOutput(0)
 		phirt.inRecs = nil
 		return NextInput()
@@ -233,7 +237,7 @@ func WriteOutput(r *OutRecord) {
 			phirt.currOutRec += 1
 			return
 		} else {
-			Log("Flush Output Because Output Buffer Full.\n")
+			Log(logtag + " Flush Output Because Output Buffer Full.\n")
 			FlushOutput(1)
 			WriteOutput(r)
 		}
@@ -243,7 +247,7 @@ func WriteOutput(r *OutRecord) {
 func FlushOutput(flag int64) {
 	var msg xdrive.XMsg
 	msg.Flag = flag
-	Log("Flush output, flag is %!v(MISSING), currOutRec is %!v(MISSING).\n", flag, phirt.currOutRec)
+	Log(logtag+" Flush output, flag is %v, currOutRec is %v.\n", flag, phirt.currOutRec)
 
 	if flag >= 0 {
 		msg.Rowset = phirt.writeOutRecs()

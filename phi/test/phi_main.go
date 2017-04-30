@@ -21,7 +21,7 @@ import (
 func do_i() {
 	var outrec OutRecord
 
-	for xx := 0; xx < 1000; xx++ {
+	for xx := 0; xx < 10; xx++ {
 		// Log("I write 1 rec\n")
 		outrec.Set_x(1)
 		outrec.Set_y(2.0)
@@ -82,6 +82,7 @@ func do_o() {
 }
 
 func main() {
+	logtag = os.Args[1]
 	switch os.Args[1] {
 	case "i":
 		do_i()

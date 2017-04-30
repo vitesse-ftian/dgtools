@@ -1,12 +1,15 @@
 import struct, sys
 import xdrive_data_pb2
+import logging
+
+logging.basicConfig(filename='py2err.log', level=logging.INFO)
 
 def readXMsg():
     s = sys.stdin.read(4)
     if s is None or s == '':
         return None
     sz = struct.unpack('<i', s)[0] 
-    # sys.stderr.write("Py: read a message of size " + str(sz) + "\n")
+    logging.info("PyPhi: read a message of size %d", sz)
     xmsg = xdrive_data_pb2.XMsg()
     xmsg.ParseFromString(sys.stdin.read(sz))
     return xmsg
@@ -14,6 +17,7 @@ def readXMsg():
 def writeXMsg(xmsg):
     xs = xmsg.SerializeToString()
     sz = len(xs) 
+    logging.info("PyPhi: write a message of size %d", sz)
     szstr = struct.pack('<i', sz) 
     sys.stdout.write(szstr)
     sys.stdout.write(xs)
@@ -71,16 +75,16 @@ class PhiRt(object):
     def loadInRecs(self): 
         xmsg = readXMsg()
         if xmsg is None:
-            # sys.stderr.write("Py: inMsg is none\n")
+            logging.info("PyPhi: inMsg is none.") 
             return None
         rs = xmsg.rowset 
         if len(rs.columns) == 0 or rs.columns[0].nrow == 0:
-            # sys.stderr.write("Py: inMsg is eos") 
+            logging.info("PyPhi: inMsg empty rowset, 0 rows.") 
             return None
 
         self.inMsg = xmsg
         self.numInRecs = rs.columns[0].nrow
-        # sys.stderr.write("Py: inMsg has " + str(self.numInRecs) + " rows.\n")
+        logging.info("PyPhi: inMsg has %d rows.", self.numInRecs)
         self.currInRec = 0
 
     def nextInput(self):
@@ -110,7 +114,6 @@ class PhiRt(object):
                     ret.append(col.sdata[r])
 
         self.currInRec += 1
-        # sys.stderr.write("Py: Returning input: " + str(ret) + "\n")
         return ret
 
     def fillCol(self, col, c): 
@@ -188,16 +191,13 @@ def NextInput():
             return None
 
     if phirt.currInRec < phirt.numInRecs:
-        # sys.stderr.write("Py: nextInput return " + str(phirt.currInRec) + " out of " + str(phirt.numInRecs) + " rows.\n")
         return phirt.nextInput()
     else:
-        # sys.stderr.write("Py: nextInput msg exhausted " + str(phirt.currInRec) + " out of " + str(phirt.numInRecs) + " rows.\n")
         FlushOutput(0) 
         phirt.inMsg = None 
         return NextInput()
 
 def WriteOutput(r):
-    # sys.stderr.write("Py: WriteOutput " + str(r) + "\n")
     if r is None:
         FlushOutput(0)
         FlushOutput(-1)

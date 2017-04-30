@@ -117,11 +117,11 @@ def main(_):
 
         # Create a "supervisor", which oversees the training process.
         sv = tf.train.Supervisor(is_chief=(FLAGS.task_index == 0),
-                             logdir="/home/ftian/oss/dgtools/tensorflow/example/basic/logs_%d" % FLAGS.task_index,
+                             logdir="/home/ftian/oss/dgtools/tensorflow/example/basic/logsat_%d" % FLAGS.task_index,
                              init_op=init_op,
                              # summary_op=summary_op,
                              saver=tf.train.Saver(), 
-                             save_model_secs=2,
+                             save_model_secs=1,
                              global_step=global_step)
 
         # on a localhost with mulitple workers, there is a race condition that hangs non chief 
@@ -135,7 +135,7 @@ def main(_):
                 if n == 0:
                     break
                 # feed data into the model
-                time.sleep(1)
+                # time.sleep(1)
                 _, gstep = sess.run([train_step, global_step], feed_dict={x: batch_data, y_: batch_labels})
 
             for op in enq_ops:
@@ -145,8 +145,10 @@ def main(_):
 
 if __name__ == '__main__':
     tf.app.run()
+
 $PHIWORKER$,
 tworker.*),
 dg_utils.transducer_column_float4(1) as accuracy
-from ( select tag, x::float4, y::float4 from linear_train ) tworker;
+from ( select tag, x::float4, (x*x + y*y)::float4 from saturn_train, generate_series(1, 100) i) tworker;
+
 

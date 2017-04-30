@@ -48,9 +48,10 @@ def main(_):
     for i in range(FLAGS.workers):
         sess.run(queue.dequeue())
 
+    vitessedata.phi.WriteOutput(None)
+
 if __name__ == '__main__':
     tf.app.run()
-    vitessedata.phi.WriteOutput(None)
 $PHIPS$,
 tps.*),
 dg_utils.transducer_column_float4(1) as accuracy
