@@ -17,14 +17,16 @@ vitessedata.phi.DeclareTypes('''
 //
 ''')
 
+xxx = 200
 def do_x():
+    outrecs = []
     while True:
         rec = vitessedata.phi.NextInput()
         if not rec:
             sys.stderr.write("Py X: end of input\n")
             break
 
-        sys.stderr.write("Py X: input rec " + str(rec) + "\n")
+        # sys.stderr.write("Py X: input rec " + str(rec) + "\n")
         outrec = [None, None, None]
 
         if rec[0] is None:
@@ -42,7 +44,21 @@ def do_x():
         else:
             outrec[2] = rec[2] + rec[2] 
 
-        vitessedata.phi.WriteOutput(outrec)
+        outrecs.append(outrec)
+        # vitessedata.phi.WriteOutput(outrec) 
+
+        # global xxx
+        # xxx += 1
+
+        # if xxx == 100: 
+        #     for i in range(xxx):
+        #         sys.stderr.write("Py X: outrec " + str(i) + ":" + str(outrecs[i]) + "\n") 
+        #         vitessedata.phi.WriteOutput(outrecs[i])
+        #     outrecs = []
+        #     xxx = 0
+        # else:
+        #     sys.stderr.write("Py X: cache outrec " + str(outrec) + ", xxx is " + str(xxx) + "\n") 
+            
 
     vitessedata.phi.WriteOutput(None)
 

@@ -22,19 +22,19 @@ func do_i() {
 	var outrec OutRecord
 
 	for xx := 0; xx < 1000; xx++ {
-		Log("I write 1 rec\n")
+		// Log("I write 1 rec\n")
 		outrec.Set_x(1)
 		outrec.Set_y(2.0)
 		outrec.Set_z("foo")
 		WriteOutput(&outrec)
 
-		Log("I write 2 rec\n")
+		// Log("I write 2 rec\n")
 		outrec.Set_x(1)
 		outrec.Set_y(2.0)
 		outrec.Set_z("foo")
 		WriteOutput(&outrec)
 
-		Log("I write 3 rec\n")
+		// Log("I write 3 rec\n")
 		outrec.Set_x(1)
 		outrec.Set_y(2.0)
 		outrec.Set_z("foo")

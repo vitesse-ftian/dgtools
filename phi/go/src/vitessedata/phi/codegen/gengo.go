@@ -45,10 +45,14 @@ func init() {
 func NextInput() *InRecord {
 	if phirt.inRecs == nil {
 		inMsg, err := phirun.ReadXMsg()
-		if err != nil || inMsg == nil || inMsg.Flag == -1 || inMsg.Rowset == nil {
+		if err != nil || inMsg == nil || inMsg.Flag == -1 { 
 			// End of input stream.
 			return nil
+		} else if inMsg.Rowset == nil {
+			phirt.inRecs = nil
+			return NextInput()
 		}
+
 		// if inMsg.Rowset != nil, it must has col data.
 		phirt.loadInRecs(inMsg.Rowset)
 	}

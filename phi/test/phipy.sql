@@ -45,7 +45,8 @@ def do_x():
     vitessedata.phi.WriteOutput(None)
 
 if __name__ == '__main__':
-    do_x()
+    vitessedata.phi.WriteOutput(None)
+    # do_x()
 
 $PHI$,
 t.*),

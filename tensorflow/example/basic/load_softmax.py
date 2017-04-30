@@ -36,6 +36,8 @@ def main(_):
     test_data_filename = "simdata/linear_data_eval.csv"
     test_data, test_labels = extract_data(test_data_filename)
     test_size,num_features = test_data.shape
+
+    print 'test_size: ', test_size, 'num_feature', num_features
     # For the test data, hold the entire dataset in one constant node.
     test_data_node = tf.constant(test_data)
 
@@ -65,8 +67,9 @@ def main(_):
     init_op = tf.global_variables_initializer() 
 
 
+    sess_config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
     saver = tf.train.Saver()
-    session = tf.Session()
+    session = tf.Session(config=sess_config)
     ckpt = tf.train.get_checkpoint_state("./logs_0/")
     if ckpt:
         print "Restore chk point from ", ckpt.model_checkpoint_path
@@ -75,6 +78,7 @@ def main(_):
         print "Error: cannot restore ckpt" 
         return
 
+    p, a, gstep = session.run([predicted_class, accuracy, global_step], feed_dict={x: test_data, y_: test_labels})
     p, a, gstep = session.run([predicted_class, accuracy, global_step], feed_dict={x: test_data, y_: test_labels})
     print "Global step: ", gstep, " Accuracy: ", a 
     print "Predicted class: ", p
