@@ -115,6 +115,7 @@ func genGoRtMethods(isch *ioSchema, osch *ioSchema) string {
 func (rt *phi_runtime_t) loadInRecs(rs *xdrive.XRowSet) {
 	cols := rs.Columns
 	nrow := cols[0].Nrow
+	rt.currInRec = 0
 	rt.inRecs = make([]InRecord, nrow, nrow)
 `
 	for i, colname := range isch.ColNames {

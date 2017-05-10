@@ -24,10 +24,10 @@ func GetSegStorage(db *sql.DB) {
 	select sum(sz), max(sz) / min(sz) from (
 		select col1::float8 as sz from (
 			select 
+			dg_utils.transducer_column_text(1) as col1,
 			dg_utils.transducer(E'Exec {
 				"cmd": "bash -c ''du --summarize . | cut -f1 ''", 
-				"ncol": 1 }', seg.*), 
-			dg_utils.transducer_column_text(1) as col1
+				"ncol": 1 }'), seg.* 
 			from (select 'i'::text from dg_utils.eachseg) seg 
 		) trt  
 	) szt 
@@ -57,18 +57,18 @@ func GetMasterStorage(db *sql.DB) {
 	sql := `
 	select 'master_data_size', col1::float8 from (
 		select 
+		dg_utils.transducer_column_text(1) as col1,
 		dg_utils.transducer(E'Exec {
 			"cmd": "bash -c ''du --summarize . | cut -f1 ''", 
-			"ncol": 1 }', seg.*), 
-		dg_utils.transducer_column_text(1) as col1
+			"ncol": 1 }'), seg.* 
 		from (select 'master'::text) seg ) datat
 	union all
 	select 'master_log_dir_size', col1::float8 from (
 		select 
+		dg_utils.transducer_column_text(1) as col1,
 		dg_utils.transducer(E'Exec {
 			"cmd": "bash -c ''du --summarize pg_log | cut -f1 ''", 
-			"ncol": 1 }', seg.*), 
-		dg_utils.transducer_column_text(1) as col1
+			"ncol": 1 }'), seg.* 
 		from (select 'master'::text) seg ) logt
 	`
 

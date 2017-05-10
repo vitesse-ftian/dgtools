@@ -1,6 +1,12 @@
 -- explain
 select * from (
-select dg_utils.transducer($PHIWORKER$PhiExec python2
+select 
+dg_utils.transducer_column_int4(1) as prediction,
+dg_utils.transducer_column_int4(2) as tag, 
+dg_utils.transducer_column_float4(3) as cat, 
+dg_utils.transducer_column_float4(4) as x, 
+dg_utils.transducer_column_float4(5) as y,
+dg_utils.transducer($PHIWORKER$PhiExec python2
 import vitessedata.phi
 import tensorflow.python.platform
 import time
@@ -142,13 +148,7 @@ def main(_):
 if __name__ == '__main__':
     tf.app.run()
 
-$PHIWORKER$,
-tworker.*),
-dg_utils.transducer_column_int4(1) as prediction,
-dg_utils.transducer_column_int4(2) as tag, 
-dg_utils.transducer_column_float4(3) as cat, 
-dg_utils.transducer_column_float4(4) as x, 
-dg_utils.transducer_column_float4(5) as y 
+$PHIWORKER$), tworker.*
 from ( select tag, 
        case when cat = 'linear' then 1.0::float4
             when cat = 'moon' then 2.0::float4

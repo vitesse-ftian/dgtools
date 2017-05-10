@@ -1,5 +1,7 @@
 -- explain
-select dg_utils.transducer($PHIPS$PhiExec python2
+select 
+dg_utils.transducer_column_float4(1) as accuracy,
+dg_utils.transducer($PHIPS$PhiExec python2
 import vitessedata.phi
 import tensorflow.python.platform
 import time
@@ -52,7 +54,5 @@ def main(_):
 
 if __name__ == '__main__':
     tf.app.run()
-$PHIPS$,
-tps.*),
-dg_utils.transducer_column_float4(1) as accuracy
+$PHIPS$), tps.*,
 from (select 1::int) tps;

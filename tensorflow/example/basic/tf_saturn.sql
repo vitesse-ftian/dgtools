@@ -1,5 +1,7 @@
 -- explain
-select dg_utils.transducer($PHIWORKER$PhiExec python2 --task_index=#SEGID#
+select 
+dg_utils.transducer_column_float4(1) as accuracy,
+dg_utils.transducer($PHIWORKER$PhiExec python2 --task_index=#SEGID#
 import vitessedata.phi
 import tensorflow.python.platform
 import time
@@ -146,9 +148,7 @@ def main(_):
 if __name__ == '__main__':
     tf.app.run()
 
-$PHIWORKER$,
-tworker.*),
-dg_utils.transducer_column_float4(1) as accuracy
+$PHIWORKER$), tworker.*
 from ( select tag, x::float4, (x*x + y*y)::float4 from saturn_train, generate_series(1, 100) i) tworker;
 
 

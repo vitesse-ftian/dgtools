@@ -1,5 +1,7 @@
 -- explain
-select dg_utils.transducer($PHIWORKER$PhiExec python2 --task_index=#SEGID#
+select 
+dg_utils.transducer_column_float4(1) as accuracy,
+dg_utils.transducer($PHIWORKER$PhiExec python2 --task_index=#SEGID#
 import vitessedata.phi
 import tensorflow.python.platform
 import time
@@ -174,9 +176,7 @@ def main(_):
 
 if __name__ == '__main__':
     tf.app.run()
-$PHIWORKER$,
-tworker.*),
-dg_utils.transducer_column_float4(1) as accuracy
+$PHIWORKER$), tworker.*
 from ( select tag, 
        case when cat = 'linear' then 1.0::float4
             when cat = 'moon' then 2.0::float4

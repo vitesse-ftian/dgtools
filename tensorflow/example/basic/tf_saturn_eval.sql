@@ -1,6 +1,11 @@
 -- explain
 select * from (
-select dg_utils.transducer($PHIWORKER$PhiExec python2
+select 
+dg_utils.transducer_column_int4(1) as prediction,
+dg_utils.transducer_column_int4(2) as tag, 
+dg_utils.transducer_column_float4(3) as x, 
+dg_utils.transducer_column_float4(4) as y,
+dg_utils.transducer($PHIWORKER$PhiExec python2
 import vitessedata.phi
 import tensorflow.python.platform
 import time
@@ -113,12 +118,7 @@ def main(_):
 if __name__ == '__main__':
     tf.app.run()
 
-$PHIWORKER$,
-tworker.*),
-dg_utils.transducer_column_int4(1) as prediction,
-dg_utils.transducer_column_int4(2) as tag, 
-dg_utils.transducer_column_float4(3) as x, 
-dg_utils.transducer_column_float4(4) as y 
+$PHIWORKER$), tworker.*
 from ( select tag::int4, x::float4, (x*x + y*y)::float4 from saturn_eval) tworker
 ) tf 
 where prediction <> tag

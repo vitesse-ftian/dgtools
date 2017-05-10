@@ -1,4 +1,4 @@
-explain analyze 
+-- explain analyze 
 select 
 dg_utils.transducer_column_int4(1) as i32,
 dg_utils.transducer_column_float4(2) as f32,
