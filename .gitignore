@@ -1,0 +1,12 @@
+*.o
+*.a
+*.pyc
+.cache
+__pycache__
+*~
+t.c
+GPATH
+GTAGS
+GRTAGS
+*.out
+*.swp
