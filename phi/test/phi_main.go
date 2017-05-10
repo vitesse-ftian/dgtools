@@ -21,7 +21,7 @@ import (
 func do_i() {
 	var outrec OutRecord
 
-	for xx := 0; xx < 10; xx++ {
+	for xx := 0; xx < 1000; xx++ {
 		// Log("I write 1 rec\n")
 		outrec.Set_x(1)
 		outrec.Set_y(2.0)
@@ -29,12 +29,6 @@ func do_i() {
 		WriteOutput(&outrec)
 
 		// Log("I write 2 rec\n")
-		outrec.Set_x(1)
-		outrec.Set_y(2.0)
-		outrec.Set_z("foo")
-		WriteOutput(&outrec)
-
-		// Log("I write 3 rec\n")
 		outrec.Set_x(1)
 		outrec.Set_y(2.0)
 		outrec.Set_z("foo")
@@ -47,7 +41,7 @@ func do_i() {
 
 func do_x() {
 	for rec := NextInput(); rec != nil; rec = NextInput() {
-		Log("X get one rec\n")
+		// Log("X get one rec\n")
 		a, aok := rec.Get_a()
 		b, bok := rec.Get_b()
 		c, cok := rec.Get_c()
@@ -70,19 +64,22 @@ func do_x() {
 }
 
 func do_o() {
+	cnt := 0
 	for rec := NextInput(); rec != nil; rec = NextInput() {
-		Log("O get one rec.\n")
-		a, aok := rec.Get_a()
-		b, bok := rec.Get_b()
-		c, cok := rec.Get_c()
-		Log("Rec: %d %v, %f %v, %s %v\n", a, aok, b, bok, c, cok)
+		// Log("O get one rec.\n")
+		if false {
+			a, aok := rec.Get_a()
+			b, bok := rec.Get_b()
+			c, cok := rec.Get_c()
+			Log("Rec: %d %v, %f %v, %s %v\n", a, aok, b, bok, c, cok)
+		}
+		cnt += 1
 	}
 	// WriteOutput(nil)
-	Log("O is done\n")
+	Log("O is done, cnt is %d\n", cnt)
 }
 
 func main() {
-	logtag = os.Args[1]
 	switch os.Args[1] {
 	case "i":
 		do_i()

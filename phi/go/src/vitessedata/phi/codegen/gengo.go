@@ -45,7 +45,7 @@ func init() {
 func NextInput() *InRecord {
 	if phirt.inRecs == nil {
 		inMsg, err := phirun.ReadXMsg()
-		if err != nil || inMsg == nil || inMsg.Flag == -1 { 
+		if err != nil || inMsg == nil || inMsg.Xflag == xdrive.XMsg_EOS { 
 			// End of input stream.
 			return nil
 		} else if inMsg.Rowset == nil {
@@ -64,7 +64,7 @@ func NextInput() *InRecord {
 	} else {
 		// All InRec from inMsg exhausted.  We will flush outRec.
 		Log("Flush Output Because We Need More Input.\n")
-		FlushOutput(0)
+		FlushOutput(xdrive.XMsg_EOB)
 		phirt.inRecs = nil
 		return NextInput()
 	}
@@ -75,8 +75,8 @@ func NextInput() *InRecord {
 func WriteOutput(r *OutRecord) {
 	if (r == nil) {
 		Log("Flush Output Because Done.\n")
-		FlushOutput(0)
-		FlushOutput(-1)
+		FlushOutput(xdrive.XMsg_EOB)
+		FlushOutput(xdrive.XMsg_EOS)
 	} else {
 		if phirt.currOutRec < 1024 {
 			phirt.outRecs[phirt.currOutRec] = r
@@ -84,18 +84,19 @@ func WriteOutput(r *OutRecord) {
 			return
 		} else {
 			Log("Flush Output Because Output Buffer Full.\n")
-			FlushOutput(1)
+			FlushOutput(xdrive.XMsg_CONTINUE)
 			WriteOutput(r)
 		}
 	}
 }
 
-func FlushOutput(flag int64) {
+func FlushOutput(flag xdrive.XMsg_XMsgFlag) { 
 	var msg xdrive.XMsg
-	msg.Flag = flag
-	Log("Flush output, flag is %v, currOutRec is %v.\n", flag, phirt.currOutRec)
+	msg.Xflag = flag
+	msg.Code = 0
+	Log("Flush output, flag is %%v, currOutRec is %%v.\n", flag, phirt.currOutRec)
 
-	if flag >= 0 {
+	if flag == xdrive.XMsg_EOB || flag == xdrive.XMsg_CONTINUE { 
 		msg.Rowset = phirt.writeOutRecs()
 		phirt.currOutRec = 0
 	}

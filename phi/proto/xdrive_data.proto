@@ -178,10 +178,23 @@ message PluginWriteReply {
     int32 errcode = 1;
     string errmsg = 2;
 }
-
+    
 message XMsg {
+    enum XMsgFlag {
+        EOS = 0;
+        EOB = 1;
+        CONTINUE = 2;
+        SYNC = 1000;
+    }
+
     string name = 1;
-    int64 flag = 2;
-    string info = 3;
-    XRowSet rowset = 4;
+    XMsgFlag xflag = 2;
+    int32 code = 3;
+    string info = 4;
+    XRowSet rowset = 5;
+}
+
+
+service Phi {
+    rpc sendmsg(XMsg) returns (PluginWriteReply) {}
 }

@@ -1,4 +1,9 @@
-select dg_utils.transducer($PHI$PhiExec go x
+explain analyze
+select 
+dg_utils.transducer_column_int4(1) as i32,
+dg_utils.transducer_column_float4(2) as f32,
+dg_utils.transducer_column_text(3) as t,
+dg_utils.transducer($PHI$PhiExec go x
 //
 // BEGIN INPUT TYPES
 // a int32
@@ -91,11 +96,7 @@ func main() {
 		do_o()
 	}
 }
-$PHI$,
-t.*),
-dg_utils.transducer_column_int4(1) as i32,
-dg_utils.transducer_column_float4(2) as f32,
-dg_utils.transducer_column_text(3) as t
+$PHI$), t.*
 from (
     select i::int, i::float4, i::text from generate_series(1, 2000) i
 ) t

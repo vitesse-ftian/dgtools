@@ -193,26 +193,27 @@ def NextInput():
     if phirt.currInRec < phirt.numInRecs:
         return phirt.nextInput()
     else:
-        FlushOutput(0) 
+        FlushOutput(xdrive_data_pb2.XMsg.EOB) 
         phirt.inMsg = None 
         return NextInput()
 
 def WriteOutput(r):
     if r is None:
-        FlushOutput(0)
-        FlushOutput(-1)
+        FlushOutput(xdrive_data_pb2.XMsg.EOB)
+        FlushOutput(xdrive_data_pb2.XMsg.EOS) 
     else:
         if phirt.currOutRec < 1024:
             phirt.outRecs[phirt.currOutRec] = r
             phirt.currOutRec += 1
         else:
-            FlushOutput(1)
+            FlushOutput(xdrive_data_pb2.XMsg.CONTINUE)
             WriteOutput(r)
 
 def FlushOutput(flag):
     xmsg = xdrive_data_pb2.XMsg()
-    xmsg.flag = flag
-    if flag >= 0:
+    xmsg.xflag = flag 
+    xmsg.code = 0
+    if flag == xdrive_data_pb2.XMsg.CONTINUE or flag == xdrive_data_pb2.XMsg.EOB:
         phirt.writeOutRecs(xmsg.rowset)
         phirt.currOutRec = 0
     writeXMsg(xmsg)
