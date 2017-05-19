@@ -3,7 +3,7 @@ select
 dg_utils.transducer_column_int4(1) as i32,
 dg_utils.transducer_column_float4(2) as f32,
 dg_utils.transducer_column_text(3) as t,
-dg_utils.transducer($PHI$PhiExec go x
+dg_utils.transducer($PHI$PhiExec go x #MASTERHOST# #SEGHOSTS# #SEGID#
 //
 // BEGIN INPUT TYPES
 // a int32
