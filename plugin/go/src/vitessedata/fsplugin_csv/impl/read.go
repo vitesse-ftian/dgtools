@@ -11,14 +11,6 @@ import (
 	"vitessedata/proto/xdrive"
 )
 
-// Reply an error to xdrive server.   ec=0 means OK.
-func readError(ec int32, msg string) {
-	var r xdrive.PluginDataReply
-	r.Errcode = ec
-	r.Errmsg = msg
-	plugin.DelimWrite(&r)
-}
-
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
 // trivial (Errcode == 0, but there is no data) message.
@@ -34,7 +26,7 @@ func DoRead() error {
 	// fill in good value.
 	if req.FragCnt <= 0 || req.FragId < 0 || req.FragId >= req.FragCnt {
 		plugin.DbgLog("Invalid read req %v", req)
-		readError(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
+		plugin.ReplyError(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
 		return fmt.Errorf("Invalid read request")
 	}
 
@@ -43,7 +35,7 @@ func DoRead() error {
 	flist, err := filepath.Glob(rinfo.Rpath)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "Glob failed.  Rinfo %v", *rinfo)
-		readError(-2, "rmgr glob failed: "+err.Error())
+		plugin.ReplyError(-2, "rmgr glob failed: "+err.Error())
 		return err
 	}
 
@@ -117,7 +109,7 @@ func DoRead() error {
 		file, err := os.Open(f)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "Open csv file %s failed.", f)
-			readError(-10, "Cannot open file "+f)
+			plugin.ReplyError(-10, "Cannot open file "+f)
 			return err
 		}
 
@@ -130,7 +122,7 @@ func DoRead() error {
 		records, err := r.ReadAll()
 		if err != nil {
 			plugin.DbgLogIfErr(err, "Parse csv file %s failed.", f)
-			readError(-20, "CSV file "+f+" has invalid data")
+			plugin.ReplyError(-20, "CSV file "+f+" has invalid data")
 			return err
 		}
 
@@ -173,7 +165,7 @@ func DoRead() error {
 						xcol.Nullmap[idx] = false
 						iv, err := strconv.Atoi(val)
 						if err != nil {
-							readError(-100, "Invalid int data "+val)
+							plugin.ReplyError(-100, "Invalid int data "+val)
 							return err
 						}
 						xcol.I32Data[idx] = int32(iv)
@@ -194,7 +186,7 @@ func DoRead() error {
 						xcol.Nullmap[idx] = false
 						xcol.I64Data[idx], err = strconv.ParseInt(val, 0, 64)
 						if err != nil {
-							readError(-100, "Invalid int data "+val)
+							plugin.ReplyError(-100, "Invalid int data "+val)
 							return err
 						}
 					}
@@ -214,7 +206,7 @@ func DoRead() error {
 						xcol.Nullmap[idx] = false
 						fv, err := strconv.ParseFloat(val, 32)
 						if err != nil {
-							readError(-100, "Invalid float data "+val)
+							plugin.ReplyError(-100, "Invalid float data "+val)
 							return err
 						}
 						xcol.F32Data[idx] = float32(fv)
@@ -235,7 +227,7 @@ func DoRead() error {
 						xcol.Nullmap[idx] = false
 						xcol.F64Data[idx], err = strconv.ParseFloat(val, 64)
 						if err != nil {
-							readError(-100, "Invalid float data "+val)
+							plugin.ReplyError(-100, "Invalid float data "+val)
 							return err
 						}
 					}
@@ -266,12 +258,12 @@ func DoRead() error {
 		plugin.DbgLog("Done Building Rowset, %d rows, %d cols", len(records), ncol)
 		err = plugin.DelimWrite(&dataReply)
 		if err != nil {
-			readError(-100, "Write data reply failed")
+			plugin.ReplyError(-100, "Write data reply failed")
 			return err
 		}
 	}
 
 	// Done!   Fill in an empty reply, indicating end of stream.
-	readError(0, "")
+	plugin.ReplyError(0, "")
 	return nil
 }

@@ -8,8 +8,16 @@ import (
 var rinfo xdrive.RmgrInfo
 
 // Reply an error to xdrive server.   ec=0 means OK.
-func replyError(ec int32, msg string) {
+func ReplyError(ec int32, msg string) {
 	var r xdrive.PluginDataReply
+	r.Errcode = ec
+	r.Errmsg = msg
+	DelimWrite(&r)
+}
+
+// Reply an error to xdrive server.   ec=0 means OK.
+func ReplyWriteError(ec int32, msg string) {
+	var r xdrive.PluginWriteReply
 	r.Errcode = ec
 	r.Errmsg = msg
 	DelimWrite(&r)
@@ -28,7 +36,7 @@ func ReadRInfo() error {
 	//
 	if rinfo.Scheme != "fsplugin" || rinfo.Format != "csv" {
 		DbgLog("Invalid Rinfo %v\n", rinfo)
-		replyError(-1, "rmgr info invalid")
+		ReplyError(-1, "rmgr info invalid")
 		return fmt.Errorf("Invalid rmgr")
 	}
 	return nil

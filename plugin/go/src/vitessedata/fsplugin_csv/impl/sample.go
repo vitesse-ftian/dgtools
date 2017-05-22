@@ -28,7 +28,7 @@ func DoSample() error {
 	rinfo := plugin.RInfo()
 	flist, err := filepath.Glob(rinfo.Rpath)
 	if err != nil {
-		readError(-2, "rmgr glob failed: "+err.Error())
+		plugin.ReplyError(-2, "rmgr glob failed: "+err.Error())
 		return err
 	}
 
@@ -67,7 +67,7 @@ func DoSample() error {
 
 		file, err := os.Open(f)
 		if err != nil {
-			readError(-10, "Cannot open file "+f)
+			plugin.ReplyError(-10, "Cannot open file "+f)
 			return err
 		}
 
@@ -79,7 +79,7 @@ func DoSample() error {
 		// If we need to process huge CSV files, we should read line by line.  Lazy.
 		records, err := r.ReadAll()
 		if err != nil {
-			readError(-20, "CSV file "+f+" has invalid data")
+			plugin.ReplyError(-20, "CSV file "+f+" has invalid data")
 			return err
 		}
 
@@ -123,6 +123,6 @@ func DoSample() error {
 	}
 
 	// Done!   Fill in an empty reply, indicating end of stream.
-	readError(0, "")
+	plugin.ReplyError(0, "")
 	return nil
 }

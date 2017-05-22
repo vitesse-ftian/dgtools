@@ -8,14 +8,6 @@ import (
 	"vitessedata/proto/xdrive"
 )
 
-// Reply an error to xdrive server.   ec=0 means OK.
-func writeError(ec int32, msg string) {
-	var r xdrive.PluginWriteReply
-	r.Errcode = ec
-	r.Errmsg = msg
-	plugin.DelimWrite(&r)
-}
-
 // DoWrite services xdrive write request.  It read a sequence of PluginWriteRequest
 // from stdin and write to file system.
 func DoWrite() error {
@@ -31,7 +23,7 @@ func DoWrite() error {
 	tmpfn := rinfo.Rpath + ".part"
 	wf, err := os.Create(tmpfn)
 	if err != nil {
-		writeError(-2, "Cannot open file to write: "+rinfo.Rpath)
+		plugin.ReplyWriteError(-2, "Cannot open file to write: "+rinfo.Rpath)
 		return fmt.Errorf("Cannot ope file to write.")
 	}
 
@@ -42,14 +34,14 @@ func DoWrite() error {
 		wf.Close()
 		os.Rename(tmpfn, rinfo.Rpath)
 
-		writeError(0, "")
+		plugin.ReplyWriteError(0, "")
 		return nil
 	} else {
 		plugin.DbgLog("Failed.   Close writer, then remove %s.", tmpfn)
 		wf.Close()
 		os.Remove(tmpfn)
 
-		writeError(-1, err.Error())
+		plugin.ReplyWriteError(-1, err.Error())
 		return err
 	}
 }
@@ -124,7 +116,7 @@ func writePart(wf *os.File) error {
 				}
 
 			default:
-				writeError(-10, "Rowset with no data")
+				plugin.ReplyWriteError(-10, "Rowset with no data")
 				return fmt.Errorf("Rowset with no data")
 			}
 		}
