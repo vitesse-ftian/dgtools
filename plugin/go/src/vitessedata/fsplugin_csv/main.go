@@ -10,32 +10,32 @@ package main
 
 import (
 	"fmt"
-	"vitessedata/fsplugin_csv/xdrive"
+	"vitessedata/fsplugin_csv/impl"
 )
 
 func main() {
-	xdrive.StartDbgLog()
-	defer xdrive.StopDbgLog()
+	impl.StartDbgLog()
+	defer impl.StopDbgLog()
 
 	// The first message from xdrive will always be an RmgrInfo.  Scheme can pass configurations
 	// to plugin via RmgrInfo.Conf, which reads from xdrive.toml file.
-	xdrive.DbgLog("Starting read rinfo ...\n")
-	err := xdrive.ReadRInfo()
-	xdrive.DbgLogIfErr(err, "Cannot read rinfo message from server.")
-	xdrive.DbgLog("Serving %s\n", xdrive.PluginOp())
+	impl.DbgLog("Starting read rinfo ...\n")
+	err := impl.ReadRInfo()
+	impl.DbgLogIfErr(err, "Cannot read rinfo message from server.")
+	impl.DbgLog("Serving %s\n", impl.PluginOp())
 
-	switch xdrive.PluginOp() {
+	switch impl.PluginOp() {
 	case "read":
-		err = xdrive.DoRead()
+		err = impl.DoRead()
 	case "sample":
-		err = xdrive.DoSample()
+		err = impl.DoSample()
 	case "size_meta":
-		err = xdrive.DoSizeMeta()
+		err = impl.DoSizeMeta()
 	case "write":
-		err = xdrive.DoWrite()
+		err = impl.DoWrite()
 	default:
-		err = fmt.Errorf("Bad command from rinfo %s", xdrive.PluginOp())
+		err = fmt.Errorf("Bad command from rinfo %s", impl.PluginOp())
 	}
 
-	xdrive.DbgLogIfErr(err, "Error!!!")
+	impl.DbgLogIfErr(err, "Error!!!")
 }

@@ -1,10 +1,11 @@
-package xdrive
+package impl
 
 import (
 	"encoding/csv"
 	"hash/fnv"
 	"os"
 	"path/filepath"
+	"vitessedata/proto/xdrive"
 )
 
 //
@@ -16,7 +17,7 @@ import (
 // alogirthm, like reservoir sampling.
 //
 func DoSample() error {
-	var req SampleRequest
+	var req xdrive.SampleRequest
 	err := delim_read(&req)
 	if err != nil {
 		return err
@@ -87,13 +88,13 @@ func DoSample() error {
 		}
 
 		// Build reply message.   Errcode initialized to 0, which is what we want.
-		var dataReply PluginDataReply
+		var dataReply xdrive.PluginDataReply
 		// dataReply.Errcode = 0
-		dataReply.Rowset = new(XRowSet)
-		dataReply.Rowset.Columns = make([]*XCol, ncol)
+		dataReply.Rowset = new(xdrive.XRowSet)
+		dataReply.Rowset.Columns = make([]*xdrive.XCol, ncol)
 
 		for col := 0; col < ncol; col++ {
-			xcol := new(XCol)
+			xcol := new(xdrive.XCol)
 			dataReply.Rowset.Columns[col] = xcol
 			xcol.Nrow = int32(len(records))
 			xcol.Nullmap = make([]bool, xcol.Nrow)

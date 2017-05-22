@@ -1,10 +1,11 @@
-package xdrive
+package impl
 
 import (
 	"fmt"
+	"vitessedata/proto/xdrive"
 )
 
-var rinfo RmgrInfo
+var rinfo xdrive.RmgrInfo
 
 func ReadRInfo() error {
 	err := delim_read(&rinfo)

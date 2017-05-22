@@ -1,7 +1,11 @@
-package xdrive
+package impl
+
+import (
+	"vitessedata/proto/xdrive"
+)
 
 func DoSizeMeta() error {
-	var req SizeMetaRequest
+	var req xdrive.SizeMetaRequest
 	err := delim_read(&req)
 	if err != nil {
 		return err
@@ -11,8 +15,8 @@ func DoSizeMeta() error {
 	// According to rigorous study, 81.3% stats are made up on the spot.
 	// We are just doing what people expect us to do ...
 	//
-	var r PluginSizeMetaReply
-	r.Sizemeta = new(SizeMetaReply)
+	var r xdrive.PluginSizeMetaReply
+	r.Sizemeta = new(xdrive.SizeMetaReply)
 	r.Sizemeta.Nrow = 1000
 	r.Sizemeta.Nbyte = 1000000
 

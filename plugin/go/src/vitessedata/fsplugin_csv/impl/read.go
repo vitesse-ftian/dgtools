@@ -1,4 +1,4 @@
-package xdrive
+package impl
 
 import (
 	"encoding/csv"
@@ -7,11 +7,12 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"vitessedata/proto/xdrive"
 )
 
 // Reply an error to xdrive server.   ec=0 means OK.
 func readError(ec int32, msg string) {
-	var r PluginDataReply
+	var r xdrive.PluginDataReply
 	r.Errcode = ec
 	r.Errmsg = msg
 	delim_write(&r)
@@ -21,7 +22,7 @@ func readError(ec int32, msg string) {
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
 // trivial (Errcode == 0, but there is no data) message.
 func DoRead() error {
-	var req ReadRequest
+	var req xdrive.ReadRequest
 	err := delim_read(&req)
 	if err != nil {
 		DbgLogIfErr(err, "Delim read rinfo failed.")
@@ -138,22 +139,22 @@ func DoRead() error {
 		}
 
 		// Build reply message.   Errcode initialized to 0, which is what we want.
-		var dataReply PluginDataReply
+		var dataReply xdrive.PluginDataReply
 		// dataReply.Errcode = 0
-		dataReply.Rowset = new(XRowSet)
-		dataReply.Rowset.Columns = make([]*XCol, ncol)
+		dataReply.Rowset = new(xdrive.XRowSet)
+		dataReply.Rowset.Columns = make([]*xdrive.XCol, ncol)
 
 		DbgLog("Building Rowset, %d rows, %d cols", len(records), ncol)
 
 		for col := 0; col < ncol; col++ {
-			xcol := new(XCol)
+			xcol := new(xdrive.XCol)
 			dataReply.Rowset.Columns[col] = xcol
 			xcol.Colname = req.Columnlist[col]
 			xcol.Nrow = int32(len(records))
 			xcol.Nullmap = make([]bool, xcol.Nrow)
 
-			switch SpqType(typ[col]) {
-			case SpqType_BOOL, SpqType_INT16, SpqType_INT32, SpqType_DATE, SpqType_TIME_MILLIS:
+			switch xdrive.SpqType(typ[col]) {
+			case xdrive.SpqType_BOOL, xdrive.SpqType_INT16, xdrive.SpqType_INT32, xdrive.SpqType_DATE, xdrive.SpqType_TIME_MILLIS:
 				//
 				// These types are encoded as int32 in xcol.   For csv data that use a different encoding,
 				// for example, BOOL as t/f, this is the place to implement parser.
@@ -177,7 +178,7 @@ func DoRead() error {
 					}
 				}
 
-			case SpqType_INT64, SpqType_TIMESTAMP_MILLIS, SpqType_TIME_MICROS, SpqType_TIMESTAMP_MICROS:
+			case xdrive.SpqType_INT64, xdrive.SpqType_TIMESTAMP_MILLIS, xdrive.SpqType_TIME_MICROS, xdrive.SpqType_TIMESTAMP_MICROS:
 				// These types are encoded as int64 in xcol
 				DbgLog("Col %d Buiding I64Data size %d\n", col, xcol.Nrow)
 				xcol.I64Data = make([]int64, xcol.Nrow)
@@ -197,7 +198,7 @@ func DoRead() error {
 					}
 				}
 
-			case SpqType_FLOAT:
+			case xdrive.SpqType_FLOAT:
 				DbgLog("Col %d Buiding F32Data size %d\n", col, xcol.Nrow)
 				// These types are encoded as float32 in xcol
 				xcol.F32Data = make([]float32, xcol.Nrow)
@@ -218,7 +219,7 @@ func DoRead() error {
 					}
 				}
 
-			case SpqType_DOUBLE:
+			case xdrive.SpqType_DOUBLE:
 				DbgLog("Col %d Buiding F64Data size %d\n", col, xcol.Nrow)
 				// These types are encoded as float64 in xcol
 				xcol.F64Data = make([]float64, xcol.Nrow)

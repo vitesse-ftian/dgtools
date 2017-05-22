@@ -1,14 +1,15 @@
-package xdrive
+package impl
 
 import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"vitessedata/proto/xdrive"
 )
 
 // Reply an error to xdrive server.   ec=0 means OK.
 func writeError(ec int32, msg string) {
-	var r PluginWriteReply
+	var r xdrive.PluginWriteReply
 	r.Errcode = ec
 	r.Errmsg = msg
 	delim_write(&r)
@@ -56,7 +57,7 @@ func writePart(wf *os.File) error {
 	w := csv.NewWriter(wf)
 
 	for {
-		var req PluginWriteRequest
+		var req xdrive.PluginWriteRequest
 		delim_read(&req)
 
 		if req.Rowset == nil {
