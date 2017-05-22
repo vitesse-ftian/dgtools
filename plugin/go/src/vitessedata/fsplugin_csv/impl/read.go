@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"vitessedata/plugin"
 	"vitessedata/proto/xdrive"
 )
 
@@ -15,7 +16,7 @@ func readError(ec int32, msg string) {
 	var r xdrive.PluginDataReply
 	r.Errcode = ec
 	r.Errmsg = msg
-	delim_write(&r)
+	plugin.DelimWrite(&r)
 }
 
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
@@ -23,24 +24,25 @@ func readError(ec int32, msg string) {
 // trivial (Errcode == 0, but there is no data) message.
 func DoRead() error {
 	var req xdrive.ReadRequest
-	err := delim_read(&req)
+	err := plugin.DelimRead(&req)
 	if err != nil {
-		DbgLogIfErr(err, "Delim read rinfo failed.")
+		plugin.DbgLogIfErr(err, "Delim read rinfo failed.")
 		return err
 	}
 
 	// Check/validate frag info.  Again, not necessary, as xdriver server should always
 	// fill in good value.
 	if req.FragCnt <= 0 || req.FragId < 0 || req.FragId >= req.FragCnt {
-		DbgLog("Invalid read req %v", req)
+		plugin.DbgLog("Invalid read req %v", req)
 		readError(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
 		return fmt.Errorf("Invalid read request")
 	}
 
 	// Glob:
+	rinfo := plugin.RInfo()
 	flist, err := filepath.Glob(rinfo.Rpath)
 	if err != nil {
-		DbgLogIfErr(err, "Glob failed.  Rinfo %v", rinfo)
+		plugin.DbgLogIfErr(err, "Glob failed.  Rinfo %v", *rinfo)
 		readError(-2, "rmgr glob failed: "+err.Error())
 		return err
 	}
@@ -63,10 +65,10 @@ func DoRead() error {
 		}
 
 		if req.FragId == tmp {
-			DbgLog("Frag: file %s hash to %d, match frag (%d, %d)", f, hv, req.FragId, req.FragCnt)
+			plugin.DbgLog("Frag: file %s hash to %d, match frag (%d, %d)", f, hv, req.FragId, req.FragCnt)
 			myflist = append(myflist, f)
 		} else {
-			DbgLog("Frag: file %s hash to %d, does not match frag (%d, %d)", f, hv, req.FragId, req.FragCnt)
+			plugin.DbgLog("Frag: file %s hash to %d, does not match frag (%d, %d)", f, hv, req.FragId, req.FragCnt)
 		}
 	}
 
@@ -114,7 +116,7 @@ func DoRead() error {
 	for _, f := range myflist {
 		file, err := os.Open(f)
 		if err != nil {
-			DbgLogIfErr(err, "Open csv file %s failed.", f)
+			plugin.DbgLogIfErr(err, "Open csv file %s failed.", f)
 			readError(-10, "Cannot open file "+f)
 			return err
 		}
@@ -127,7 +129,7 @@ func DoRead() error {
 		// If we need to process huge CSV files, we should read line by line.  Lazy.
 		records, err := r.ReadAll()
 		if err != nil {
-			DbgLogIfErr(err, "Parse csv file %s failed.", f)
+			plugin.DbgLogIfErr(err, "Parse csv file %s failed.", f)
 			readError(-20, "CSV file "+f+" has invalid data")
 			return err
 		}
@@ -144,7 +146,7 @@ func DoRead() error {
 		dataReply.Rowset = new(xdrive.XRowSet)
 		dataReply.Rowset.Columns = make([]*xdrive.XCol, ncol)
 
-		DbgLog("Building Rowset, %d rows, %d cols", len(records), ncol)
+		plugin.DbgLog("Building Rowset, %d rows, %d cols", len(records), ncol)
 
 		for col := 0; col < ncol; col++ {
 			xcol := new(xdrive.XCol)
@@ -159,7 +161,7 @@ func DoRead() error {
 				// These types are encoded as int32 in xcol.   For csv data that use a different encoding,
 				// for example, BOOL as t/f, this is the place to implement parser.
 				//
-				DbgLog("Col %d Buiding I32Data size %d\n", col, xcol.Nrow)
+				plugin.DbgLog("Col %d Buiding I32Data size %d\n", col, xcol.Nrow)
 				xcol.I32Data = make([]int32, xcol.Nrow)
 				for idx, rec := range records {
 					val := rec[col]
@@ -180,7 +182,7 @@ func DoRead() error {
 
 			case xdrive.SpqType_INT64, xdrive.SpqType_TIMESTAMP_MILLIS, xdrive.SpqType_TIME_MICROS, xdrive.SpqType_TIMESTAMP_MICROS:
 				// These types are encoded as int64 in xcol
-				DbgLog("Col %d Buiding I64Data size %d\n", col, xcol.Nrow)
+				plugin.DbgLog("Col %d Buiding I64Data size %d\n", col, xcol.Nrow)
 				xcol.I64Data = make([]int64, xcol.Nrow)
 				for idx, rec := range records {
 					val := rec[col]
@@ -199,7 +201,7 @@ func DoRead() error {
 				}
 
 			case xdrive.SpqType_FLOAT:
-				DbgLog("Col %d Buiding F32Data size %d\n", col, xcol.Nrow)
+				plugin.DbgLog("Col %d Buiding F32Data size %d\n", col, xcol.Nrow)
 				// These types are encoded as float32 in xcol
 				xcol.F32Data = make([]float32, xcol.Nrow)
 				for idx, rec := range records {
@@ -220,7 +222,7 @@ func DoRead() error {
 				}
 
 			case xdrive.SpqType_DOUBLE:
-				DbgLog("Col %d Buiding F64Data size %d\n", col, xcol.Nrow)
+				plugin.DbgLog("Col %d Buiding F64Data size %d\n", col, xcol.Nrow)
 				// These types are encoded as float64 in xcol
 				xcol.F64Data = make([]float64, xcol.Nrow)
 				for idx, rec := range records {
@@ -245,7 +247,7 @@ func DoRead() error {
 				// Handle default type as string.  In fact, we do not need to do ANY of the above.
 				// We can always pass data as string in XCol, and xdrive side will do proper parsing.
 				//
-				DbgLog("Buiding SData size %d\n", xcol.Nrow)
+				plugin.DbgLog("Buiding SData size %d\n", xcol.Nrow)
 				xcol.Sdata = make([]string, xcol.Nrow)
 				for idx, rec := range records {
 					val := rec[col]
@@ -261,8 +263,8 @@ func DoRead() error {
 			}
 		}
 
-		DbgLog("Done Building Rowset, %d rows, %d cols", len(records), ncol)
-		err = delim_write(&dataReply)
+		plugin.DbgLog("Done Building Rowset, %d rows, %d cols", len(records), ncol)
+		err = plugin.DelimWrite(&dataReply)
 		if err != nil {
 			readError(-100, "Write data reply failed")
 			return err

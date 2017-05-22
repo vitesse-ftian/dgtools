@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"vitessedata/plugin"
 	"vitessedata/proto/xdrive"
 )
 
@@ -12,7 +13,7 @@ func writeError(ec int32, msg string) {
 	var r xdrive.PluginWriteReply
 	r.Errcode = ec
 	r.Errmsg = msg
-	delim_write(&r)
+	plugin.DelimWrite(&r)
 }
 
 // DoWrite services xdrive write request.  It read a sequence of PluginWriteRequest
@@ -26,6 +27,7 @@ func DoWrite() error {
 	// will open exactly one file, this trick actually gives a very poor man's
 	// transaction (all or nothing) semantics.
 	//
+	rinfo := plugin.RInfo()
 	tmpfn := rinfo.Rpath + ".part"
 	wf, err := os.Create(tmpfn)
 	if err != nil {
@@ -36,14 +38,14 @@ func DoWrite() error {
 	err = writePart(wf)
 	if err == nil {
 		// Success!
-		DbgLog("OK.  Close writer, then rename %s -> %s.", tmpfn, rinfo.Rpath)
+		plugin.DbgLog("OK.  Close writer, then rename %s -> %s.", tmpfn, rinfo.Rpath)
 		wf.Close()
 		os.Rename(tmpfn, rinfo.Rpath)
 
 		writeError(0, "")
 		return nil
 	} else {
-		DbgLog("Failed.   Close writer, then remove %s.", tmpfn)
+		plugin.DbgLog("Failed.   Close writer, then remove %s.", tmpfn)
 		wf.Close()
 		os.Remove(tmpfn)
 
@@ -58,10 +60,10 @@ func writePart(wf *os.File) error {
 
 	for {
 		var req xdrive.PluginWriteRequest
-		delim_read(&req)
+		plugin.DelimRead(&req)
 
 		if req.Rowset == nil {
-			DbgLog("Done writing!")
+			plugin.DbgLog("Done writing!")
 			return nil
 		}
 

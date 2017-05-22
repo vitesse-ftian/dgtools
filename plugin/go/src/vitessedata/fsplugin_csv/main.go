@@ -1,5 +1,5 @@
 /*
-XDrive Plugin implements customery storage/format interface for XDrive.
+XDrive Plugin fsplugin_csv customery storage/format interface for XDrive.
 
 The binary should be called schema_format.  This example implements a fsplugin for
 csv format, therefore, the binary is fsplugin_csv.   XDriver server will launch this
@@ -11,20 +11,21 @@ package main
 import (
 	"fmt"
 	"vitessedata/fsplugin_csv/impl"
+	"vitessedata/plugin"
 )
 
 func main() {
-	impl.StartDbgLog()
-	defer impl.StopDbgLog()
+	plugin.StartDbgLog()
+	defer plugin.StopDbgLog()
 
 	// The first message from xdrive will always be an RmgrInfo.  Scheme can pass configurations
 	// to plugin via RmgrInfo.Conf, which reads from xdrive.toml file.
-	impl.DbgLog("Starting read rinfo ...\n")
-	err := impl.ReadRInfo()
-	impl.DbgLogIfErr(err, "Cannot read rinfo message from server.")
-	impl.DbgLog("Serving %s\n", impl.PluginOp())
+	plugin.DbgLog("Starting read rinfo ...\n")
+	err := plugin.ReadRInfo()
+	plugin.DbgLogIfErr(err, "Cannot read rinfo message from server.")
+	plugin.DbgLog("Serving %s\n", plugin.PluginOp())
 
-	switch impl.PluginOp() {
+	switch plugin.PluginOp() {
 	case "read":
 		err = impl.DoRead()
 	case "sample":
@@ -34,8 +35,8 @@ func main() {
 	case "write":
 		err = impl.DoWrite()
 	default:
-		err = fmt.Errorf("Bad command from rinfo %s", impl.PluginOp())
+		err = fmt.Errorf("Bad command from rinfo %s", plugin.PluginOp())
 	}
 
-	impl.DbgLogIfErr(err, "Error!!!")
+	plugin.DbgLogIfErr(err, "Error!!!")
 }

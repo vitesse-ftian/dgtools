@@ -5,6 +5,7 @@ import (
 	"hash/fnv"
 	"os"
 	"path/filepath"
+	"vitessedata/plugin"
 	"vitessedata/proto/xdrive"
 )
 
@@ -18,12 +19,13 @@ import (
 //
 func DoSample() error {
 	var req xdrive.SampleRequest
-	err := delim_read(&req)
+	err := plugin.DelimRead(&req)
 	if err != nil {
 		return err
 	}
 
 	// Glob:
+	rinfo := plugin.RInfo()
 	flist, err := filepath.Glob(rinfo.Rpath)
 	if err != nil {
 		readError(-2, "rmgr glob failed: "+err.Error())

@@ -1,4 +1,4 @@
-package impl
+package plugin
 
 import (
 	"bufio"
@@ -20,7 +20,7 @@ import (
 // golang binary.ReadUvarint requires a byte reader.
 var stdin *bufio.Reader = bufio.NewReader(os.Stdin)
 
-func delim_read(pb proto.Message) error {
+func DelimRead(pb proto.Message) error {
 	DbgLog("Delim read ... ")
 	msgsz, err := binary.ReadUvarint(stdin)
 	if err != nil {
@@ -45,7 +45,7 @@ func delim_read(pb proto.Message) error {
 
 // NOTE: we do not wrap os.Stdout with a bufio -- actually, better not, because we
 // want to push message over the wire instead of buffering it.
-func delim_write(pb proto.Message) error {
+func DelimWrite(pb proto.Message) error {
 	msg, err := proto.Marshal(pb)
 	if err != nil {
 		DbgLogIfErr(err, "Marshal error.")

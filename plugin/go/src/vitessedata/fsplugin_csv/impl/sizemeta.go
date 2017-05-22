@@ -1,12 +1,13 @@
 package impl
 
 import (
+	"vitessedata/plugin"
 	"vitessedata/proto/xdrive"
 )
 
 func DoSizeMeta() error {
 	var req xdrive.SizeMetaRequest
-	err := delim_read(&req)
+	err := plugin.DelimRead(&req)
 	if err != nil {
 		return err
 	}
@@ -20,6 +21,6 @@ func DoSizeMeta() error {
 	r.Sizemeta.Nrow = 1000
 	r.Sizemeta.Nbyte = 1000000
 
-	delim_write(&r)
+	plugin.DelimWrite(&r)
 	return nil
 }
