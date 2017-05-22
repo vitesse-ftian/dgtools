@@ -1,7 +1,6 @@
 package plugin
 
 import (
-	"fmt"
 	"vitessedata/proto/xdrive"
 )
 
@@ -30,15 +29,6 @@ func ReadRInfo() error {
 	}
 
 	DbgLog("Rinfo: %v\n", rinfo)
-	//
-	// Check plugin type and format.  Strictly speaking this is not necessary
-	// because xdriver server promises valid values.
-	//
-	if rinfo.Scheme != "fsplugin" || rinfo.Format != "csv" {
-		DbgLog("Invalid Rinfo %v\n", rinfo)
-		ReplyError(-1, "rmgr info invalid")
-		return fmt.Errorf("Invalid rmgr")
-	}
 	return nil
 }
 

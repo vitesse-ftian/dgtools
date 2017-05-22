@@ -3,7 +3,8 @@ package xtable
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/jackc/pgx/stdlib"
+	_ "github.com/lib/pq"
+	// _ "github.com/jackc/pgx/stdlib"
 )
 
 type Deepgreen struct {
@@ -32,11 +33,11 @@ func (dg *Deepgreen) Connect() error {
 	var err error
 	var connstr string
 	if dg.User == "" {
-		connstr = fmt.Sprintf("postgres://%s:%s/%s", dg.Host, dg.Port, dg.Db)
+		connstr = fmt.Sprintf("postgres://%s:%s/%s?sslmode=disable", dg.Host, dg.Port, dg.Db)
 	} else {
-		connstr = fmt.Sprintf("postgres://%s@%s:%s/%s", dg.User, dg.Host, dg.Port, dg.Db)
+		connstr = fmt.Sprintf("postgres://%s@%s:%s/%s?sslmode=disable", dg.User, dg.Host, dg.Port, dg.Db)
 	}
-	dg.Conn, err = sql.Open("pgx", connstr)
+	dg.Conn, err = sql.Open("postgres", connstr)
 	if err != nil {
 		return err
 	}
@@ -64,4 +65,9 @@ func (dg *Deepgreen) Disconnect() {
 		dg.Conn.Close()
 		dg.Conn = nil
 	}
+}
+
+func (dg *Deepgreen) Execute(sql string) error {
+	_, err := dg.Conn.Exec(sql)
+	return err
 }

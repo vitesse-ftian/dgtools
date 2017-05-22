@@ -1,11 +1,11 @@
 package impl
 
 import (
-	"encoding/csv"
 	"hash/fnv"
 	"os"
 	"path/filepath"
 	"vitessedata/plugin"
+	"vitessedata/plugin/csvhandler"
 	"vitessedata/proto/xdrive"
 )
 
@@ -52,15 +52,14 @@ func DoSample() error {
 		}
 	}
 
-	// count so far.
-	cnt := int32(0)
-	ncol := len(req.Columndesc)
+	var csvh csvhandler.CsvReader
+	csvh.Init(req.Filespec, req.Columndesc, nil)
 
 	//
 	// NOTE: Sample does not have a columnlist, as it will read all columns, in order.
 	//
 	for _, f := range myflist {
-		if cnt >= req.Nrow {
+		if csvh.RowCnt >= int(req.Nrow) {
 			// Got enough.
 			break
 		}
@@ -70,56 +69,11 @@ func DoSample() error {
 			plugin.ReplyError(-10, "Cannot open file "+f)
 			return err
 		}
-
-		r := csv.NewReader(file)
-
-		// CSV options, in file spec, we just do Comma.
-		r.Comma = rune(req.Filespec.Csvspec.Delimiter[0])
-
-		// If we need to process huge CSV files, we should read line by line.  Lazy.
-		records, err := r.ReadAll()
+		err = csvh.ProcessEachFile(file)
 		if err != nil {
 			plugin.ReplyError(-20, "CSV file "+f+" has invalid data")
 			return err
 		}
-
-		// Empty file.  This is fine -- however, we do not want to send a data reply
-		// with no data, because xdrive will interprete this as end of stream.
-		if len(records) == 0 {
-			continue
-		}
-
-		// Build reply message.   Errcode initialized to 0, which is what we want.
-		var dataReply xdrive.PluginDataReply
-		// dataReply.Errcode = 0
-		dataReply.Rowset = new(xdrive.XRowSet)
-		dataReply.Rowset.Columns = make([]*xdrive.XCol, ncol)
-
-		for col := 0; col < ncol; col++ {
-			xcol := new(xdrive.XCol)
-			dataReply.Rowset.Columns[col] = xcol
-			xcol.Nrow = int32(len(records))
-			xcol.Nullmap = make([]bool, xcol.Nrow)
-
-			//
-			// One can pack proper data types into XCol.   But here, we don't bother
-			// just use string.  XDrive will take care of parsing.
-			//
-			xcol.Sdata = make([]string, xcol.Nrow)
-			for idx, rec := range records {
-				val := rec[col]
-				if val == "" {
-					// Trivial null, for better null handling, need to deal with the nullstr in csvspec.
-					xcol.Nullmap[idx] = true
-					xcol.Sdata[idx] = ""
-				} else {
-					xcol.Nullmap[idx] = false
-					xcol.Sdata[idx] = val
-				}
-			}
-		}
-
-		cnt += int32(len(records))
 	}
 
 	// Done!   Fill in an empty reply, indicating end of stream.

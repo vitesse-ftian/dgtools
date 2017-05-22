@@ -1,11 +1,10 @@
 package impl
 
 import (
-	"encoding/csv"
 	"fmt"
 	"os"
 	"vitessedata/plugin"
-	"vitessedata/proto/xdrive"
+	"vitessedata/plugin/csvhandler"
 )
 
 // DoWrite services xdrive write request.  It read a sequence of PluginWriteRequest
@@ -24,105 +23,20 @@ func DoWrite() error {
 	wf, err := os.Create(tmpfn)
 	if err != nil {
 		plugin.ReplyWriteError(-2, "Cannot open file to write: "+rinfo.Rpath)
-		return fmt.Errorf("Cannot ope file to write.")
+		return fmt.Errorf("Cannot open file to write.")
 	}
 
-	err = writePart(wf)
+	err = csvhandler.WritePart(wf)
 	if err == nil {
 		// Success!
 		plugin.DbgLog("OK.  Close writer, then rename %s -> %s.", tmpfn, rinfo.Rpath)
-		wf.Close()
 		os.Rename(tmpfn, rinfo.Rpath)
-
 		plugin.ReplyWriteError(0, "")
 		return nil
 	} else {
 		plugin.DbgLog("Failed.   Close writer, then remove %s.", tmpfn)
-		wf.Close()
 		os.Remove(tmpfn)
-
 		plugin.ReplyWriteError(-1, err.Error())
 		return err
 	}
-}
-
-func writePart(wf *os.File) error {
-	defer wf.Close()
-	w := csv.NewWriter(wf)
-
-	for {
-		var req xdrive.PluginWriteRequest
-		plugin.DelimRead(&req)
-
-		if req.Rowset == nil {
-			plugin.DbgLog("Done writing!")
-			return nil
-		}
-
-		// TODO: Configure csv writer with CSVSpec.
-		ncol := len(req.Rowset.Columns)
-		nrow := req.Rowset.Columns[0].Nrow
-		rec := make([][]string, nrow)
-
-		for row := int32(0); row < nrow; row++ {
-			rec[row] = make([]string, ncol)
-		}
-
-		for col := 0; col < ncol; col++ {
-			switch {
-			case req.Rowset.Columns[col].Sdata != nil:
-				for row := int32(0); row < nrow; row++ {
-					if req.Rowset.Columns[col].Nullmap[row] {
-						rec[row][col] = ""
-					} else {
-						rec[row][col] = req.Rowset.Columns[col].Sdata[row]
-					}
-				}
-
-			case req.Rowset.Columns[col].I32Data != nil:
-				for row := int32(0); row < nrow; row++ {
-					if req.Rowset.Columns[col].Nullmap[row] {
-						rec[row][col] = ""
-					} else {
-						rec[row][col] = fmt.Sprintf("%d", req.Rowset.Columns[col].I32Data[row])
-					}
-				}
-
-			case req.Rowset.Columns[col].I64Data != nil:
-				for row := int32(0); row < nrow; row++ {
-					if req.Rowset.Columns[col].Nullmap[row] {
-						rec[row][col] = ""
-					} else {
-						rec[row][col] = fmt.Sprintf("%d", req.Rowset.Columns[col].I64Data[row])
-					}
-				}
-
-			case req.Rowset.Columns[col].F32Data != nil:
-				for row := int32(0); row < nrow; row++ {
-					if req.Rowset.Columns[col].Nullmap[row] {
-						rec[row][col] = ""
-					} else {
-						rec[row][col] = fmt.Sprintf("%f", req.Rowset.Columns[col].F32Data[row])
-					}
-				}
-
-			case req.Rowset.Columns[col].F64Data != nil:
-				for row := int32(0); row < nrow; row++ {
-					if req.Rowset.Columns[col].Nullmap[row] {
-						rec[row][col] = ""
-					} else {
-						rec[row][col] = fmt.Sprintf("%f", req.Rowset.Columns[col].F64Data[row])
-					}
-				}
-
-			default:
-				plugin.ReplyWriteError(-10, "Rowset with no data")
-				return fmt.Errorf("Rowset with no data")
-			}
-		}
-
-		w.WriteAll(rec)
-	}
-
-	return nil
 }

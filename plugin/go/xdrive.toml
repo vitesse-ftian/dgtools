@@ -1,0 +1,21 @@
+[xdrive]
+    dir = "/tmp/wetestdata/xdrive"
+    host = [ "localhost:31416" ]
+
+[[xdrive.mount]]
+name = "fs" 
+scheme = "nfs"
+root = "/tmp/wetestdata/xdrive/data"
+conf = ""
+
+[[xdrive.mount]]
+name = "myx"
+scheme = "fsplugin"
+root = "/tmp/wetestdata/xdrive/data"
+conf = "" 
+
+[[xdrive.mount]]
+name = "tpch1fs3"
+scheme = "s3plugin"
+root = "/"
+conf = "bucket=tpch1f,region=us-west-1"
