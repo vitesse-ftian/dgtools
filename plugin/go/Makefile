@@ -2,8 +2,6 @@ build:
 	(cd src/vitessedata/fsplugin_csv && go get . && go install)
 	(cd src/vitessedata/s3plugin_csv && go get . && go install)
 
-test: plugin start fsplugin_csv s3plugin_csv
-
 start:
 	echo "Setup/Deploy xdrive ..." 
 	rm -fr /tmp/wetestdata/xdrive
@@ -20,11 +18,11 @@ stop:
 	echo "Stop xdrive ..."
 	xdrctl stop ./xdrive.toml
 
-fsplugin_csv:
+testfs: 
 	echo "Running fsplugin test ..."
 	go test wetestdata/fsplugin 
 
-s3plugin_csv:
+tests3:
 	echo "Running fsplugin test ..."
 	go test wetestdata/s3plugin 
 
