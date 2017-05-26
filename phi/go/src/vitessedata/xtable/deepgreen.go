@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
-	// _ "github.com/jackc/pgx/stdlib"
 )
 
 type Deepgreen struct {

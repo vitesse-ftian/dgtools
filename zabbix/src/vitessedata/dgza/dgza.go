@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	_ "github.com/jackc/pgx/stdlib"
+	_ "github.com/lib/pq"
 	"vitessedata/dgza/dgza"
 )
 
@@ -16,9 +16,9 @@ func main() {
 	flag.Parse()
 
 	cmd := flag.Args()[0]
-	connstr := fmt.Sprintf("postgres://%s@%s:%s/template1", *dgUser, *dgHost, *dgPort)
+	connstr := fmt.Sprintf("postgres://%s@%s:%s/template1?sslmode=disable", *dgUser, *dgHost, *dgPort)
 
-	db, err := sql.Open("pgx", connstr)
+	db, err := sql.Open("postgres", connstr)
 	if err != nil {
 		panic("Cannot open connection to DeepGreen database.")
 	}
