@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	"vitessedata/proto/xdrive"
+	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 )
 
 var rinfo xdrive.RmgrInfo

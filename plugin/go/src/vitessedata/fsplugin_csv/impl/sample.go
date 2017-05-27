@@ -1,12 +1,12 @@
 package impl
 
 import (
+	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"hash/fnv"
 	"os"
 	"path/filepath"
 	"vitessedata/plugin"
 	"vitessedata/plugin/csvhandler"
-	"vitessedata/proto/xdrive"
 )
 
 //

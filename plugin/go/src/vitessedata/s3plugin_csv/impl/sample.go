@@ -1,9 +1,9 @@
 package impl
 
 import (
+	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"vitessedata/plugin"
 	"vitessedata/plugin/csvhandler"
-	"vitessedata/proto/xdrive"
 )
 
 func DoSample() error {

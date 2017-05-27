@@ -2,11 +2,11 @@ package impl
 
 import (
 	"fmt"
+	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"hash/fnv"
 	"path/filepath"
 	"vitessedata/plugin"
 	"vitessedata/plugin/csvhandler"
-	"vitessedata/proto/xdrive"
 )
 
 func buildS3Flist(sb *S3Bkt, path string, fragid int32, fragcnt int32) ([]S3Item, error) {

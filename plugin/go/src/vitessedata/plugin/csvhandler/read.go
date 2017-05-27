@@ -2,10 +2,10 @@ package csvhandler
 
 import (
 	"encoding/csv"
+	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"io"
 	"strconv"
 	"vitessedata/plugin"
-	"vitessedata/proto/xdrive"
 )
 
 type CsvReader struct {

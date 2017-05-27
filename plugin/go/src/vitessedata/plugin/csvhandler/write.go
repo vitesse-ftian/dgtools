@@ -3,9 +3,9 @@ package csvhandler
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"io"
 	"vitessedata/plugin"
-	"vitessedata/proto/xdrive"
 )
 
 func WritePart(wf io.WriteCloser) error {

@@ -2,8 +2,8 @@ package plugin
 
 import (
 	"fmt"
+	"github.com/vitesse-ftian/dggo/vitessedata/xtable"
 	"testing"
-	"vitessedata/xtable"
 )
 
 func checkError(t *testing.T, err error) {

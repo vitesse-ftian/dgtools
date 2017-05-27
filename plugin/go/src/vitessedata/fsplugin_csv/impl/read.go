@@ -2,12 +2,12 @@ package impl
 
 import (
 	"fmt"
+	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"hash/fnv"
 	"os"
 	"path/filepath"
 	"vitessedata/plugin"
 	"vitessedata/plugin/csvhandler"
-	"vitessedata/proto/xdrive"
 )
 
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply

@@ -1,8 +1,8 @@
 package impl
 
 import (
+	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"vitessedata/plugin"
-	"vitessedata/proto/xdrive"
 )
 
 func DoSizeMeta() error {

@@ -2,9 +2,9 @@ package s3
 
 import (
 	"fmt"
+	"github.com/vitesse-ftian/dggo/vitessedata/xtable"
 	"os"
 	"testing"
-	"vitessedata/xtable"
 )
 
 func checkError(t *testing.T, err error) {
