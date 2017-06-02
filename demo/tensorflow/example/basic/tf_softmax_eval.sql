@@ -90,7 +90,7 @@ def main(_):
     sess_config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
     saver = tf.train.Saver()
     sess = tf.Session(config=sess_config)
-    ckpt = tf.train.get_checkpoint_state("/home/ftian/oss/dgtools/tensorflow/example/basic/logs_0/")
+    ckpt = tf.train.get_checkpoint_state("/home/ftian/oss/dgtools/demo/tensorflow/example/basic/logs_0/")
     if ckpt:
         saver.restore(sess, ckpt.model_checkpoint_path) 
     else:

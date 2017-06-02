@@ -119,7 +119,7 @@ def main(_):
 
         # Create a "supervisor", which oversees the training process.
         sv = tf.train.Supervisor(is_chief=(FLAGS.task_index == 0),
-                             logdir="/home/ftian/oss/dgtools/tensorflow/example/basic/logs_%d" % FLAGS.task_index,
+                             logdir="/home/ftian/oss/dgtools/demo/tensorflow/example/basic/logs_%d" % FLAGS.task_index,
                              init_op=init_op,
                              # summary_op=summary_op,
                              saver=tf.train.Saver(), 
