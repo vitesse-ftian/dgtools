@@ -16,6 +16,16 @@ CREATE EXTERNAL TABLE xx1
 LOCATION ('xdrive://localhost:31416/myx/x1.csv') 
 FORMAT 'CSV';
 
+DROP EXTERNAL TABLE IF EXISTS xx1exec; 
+CREATE EXTERNAL TABLE xx1exec
+    (
+        i int,
+        t text
+    )
+LOCATION ('xdrive://localhost:31416/myexec/x1.csv') 
+FORMAT 'CSV';
+
+
 DROP EXTERNAL TABLE IF EXISTS xx2; 
 CREATE EXTERNAL TABLE xx2
     (
@@ -24,6 +34,16 @@ CREATE EXTERNAL TABLE xx2
     )
 LOCATION ('xdrive://localhost:31416/myx/x?.csv') 
 FORMAT 'CSV';
+
+DROP EXTERNAL TABLE IF EXISTS xx2exec; 
+CREATE EXTERNAL TABLE xx2exec
+    (
+        i int,
+        t text
+    )
+LOCATION ('xdrive://localhost:31416/myexec/x?.csv') 
+FORMAT 'CSV';
+
 
 DROP EXTERNAL TABLE IF EXISTS x3; 
 CREATE EXTERNAL TABLE x3

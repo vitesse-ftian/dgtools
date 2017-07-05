@@ -51,8 +51,14 @@ func TestPlugin(t *testing.T) {
 		cnt = countRows(t, &dg, "select * from xx1")
 		checkCond(t, cnt == 404, fmt.Sprintf("xx1 %d bad result", cnt))
 
+		cnt = countRows(t, &dg, "select * from xx1exec")
+		checkCond(t, cnt == 404, fmt.Sprintf("xx1exec %d bad result", cnt))
+
 		cnt = countRows(t, &dg, "select * from xx2")
 		checkCond(t, cnt == 404, fmt.Sprintf("xx2 %d bad result", cnt))
+
+		cnt = countRows(t, &dg, "select * from xx2exec")
+		checkCond(t, cnt == 404, fmt.Sprintf("xx2exec %d bad result", cnt))
 
 		x3cnt := countRows(t, &dg, "select * from x3")
 		xx3cnt := countRows(t, &dg, "select * from xx3")
@@ -63,6 +69,9 @@ func TestPlugin(t *testing.T) {
 
 		cnt = countRows(t, &dg, "select * from xx2")
 		checkCond(t, cnt == 404, fmt.Sprintf("xx2 %d bad result", cnt))
+
+		cnt = countRows(t, &dg, "select * from xx2exec")
+		checkCond(t, cnt == 404, fmt.Sprintf("xx2exec %d bad result", cnt))
 
 		cnt = countRows(t, &dg, "select * from x3")
 		checkCond(t, cnt == x3cnt+404, fmt.Sprintf("x3 %d + 404 != %d", x3cnt, cnt))
