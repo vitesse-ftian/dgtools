@@ -23,6 +23,11 @@ func WritePart(wf io.WriteCloser) error {
 
 		// TODO: Configure csv writer with CSVSpec.
 		ncol := len(req.Rowset.Columns)
+		if ncol == 0 {
+			plugin.DbgLog("Done writing!")
+			return nil
+		}
+
 		nrow := req.Rowset.Columns[0].Nrow
 		rec := make([][]string, nrow)
 
