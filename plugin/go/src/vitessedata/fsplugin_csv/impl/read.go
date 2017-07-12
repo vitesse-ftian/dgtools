@@ -67,7 +67,7 @@ func DoRead() error {
 	}
 
 	if fault != "" {
-		inject_fault(fault)
+		err = inject_fault(fault)
 		if err != nil {
 			return err
 		}
