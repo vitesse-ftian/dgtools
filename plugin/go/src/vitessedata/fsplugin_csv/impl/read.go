@@ -6,9 +6,28 @@ import (
 	"hash/fnv"
 	"os"
 	"path/filepath"
+	"time"
 	"vitessedata/plugin"
 	"vitessedata/plugin/csvhandler"
 )
+
+func inject_fault(fault string) error {
+	switch fault {
+	case "sleep":
+		time.Sleep(1 * time.Hour)
+		return nil
+	case "crash":
+		plugin.FatalIf(true, "Fault inj crash.")
+		return nil
+	case "garble":
+		fmt.Printf("Garbage out!")
+		return nil
+	case "error":
+		return fmt.Errorf("Fault inj error.")
+	default:
+		return fmt.Errorf("Fault inj unknown.")
+	}
+}
 
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
@@ -27,6 +46,31 @@ func DoRead() error {
 		plugin.DbgLog("Invalid read req %v", req)
 		plugin.ReplyError(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
 		return fmt.Errorf("Invalid read request")
+	}
+
+	//
+	// Filter:
+	// req may contains a list of Filters that got pushed down from XDrive server.
+	// As per plugin protocol, plugin can ignore all of them if they choose to be
+	// lazy.  See comments in csvhandler.go.
+	//
+	// All filters are derived from SQL (where clause).  There is a special kind of
+	// filter called "QUERY", which allow users to send any query to plugin.  Here as
+	// an example, we implement a poorman's fault injection.
+	//
+	var fault string
+	for _, f := range req.Filter {
+		// f cannot be nil
+		if f.Op == "QUERY" {
+			fault = f.Args[0]
+		}
+	}
+
+	if fault != "" {
+		inject_fault(fault)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Glob:
