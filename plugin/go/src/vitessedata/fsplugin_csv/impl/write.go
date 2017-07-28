@@ -18,19 +18,25 @@ func DoWrite() error {
 	// will open exactly one file, this trick actually gives a very poor man's
 	// transaction (all or nothing) semantics.
 	//
-	rinfo := plugin.RInfo()
-	tmpfn := rinfo.Rpath + ".part"
+
+	path, err := plugin.WritePath()
+	if err != nil {
+		plugin.ReplyWriteError(-2, err.Error())
+		return err
+	}
+
+	tmpfn := path + ".part"
 	wf, err := os.Create(tmpfn)
 	if err != nil {
-		plugin.ReplyWriteError(-2, "Cannot open file to write: "+rinfo.Rpath)
+		plugin.ReplyWriteError(-2, "Cannot open file to write: "+path)
 		return fmt.Errorf("Cannot open file to write.")
 	}
 
 	err = csvhandler.WritePart(wf)
 	if err == nil {
 		// Success!
-		plugin.DbgLog("OK.  Close writer, then rename %s -> %s.", tmpfn, rinfo.Rpath)
-		os.Rename(tmpfn, rinfo.Rpath)
+		plugin.DbgLog("OK.  Close writer, then rename %s -> %s.", tmpfn, path)
+		os.Rename(tmpfn, path)
 		plugin.ReplyWriteError(0, "")
 		return nil
 	} else {

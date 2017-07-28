@@ -9,13 +9,18 @@ import (
 // DoWrite services xdrive write request.  It read a sequence of PluginWriteRequest
 // from stdin and write to file system.
 func DoWrite() error {
-	rinfo := plugin.RInfo()
+	path, err := plugin.WritePath()
+	if err != nil {
+		plugin.ReplyWriteError(-1, err.Error())
+		return err
+	}
+
 	var sb S3Bkt
 	sb.ConnectUsingRInfo()
 
-	wf, err := sb.ObjectWriter(rinfo.Rpath)
+	wf, err := sb.ObjectWriter(path)
 	if err != nil {
-		plugin.ReplyWriteError(-2, "Cannot open file to write: "+rinfo.Rpath)
+		plugin.ReplyWriteError(-2, "Cannot open file to write: "+path)
 		return fmt.Errorf("Cannot open file to write.")
 	}
 

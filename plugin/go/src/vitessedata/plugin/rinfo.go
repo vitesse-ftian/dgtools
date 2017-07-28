@@ -1,7 +1,11 @@
 package plugin
 
 import (
+	"fmt"
+	"github.com/satori/go.uuid"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
+	"strconv"
+	"strings"
 )
 
 var rinfo xdrive.RmgrInfo
@@ -38,4 +42,16 @@ func PluginOp() string {
 
 func RInfo() *xdrive.RmgrInfo {
 	return &rinfo
+}
+
+func WritePath() (string, error) {
+	str := rinfo.Rpath
+	str = strings.Replace(str, "#SEGCOUNT#", strconv.Itoa(int(rinfo.FragCnt)), -1)
+	path := strings.Replace(str, "#SEGID#", strconv.Itoa(int(rinfo.FragId)), -1)
+	path = strings.Replace(path, "#UUID#", fmt.Sprintf("%s", uuid.NewV4()), -1)
+
+	if path == str {
+		return path, fmt.Errorf("No #SEGID# or #UUID# substitution in write request.")
+	}
+	return path, nil
 }
