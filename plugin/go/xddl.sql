@@ -16,6 +16,24 @@ CREATE EXTERNAL TABLE xx1
 LOCATION ('xdrive://localhost:31416/myx/x1.csv') 
 FORMAT 'CSV';
 
+DROP EXTERNAL TABLE IF EXISTS numbug; 
+CREATE EXTERNAL TABLE numbug 
+    (
+		n numeric
+    )
+LOCATION ('xdrive://localhost:31416/fs/num.csv') 
+FORMAT 'CSV';
+
+DROP EXTERNAL TABLE IF EXISTS numbug2; 
+CREATE EXTERNAL TABLE numbug2 
+    (
+		n numeric
+    )
+LOCATION ('xdrive://localhost:31416/myx/num.csv') 
+FORMAT 'CSV';
+
+
+
 DROP EXTERNAL TABLE IF EXISTS xx1exec; 
 CREATE EXTERNAL TABLE xx1exec
     (
