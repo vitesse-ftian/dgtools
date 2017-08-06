@@ -21,8 +21,6 @@ start:
 	rm -fr /tmp/wetestdata/xdrive
 	mkdir -p /tmp/wetestdata/xdrive/data
 	xdrctl deploy ./xdrive.toml
-	echo "Start deploy plugin bits ... " 
-	cp bin/* /tmp/wetestdata/xdrive/xdrplugin
 	echo "Start xdrive ..."
 	xdrctl start ./xdrive.toml
 	echo "Sym linking ..." 
