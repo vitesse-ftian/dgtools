@@ -97,3 +97,44 @@ CREATE EXTERNAL TABLE LINEITEM ( L_ORDERKEY    INTEGER ,
                              L_COMMENT      VARCHAR(44) )
 LOCATION ('xdrive://localhost:31416/tpch1/lineitem.tbl')
 FORMAT 'CSV' (DELIMITER '|') ;
+
+
+DROP EXTERNAL TABLE IF EXISTS WSPQ_LINITEM;
+CREATE WRITABLE EXTERNAL TABLE WSPQ_LINEITEM ( L_ORDERKEY    INTEGER ,
+                             L_PARTKEY     INTEGER ,
+                             L_SUPPKEY     INTEGER ,
+                             L_LINENUMBER  INTEGER ,
+                             L_QUANTITY    INTEGER /*DECIMAL(15,2)*/ ,
+                             L_EXTENDEDPRICE  DOUBLE PRECISION/*DECIMAL(15,2)*/ ,
+                             L_DISCOUNT    DOUBLE PRECISION /*DECIMAL(15,2)*/ ,
+                             L_TAX         DOUBLE PRECISION /*DECIMAL(15,2)*/ ,
+                             L_RETURNFLAG  VARCHAR(1) ,
+                             L_LINESTATUS  VARCHAR(1) ,
+                             L_SHIPDATE    DATE ,
+                             L_COMMITDATE  DATE ,
+                             L_RECEIPTDATE DATE ,
+                             L_SHIPINSTRUCT VARCHAR(25) /*CHAR(25)*/ ,
+                             L_SHIPMODE     VARCHAR(10) /*CHAR(10)*/ ,
+                             L_COMMENT      VARCHAR(44) )
+LOCATION ('xdrive://localhost:31416/tpch1/lineitem.#SEGID#.spq')
+FORMAT 'SPQ'; 
+
+DROP EXTERNAL TABLE IF EXISTS RSPQ_LINITEM;
+CREATE EXTERNAL TABLE RSPQ_LINEITEM ( L_ORDERKEY    INTEGER ,
+                             L_PARTKEY     INTEGER ,
+                             L_SUPPKEY     INTEGER ,
+                             L_LINENUMBER  INTEGER ,
+                             L_QUANTITY    INTEGER /*DECIMAL(15,2)*/ ,
+                             L_EXTENDEDPRICE  DOUBLE PRECISION/*DECIMAL(15,2)*/ ,
+                             L_DISCOUNT    DOUBLE PRECISION /*DECIMAL(15,2)*/ ,
+                             L_TAX         DOUBLE PRECISION /*DECIMAL(15,2)*/ ,
+                             L_RETURNFLAG  VARCHAR(1) ,
+                             L_LINESTATUS  VARCHAR(1) ,
+                             L_SHIPDATE    DATE ,
+                             L_COMMITDATE  DATE ,
+                             L_RECEIPTDATE DATE ,
+                             L_SHIPINSTRUCT VARCHAR(25) /*CHAR(25)*/ ,
+                             L_SHIPMODE     VARCHAR(10) /*CHAR(10)*/ ,
+                             L_COMMENT      VARCHAR(44) )
+LOCATION ('xdrive://localhost:31416/tpch1/lineitem.#SEGID#.spq')
+FORMAT 'SPQ'; 
