@@ -95,6 +95,7 @@ order by
 	s_name,
 	p_partkey
 */
+limit 100
 ;
 
 drop view if exists q3;
@@ -123,6 +124,7 @@ order by
 	revenue desc,
 	o_orderdate
 */
+limit 10
 ;
 
 
@@ -361,6 +363,7 @@ group by
 order by
 	revenue desc
 */
+limit 20
 ;
 
 drop view if exists q11;
@@ -611,6 +614,7 @@ order by
 	o_totalprice desc,
 	o_orderdate
 */
+limit 100
 ;
 
 drop view if exists q19;
@@ -723,6 +727,7 @@ order by
 	numwait desc,
 	s_name
 */
+limit 100
 ;
 
 drop view if exists q22;
@@ -791,11 +796,10 @@ where
 group by
 	l_returnflag,
 	l_linestatus
-/*
 order by
 	l_returnflag,
 	l_linestatus
-*/;
+;
 
 -- 2
 -- using 1461004545 as a seed to the RNG
@@ -841,13 +845,13 @@ where
 			and n_regionkey = r_regionkey
 			and r_name = 'MIDDLE EAST'
 	)
-/*
 order by
 	s_acctbal desc,
 	n_name,
 	s_name,
 	p_partkey
-*/;
+limit 100
+;
 
 -- 3
 -- using 1461004545 as a seed to the RNG
@@ -874,11 +878,11 @@ group by
 	l_orderkey,
 	o_orderdate,
 	o_shippriority
-/*
 order by
 	revenue desc,
 	o_orderdate
-*/;
+limit 10
+;
 
 -- 4
 -- using 1461004545 as a seed to the RNG
@@ -905,10 +909,9 @@ where
 	)
 group by
 	o_orderpriority
-/*
 order by
 	o_orderpriority
-*/;
+;
 
 -- 5
 -- using 1461004545 as a seed to the RNG
@@ -938,10 +941,9 @@ where
 	and o_orderdate < date '1994-01-01' + interval '1 year'
 group by
 	n_name
-/*
 order by
 	revenue desc
-*/;
+;
 
 -- 6
 -- using 1461004545 as a seed to the RNG
@@ -1000,12 +1002,11 @@ group by
 	supp_nation,
 	cust_nation,
 	l_year
-/*
 order by
 	supp_nation,
 	cust_nation,
 	l_year
-*/;
+;
 
 -- 8
 -- using 1461004545 as a seed to the RNG
@@ -1048,10 +1049,9 @@ from
 	) as all_nations
 group by
 	o_year
-/*
 order by
 	o_year
-*/;
+;
 
 -- 9
 -- using 1461004545 as a seed to the RNG
@@ -1088,11 +1088,10 @@ from
 group by
 	nation,
 	o_year
-/*
 order by
 	nation,
 	o_year desc
-*/;
+;
 
 -- 10
 -- using 1461004545 as a seed to the RNG
@@ -1129,10 +1128,10 @@ group by
 	n_name,
 	c_address,
 	c_comment
-/*
 order by
 	revenue desc
-*/;
+limit 20
+;
 
 -- 11
 -- using 1461004545 as a seed to the RNG
@@ -1165,10 +1164,9 @@ group by
 				and s_nationkey = n_nationkey
 				and n_name = 'JAPAN'
 		)
-/*
 order by
 	value desc
-*/;
+;
 
 -- 12
 -- using 1461004545 as a seed to the RNG
@@ -1202,10 +1200,9 @@ where
 	and l_receiptdate < date '1996-01-01' + interval '1 year'
 group by
 	l_shipmode
-/*
 order by
 	l_shipmode
-*/;
+;
 
 -- 13
 -- using 1461004545 as a seed to the RNG
@@ -1230,11 +1227,10 @@ from
 	) as c_orders (c_custkey, c_count)
 group by
 	c_count
-/*
 order by
 	custdist desc,
 	c_count desc
-*/;
+;
 
 -- 14
 -- using 1461004545 as a seed to the RNG
@@ -1292,10 +1288,9 @@ where
 		from
 			qv15_revenue0
 	)
-/*
 order by
 	s_suppkey
-*/;
+;
 
 
 -- 16
@@ -1329,13 +1324,12 @@ group by
 	p_brand,
 	p_type,
 	p_size
-/*
 order by
 	supplier_cnt desc,
 	p_brand,
 	p_type,
 	p_size
-*/;
+;
 
 -- 17
 -- using 1461004545 as a seed to the RNG
@@ -1396,11 +1390,11 @@ group by
 	o_orderkey,
 	o_orderdate,
 	o_totalprice
-/*
 order by
 	o_totalprice desc,
 	o_orderdate
-*/;
+limit 100
+;
 
 -- 19
 -- using 1461004545 as a seed to the RNG
@@ -1485,10 +1479,8 @@ where
 	)
 	and s_nationkey = n_nationkey
 	and n_name = 'VIETNAM'
-/*
-order by
-	s_name
-*/;
+order by s_name
+;
 
 -- 21
 -- using 1461004545 as a seed to the RNG
@@ -1532,11 +1524,11 @@ where
 	and n_name = 'BRAZIL'
 group by
 	s_name
-/*
 order by
 	numwait desc,
 	s_name
-*/;
+limit 100
+;
 
 -- 22
 -- using 1461004545 as a seed to the RNG
@@ -1579,8 +1571,7 @@ from
 	) as custsale
 group by
 	cntrycode
-/*
 order by
 	cntrycode
-*/;
+;
 
