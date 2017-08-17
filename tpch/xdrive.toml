@@ -1,9 +1,0 @@
-[xdrive]
-    dir = "/tmp/wetestdata/xdrive" 
-    host = [ "localhost:31416" ]
-
-[[xdrive.mount]]
-name = "tpch1" 
-scheme = "nfs"
-root = "./data/tpch1" 
-conf = ""
