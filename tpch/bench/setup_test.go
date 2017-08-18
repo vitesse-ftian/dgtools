@@ -84,6 +84,17 @@ func TestSetup(t *testing.T) {
 		if err != nil {
 			t.Errorf("Cannot run ddl.   error: %s", err.Error())
 		}
+
+		qf := fmt.Sprintf("%s/sql/mkview-n.sql", Dir())
+		cmd, err = PsqlCmd(qf)
+		if err != nil {
+			t.Errorf("Cannot build psql query command. error :%s", err.Error())
+		}
+
+		err = exec.Command("bash", "-c", cmd).Run()
+		if err != nil {
+			t.Errorf("Cannot run query view ddl.   error: %s", err.Error())
+		}
 	})
 
 	t.Run("Step=extddl", func(t *testing.T) {
