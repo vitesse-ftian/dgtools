@@ -1,10 +1,12 @@
 package bench
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/BurntSushi/toml"
+	"github.com/vitesse-ftian/dggo/vitessedata/ssh"
 	"github.com/vitesse-ftian/dggo/vitessedata/xtable"
 )
 
@@ -103,4 +105,16 @@ func Segs() ([]Seg, error) {
 		ret = append(ret, seg)
 	}
 	return ret, nil
+}
+
+func PsqlCmd(fn string) (string, error) {
+	var cmd string
+	conf, err := GetConfig()
+	if err != nil {
+		return cmd, err
+	}
+
+	psql := ssh.BinAbs("psql")
+	cmd = fmt.Sprintf("%s -h %s -p %d -f %s %s", psql, conf.DGHost, conf.DGPort, fn, conf.Db)
+	return cmd, nil
 }
