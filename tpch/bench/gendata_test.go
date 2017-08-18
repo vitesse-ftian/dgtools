@@ -41,7 +41,7 @@ func TestGenData(t *testing.T) {
 			}
 
 			seghost := []string{seg.Addr}
-			datadir := fmt.Sprintf("%s/seg-%d", conf.Staging, seg.Id)
+			datadir := fmt.Sprintf("%s/tpch/scale-%d/seg-%d", conf.Staging, conf.Scale, seg.Id)
 			cmd = fmt.Sprintf("rm -fr %s; mkdir -p %s", datadir, datadir)
 			if ssh.ExecAnyError(ssh.ExecCmdOn("", seghost, cmd)) != nil {
 				t.Errorf("Cannot prepare staging data dir %s on host %s.", datadir, seg.Addr)

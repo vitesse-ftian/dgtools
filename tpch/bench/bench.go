@@ -18,6 +18,7 @@ type Config struct {
 	Staging string
 	Db      string
 	Scale   int
+	DDL     string
 }
 
 type tomlConfig struct {

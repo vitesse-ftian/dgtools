@@ -3,4 +3,5 @@
 	DGPort = 5432
 	Db = "tpch10"
 	Staging = "/data/tpch/staging"
-	Scale = 10
+	Scale = 1
+	DDL = "mktab-f.sql" 
