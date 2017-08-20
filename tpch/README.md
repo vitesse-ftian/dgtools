@@ -8,16 +8,15 @@ put greenplumn bin before deepgreen bin in $PATH.
 export BENCH_DIR=$PWD
 ```
 
-Test config is in bench.toml file.  
-
-We use golang test.   See golang testing package for how to run a
-test or subtest, here we list two examples.
+Test config is in bench.toml file.  We use golang test.  See golang 
+testing package for how to run a test or subtest, here we list two examples.
 ```
 	BENCH_DIR=$PWD go test -run GenData ./bench
 	go test -run GenData/Step=dbgen ./bench
 ```
 
-There are a series of tests to run.
+There are a bunch of makefile target in the Makefile.  In general one should
+just use make to drive the tests.   The following are details,
 
 # GenData
 Generate data.   Costly.   Not timed/measured.
@@ -30,3 +29,19 @@ Setup ddl etc.   Cheap.    Not timed/measured.
 ```
 go test -run Setup ./bench
 ```
+
+# Load
+Loading data.   Benchmarked.   Note that we used -benchtime=0s
+to disable golang test b.N loop.   We want to load/bench the 
+query only once, regardless how fast/slow etc.  
+
+Also, -run=None basically disable all tests.   Otherwise, golang
+test will try to gen data, setup etc again.
+
+```
+go test -run=None -bench=Load -benchtime=0s ./bench 
+```
+
+
+
+

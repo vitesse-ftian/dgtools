@@ -5,3 +5,4 @@
 	Staging = "/data/bench/staging"
 	Scale = 1
 	DDL = "mktab-f.sql" 
+	Ext = "XDR"

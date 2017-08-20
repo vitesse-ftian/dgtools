@@ -21,6 +21,7 @@ type Config struct {
 	Db      string
 	Scale   int
 	DDL     string
+	Ext     string
 }
 
 type tomlConfig struct {

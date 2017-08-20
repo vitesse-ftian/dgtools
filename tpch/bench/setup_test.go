@@ -110,13 +110,16 @@ func TestSetup(t *testing.T) {
 		conn.Execute("CREATE SCHEMA GPF")
 
 		xdr1f := func(t string) string {
-			return fmt.Sprintf("xdrive://localhost:31416/tpch-scale-%d/seg-1/%s.tbl", conf.Scale, t)
+			// xdrive syntax for nation, region is exactly the same as other tables.   In fact, for a
+			// cluster running xdrive as single cluster mode, we must add a * wildcard -- otherwise,
+			// if xdrive sees no wildcard, it will enforce the file exists, otherwise, error.
+			return fmt.Sprintf("xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*", conf.Scale, t)
 		}
 		xdrallf := func(t string) string {
-			return fmt.Sprintf("xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl.*", conf.Scale, t)
+			return fmt.Sprintf("xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*", conf.Scale, t)
 		}
 		gpf1f := func(t string) string {
-			return fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-1/%s.tbl", segs[0].Addr, conf.Scale, t)
+			return fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-0/%s.tbl", segs[0].Addr, conf.Scale, t)
 		}
 		gpfallf := func(t string) string {
 			prefix := ""
@@ -227,7 +230,7 @@ func TestSetup(t *testing.T) {
 		conn.Execute(fmt.Sprintf(orders, "XDR", xdrallf("orders")))
 		conn.Execute(fmt.Sprintf(orders, "GPF", gpfallf("orders")))
 
-		lineitem := `CREATE EXTERNAL TABLE %s.LINEITEM ( L_ORDERKEY,
+		lineitem := `CREATE EXTERNAL TABLE %s.LINEITEM ( L_ORDERKEY INTEGER,
                              L_PARTKEY     INTEGER,
                              L_SUPPKEY     INTEGER,
                              L_LINENUMBER  INTEGER,
