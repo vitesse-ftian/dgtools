@@ -126,7 +126,7 @@ func TestSetup(t *testing.T) {
 			loc1f = func(t string) string {
 				return fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-0/%s.tbl", segs[0].Addr, conf.Scale, t)
 			}
-			locallf := func(t string) string {
+			locallf = func(t string) string {
 				prefix := ""
 				ret := ""
 				for h, _ := range seghosts {

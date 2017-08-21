@@ -7,3 +7,5 @@ load:
 	go test -run=Setup ./bench
 	go test -run=NONO -bench=Load -benchtime=0s ./bench
 
+run:
+	go test -run=NONO -bench=Query -benchtime=0s ./bench
