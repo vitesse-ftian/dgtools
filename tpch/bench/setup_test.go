@@ -109,25 +109,31 @@ func TestSetup(t *testing.T) {
 		conn.Execute("CREATE SCHEMA XDR")
 		conn.Execute("CREATE SCHEMA GPF")
 
-		xdr1f := func(t string) string {
-			// xdrive syntax for nation, region is exactly the same as other tables.   In fact, for a
-			// cluster running xdrive as single cluster mode, we must add a * wildcard -- otherwise,
-			// if xdrive sees no wildcard, it will enforce the file exists, otherwise, error.
-			return fmt.Sprintf("xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*", conf.Scale, t)
-		}
-		xdrallf := func(t string) string {
-			return fmt.Sprintf("xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*", conf.Scale, t)
-		}
-		gpf1f := func(t string) string {
-			return fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-0/%s.tbl", segs[0].Addr, conf.Scale, t)
-		}
-		gpfallf := func(t string) string {
-			prefix := ""
-			ret := ""
-			for h, _ := range seghosts {
-				ret = ret + prefix + fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-*/%s.tbl.*", h, conf.Scale, t)
+		var loc1f func(string) string
+		var locallf func(string) string
+
+		if conf.Ext == "XDR" {
+			loc1f = func(t string) string {
+				// xdrive syntax for nation, region is exactly the same as other tables.   In fact, for a
+				// cluster running xdrive as single cluster mode, we must add a * wildcard -- otherwise,
+				// if xdrive sees no wildcard, it will enforce the file exists, otherwise, error.
+				return fmt.Sprintf("xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*", conf.Scale, t)
 			}
-			return ret
+			locallf = func(t string) string {
+				return fmt.Sprintf("xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*", conf.Scale, t)
+			}
+		} else {
+			loc1f = func(t string) string {
+				return fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-0/%s.tbl", segs[0].Addr, conf.Scale, t)
+			}
+			locallf := func(t string) string {
+				prefix := ""
+				ret := ""
+				for h, _ := range seghosts {
+					ret = ret + prefix + fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-*/%s.tbl.*", h, conf.Scale, t)
+				}
+				return ret
+			}
 		}
 
 		// Create two set of external tables, one for xdrive, one for gpfdist.
@@ -141,8 +147,7 @@ func TestSetup(t *testing.T) {
 				   LOCATION ('%s') 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
-		conn.Execute(fmt.Sprintf(nation, "XDR", xdr1f("nation")))
-		conn.Execute(fmt.Sprintf(nation, "GPF", gpf1f("nation")))
+		conn.Execute(fmt.Sprintf(nation, conf.Ext, loc1f("nation")))
 
 		// region
 		region := ` CREATE EXTERNAL TABLE %s.REGION  ( R_REGIONKEY  INTEGER, 
@@ -152,8 +157,7 @@ func TestSetup(t *testing.T) {
 				   LOCATION ('%s') 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
-		conn.Execute(fmt.Sprintf(region, "XDR", xdr1f("region")))
-		conn.Execute(fmt.Sprintf(region, "GPF", gpf1f("region")))
+		conn.Execute(fmt.Sprintf(region, conf.Ext, loc1f("region")))
 
 		// part
 		part := `CREATE EXTERNAL TABLE %s.PART  ( P_PARTKEY     INTEGER, 
@@ -169,8 +173,7 @@ func TestSetup(t *testing.T) {
 				   LOCATION ('%s') 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
-		conn.Execute(fmt.Sprintf(part, "XDR", xdrallf("part")))
-		conn.Execute(fmt.Sprintf(part, "GPF", gpfallf("part")))
+		conn.Execute(fmt.Sprintf(part, conf.Ext, locallf("part")))
 
 		// supplier
 		supplier := `CREATE EXTERNAL TABLE %s.SUPPLIER ( S_SUPPKEY     INTEGER, 
@@ -184,8 +187,7 @@ func TestSetup(t *testing.T) {
 				   LOCATION ('%s') 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
-		conn.Execute(fmt.Sprintf(supplier, "XDR", xdrallf("supplier")))
-		conn.Execute(fmt.Sprintf(supplier, "GPF", gpfallf("supplier")))
+		conn.Execute(fmt.Sprintf(supplier, conf.Ext, locallf("supplier")))
 
 		partsupp := `CREATE EXTERNAL TABLE %s.PARTSUPP ( PS_PARTKEY     INTEGER, 
                              PS_SUPPKEY     INTEGER, 
@@ -196,8 +198,7 @@ func TestSetup(t *testing.T) {
 				   LOCATION ('%s') 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
-		conn.Execute(fmt.Sprintf(partsupp, "XDR", xdrallf("partsupp")))
-		conn.Execute(fmt.Sprintf(partsupp, "GPF", gpfallf("partsupp")))
+		conn.Execute(fmt.Sprintf(partsupp, conf.Ext, locallf("partsupp")))
 
 		customer := `CREATE EXTERNAL TABLE %s.CUSTOMER ( C_CUSTKEY     INTEGER, 
                              C_NAME        VARCHAR(25),
@@ -211,8 +212,7 @@ func TestSetup(t *testing.T) {
 				   LOCATION ('%s') 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
-		conn.Execute(fmt.Sprintf(customer, "XDR", xdrallf("customer")))
-		conn.Execute(fmt.Sprintf(customer, "GPF", gpfallf("customer")))
+		conn.Execute(fmt.Sprintf(customer, conf.Ext, locallf("customer")))
 
 		orders := `CREATE EXTERNAL TABLE %s.ORDERS  ( O_ORDERKEY       INTEGER, 
                            O_CUSTKEY        INTEGER,
@@ -227,8 +227,7 @@ func TestSetup(t *testing.T) {
 				   LOCATION ('%s') 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
-		conn.Execute(fmt.Sprintf(orders, "XDR", xdrallf("orders")))
-		conn.Execute(fmt.Sprintf(orders, "GPF", gpfallf("orders")))
+		conn.Execute(fmt.Sprintf(orders, conf.Ext, locallf("orders")))
 
 		lineitem := `CREATE EXTERNAL TABLE %s.LINEITEM ( L_ORDERKEY INTEGER,
                              L_PARTKEY     INTEGER,
@@ -250,7 +249,6 @@ func TestSetup(t *testing.T) {
 				   LOCATION ('%s') 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
-		conn.Execute(fmt.Sprintf(lineitem, "XDR", xdrallf("lineitem")))
-		conn.Execute(fmt.Sprintf(lineitem, "GPF", gpfallf("lineitem")))
+		conn.Execute(fmt.Sprintf(lineitem, conf.Ext, locallf("lineitem")))
 	})
 }

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func BenchmarkLoad(b *testing.B) {
+func BenchmarkLoadData(b *testing.B) {
 	conf, err := GetConfig()
 	if err != nil {
 		b.Errorf("Configuration error: %s", err.Error())
@@ -99,6 +99,13 @@ func BenchmarkLoad(b *testing.B) {
 			 FROM %s.LINEITEM`, conf.Ext))
 		if err != nil {
 			b.Errorf("Cannot load table lineitem.  error: %s", err.Error())
+		}
+	})
+
+	b.Run("Step=analyze", func(b *testing.B) {
+		err := conn.Execute("VACUUM ANALYZE")
+		if err != nil {
+			b.Errorf("Cannot vacuum analyze database. error: %s", err.Error())
 		}
 	})
 }

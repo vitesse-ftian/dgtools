@@ -2,21 +2,22 @@ SET client_min_messages TO WARNING;
 
 drop view if exists q0;
 create view q0 as
-select count(*) from lineitem
+select 'lineitem', count(*) from lineitem
 union all
-select count(*) from orders
+select 'orders', count(*) from orders
 union all
-select count(*) from customer
+select 'customer', count(*) from customer
 union all
-select count(*) from supplier
+select 'supplier', count(*) from supplier
 union all
-select count(*) from lineitem
+select 'partsupp', count(*) from partsupp 
 union all
-select count(*) from orders
+select 'part', count(*) from part 
 union all
-select count(*) from customer
+select 'nation', count(*) from nation 
 union all
-select count(*) from supplier;
+select 'region', count(*) from region
+; 
 
 -- 1
 -- using 1461004545 as a seed to the RNG
