@@ -34,41 +34,43 @@ func TestGenData(t *testing.T) {
 	})
 
 	t.Run("Step=dbgen", func(t *testing.T) {
-		// We deliberately run dbgen one section by one section, because
-		// we only assume there is enough disk space for one section.
+		// dbgen is run parallely on each seg,
 		nseg := len(segs)
-		for _, seg := range segs {
-			t.Logf("DB Seg %d, Addr %s.", seg.Id, seg.Addr)
-			cmd := fmt.Sprintf("cd %s/tpch_2_15_0/dbgen && ./dbgen -s %d -C %d -S %d", Dir(), conf.Scale, nseg, seg.Id+1)
+		hosts := make([]string, nseg)
+		cmds := make([]string, nseg)
 
+		for i, seg := range segs {
+			hosts[i] = seg.Addr
+			datadir := fmt.Sprintf("%s/tpch/scale-%d/seg-%d", conf.Staging, conf.Scale, seg.Id)
+			cmds[i] = fmt.Sprintf("rm -fr %s; mkdir -p %s", datadir, datadir)
+		}
+
+		if ssh.ExecAnyError(ssh.ExecOn(hosts, cmds)) != nil {
+			t.Errorf("Cannot prepare staging data dir.")
+		}
+
+		for _, seg := range segs {
+			datadir := fmt.Sprintf("%s/tpch/scale-%d/seg-%d", conf.Staging, conf.Scale, seg.Id)
+			cmd := fmt.Sprintf("cd %s; scp -r tpch_2_15_0 %s:%s/", Dir(), seg.Addr, datadir)
 			err := exec.Command("bash", "-c", cmd).Run()
 			if err != nil {
-				t.Errorf("Cannot call dbgen.")
+				t.Errorf("Cannot scp tpch_2_15_0.")
 			}
+		}
 
-			seghost := []string{seg.Addr}
+		for i, seg := range segs {
 			datadir := fmt.Sprintf("%s/tpch/scale-%d/seg-%d", conf.Staging, conf.Scale, seg.Id)
-			cmd = fmt.Sprintf("rm -fr %s; mkdir -p %s", datadir, datadir)
-			if ssh.ExecAnyError(ssh.ExecCmdOn(seghost, cmd)) != nil {
-				t.Errorf("Cannot prepare staging data dir %s on host %s.", datadir, seg.Addr)
-			}
-
+			// nation and region table (*tbl files).  should only be copied to dest dir once.
+			// other tables are generated in parts (*tbl.*).   Note the .
 			if seg.Id == 0 {
-				cmd = fmt.Sprintf("cd %s/tpch_2_15_0/dbgen && scp *tbl* %s:%s/", Dir(), seghost, datadir)
+				cmds[i] = fmt.Sprintf("cd %s/tpch_2_15_0/dbgen && ./dbgen -s %d -C %d -S %d && mv *tbl* ../..", datadir, conf.Scale, nseg, seg.Id+1)
 			} else {
-				cmd = fmt.Sprintf("cd %s/tpch_2_15_0/dbgen && scp *tbl.* %s:%s/", Dir(), seghost, datadir)
+				cmds[i] = fmt.Sprintf("cd %s/tpch_2_15_0/dbgen && ./dbgen -s %d -C %d -S %d && mv *tbl.* ../..", datadir, conf.Scale, nseg, seg.Id+1)
 			}
+		}
 
-			err = exec.Command("bash", "-c", cmd).Run()
-			if err != nil {
-				t.Errorf("Cannot scp dbgen.")
-			}
-
-			cmd = fmt.Sprintf("cd %s/tpch_2_15_0/dbgen && rm -f *tbl*", Dir())
-			err = exec.Command("bash", "-c", cmd).Run()
-			if err != nil {
-				t.Errorf("Cannot clean dbgen.")
-			}
+		if ssh.ExecAnyError(ssh.ExecOn(hosts, cmds)) != nil {
+			t.Errorf("Cannot generate data.")
 		}
 	})
 }
