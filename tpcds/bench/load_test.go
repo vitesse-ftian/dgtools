@@ -5,14 +5,6 @@ import (
 	"testing"
 )
 
-func insSql(b *testing.B, tab string, ext string) string {
-	sql := fmt.Sprintf("INSERT INTO tpcds.%s SELECT * FROM %s.%s", tab, ext, tab)
-	err := conn.Execute(sql)
-	if err != nil {
-		b.Errorf("Cannot load table %s.  error: %s", tab, err.Error())
-	}
-}
-
 func BenchmarkLoadData(b *testing.B) {
 	conf, err := GetConfig()
 	if err != nil {
@@ -30,100 +22,108 @@ func BenchmarkLoadData(b *testing.B) {
 		b.Errorf("Cannot set guc gp_autostats_mode.  error: %s", err.Error())
 	}
 
+	insSql := func(tab string) {
+		sql := fmt.Sprintf("INSERT INTO tpcds.%s SELECT * FROM %s.%s", tab, conf.Ext, tab)
+		err := conn.Execute(sql)
+		if err != nil {
+			b.Errorf("Cannot load table %s.  error: %s", tab, err.Error())
+		}
+	}
+
 	b.Run("Step=call_center", func(b *testing.B) {
-		insSql(b, "call_center", conf.Ext)
+		insSql("call_center")
 	})
 
 	b.Run("Step=catalog_page", func(b *testing.B) {
-		insSql(b, "catalog_page", conf.Ext)
+		insSql("catalog_page")
 	})
 
 	b.Run("Step=catalog_returns", func(b *testing.B) {
-		insSql(b, "catalog_returns", conf.Ext)
+		insSql("catalog_returns")
 	})
 
 	b.Run("Step=catalog_sales", func(b *testing.B) {
-		insSql(b, "catalog_sales", conf.Ext)
+		insSql("catalog_sales")
 	})
 
 	b.Run("Step=customer", func(b *testing.B) {
-		insSql(b, "customer", conf.Ext)
+		insSql("customer")
 	})
 
 	b.Run("Step=customer_address", func(b *testing.B) {
-		insSql(b, "customer_address", conf.Ext)
+		insSql("customer_address")
 	})
 
 	b.Run("Step=customer_demographics", func(b *testing.B) {
-		insSql(b, "customer_demographics", conf.Ext)
+		insSql("customer_demographics")
 	})
 
 	b.Run("Step=date_dim", func(b *testing.B) {
-		insSql(b, "date_dim", conf.Ext)
+		insSql("date_dim")
 	})
 
 	b.Run("Step=household_demographics", func(b *testing.B) {
-		insSql(b, "household_demographics", conf.Ext)
+		insSql("household_demographics")
 	})
 
 	b.Run("Step=income_band", func(b *testing.B) {
-		insSql(b, "income_band", conf.Ext)
+		insSql("income_band")
 	})
 
 	b.Run("Step=inventory", func(b *testing.B) {
-		insSql(b, "inventory", conf.Ext)
+		insSql("inventory")
 	})
 
 	b.Run("Step=item", func(b *testing.B) {
-		insSql(b, "item", conf.Ext)
+		insSql("item")
 	})
 
 	b.Run("Step=promotion", func(b *testing.B) {
-		insSql(b, "promotion", conf.Ext)
+		insSql("promotion")
 	})
 
 	b.Run("Step=reason", func(b *testing.B) {
-		insSql(b, "reason", conf.Ext)
+		insSql("reason")
 	})
 
 	b.Run("Step=ship_mode", func(b *testing.B) {
-		insSql(b, "ship_mode", conf.Ext)
+		insSql("ship_mode")
 	})
 
 	b.Run("Step=store", func(b *testing.B) {
-		insSql(b, "store", conf.Ext)
+		insSql("store")
 	})
 
 	b.Run("Step=store_returns", func(b *testing.B) {
-		insSql(b, "store_returns", conf.Ext)
+		insSql("store_returns")
 	})
 
 	b.Run("Step=store_sales", func(b *testing.B) {
-		insSql(b, "store_sales", conf.Ext)
+		insSql("store_sales")
 	})
 
 	b.Run("Step=time_dim", func(b *testing.B) {
-		insSql(b, "time_dim", conf.Ext)
+		insSql("time_dim")
 	})
 
 	b.Run("Step=warehouse", func(b *testing.B) {
-		insSql(b, "warehouse", conf.Ext)
+		insSql("warehouse")
 	})
 
 	b.Run("Step=web_page", func(b *testing.B) {
-		insSql(b, "web_page", conf.Ext)
+		insSql("web_page")
 	})
 
 	b.Run("Step=web_returns", func(b *testing.B) {
-		insSql(b, "web_returns", conf.Ext)
+		insSql("web_returns")
 	})
 
 	b.Run("Step=web_sales", func(b *testing.B) {
-		insSql(b, "web_sales", conf.Ext)
+		insSql("web_sales")
 	})
 
 	b.Run("Step=web_site", func(b *testing.B) {
-		insSql(b, "web_site", conf.Ext)
+		insSql("web_site")
 	})
 
 	b.Run("Step=analyze", func(b *testing.B) {

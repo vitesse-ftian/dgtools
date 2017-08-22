@@ -520,7 +520,7 @@ func TestSetup(t *testing.T) {
 				   `
 		conn.Execute(fmt.Sprintf(ss, conf.Ext, locf("store_sales")))
 
-		t := `CREATE EXTERNAL TABLE %s.time_dim ( 
+		ttt := `CREATE EXTERNAL TABLE %s.time_dim ( 
 			t_time_sk integer, 
 			t_time_id character varying(16),
 			t_time integer,
@@ -533,7 +533,7 @@ func TestSetup(t *testing.T) {
 			t_meal_time character varying (20)
 		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
 				   `
-		conn.Execute(fmt.Sprintf(t, conf.Ext, locf("time_dim")))
+		conn.Execute(fmt.Sprintf(ttt, conf.Ext, locf("time_dim")))
 
 		w := `CREATE EXTERNAL TABLE %s.warehouse ( 
 			w_warehouse_sk integer, 

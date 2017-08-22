@@ -80,13 +80,13 @@ with wscs as
  where d_date_sk = sold_date_sk
  group by d_week_seq)
  select d_week_seq1
-       ,round(sun_sales1/sun_sales2,2)
-       ,round(mon_sales1/mon_sales2,2)
-       ,round(tue_sales1/tue_sales2,2)
-       ,round(wed_sales1/wed_sales2,2)
-       ,round(thu_sales1/thu_sales2,2)
-       ,round(fri_sales1/fri_sales2,2)
-       ,round(sat_sales1/sat_sales2,2)
+       ,round((sun_sales1/sun_sales2)::numeric,2) as r1
+       ,round((mon_sales1/mon_sales2)::numeric,2) as r2
+       ,round((tue_sales1/tue_sales2)::numeric,2) as r3
+       ,round((wed_sales1/wed_sales2)::numeric,2) as r4
+       ,round((thu_sales1/thu_sales2)::numeric,2) as r5
+       ,round((fri_sales1/fri_sales2)::numeric,2) as r6
+       ,round((sat_sales1/sat_sales2)::numeric,2) as r7
  from
  (select wswscs.d_week_seq d_week_seq1
         ,sun_sales sun_sales1
@@ -758,10 +758,10 @@ limit 100;
 -- end query 1 in stream 0 using template query12.tpl
 -- start query 1 in stream 0 using template query13.tpl
 create view q13 as
-select avg(ss_quantity)
-       ,avg(ss_ext_sales_price)
-       ,avg(ss_ext_wholesale_cost)
-       ,sum(ss_ext_wholesale_cost)
+select avg(ss_quantity) as avg1
+       ,avg(ss_ext_sales_price) as avg2
+       ,avg(ss_ext_wholesale_cost) as avg3 
+       ,sum(ss_ext_wholesale_cost) as avg4
  from store_sales
      ,store
      ,customer_demographics
@@ -810,7 +810,7 @@ select avg(ss_quantity)
 
 -- end query 1 in stream 0 using template query13.tpl
 -- start query 1 in stream 0 using template query14.tpl
-create view q14 as
+create view q14_1 as
 with  cross_items as
  (select i_item_sk ss_item_sk
  from item,
@@ -869,7 +869,7 @@ with  cross_items as
            ,date_dim
        where ws_sold_date_sk = d_date_sk
          and d_year between 1998 and 1998 + 2) x)
-  select  channel, i_brand_id,i_class_id,i_category_id,sum(sales), sum(number_sales)
+  select  channel, i_brand_id,i_class_id,i_category_id,sum(sales) as sum1, sum(number_sales) as sum2
  from(
        select 'store' channel, i_brand_id,i_class_id
              ,i_category_id,sum(ss_quantity*ss_list_price) sales
@@ -912,6 +912,8 @@ with  cross_items as
  group by rollup (channel, i_brand_id,i_class_id,i_category_id)
  order by channel,i_brand_id,i_class_id,i_category_id
  limit 100;
+
+create view q14_2 as
 with  cross_items as
  (select i_item_sk ss_item_sk
  from item,
@@ -971,8 +973,8 @@ with  cross_items as
        where ws_sold_date_sk = d_date_sk
          and d_year between 1998 and 1998 + 2) x)
   select  * from
- (select 'store' channel, i_brand_id,i_class_id,i_category_id
-        ,sum(ss_quantity*ss_list_price) sales, count(*) number_sales
+ (select 'store'::text as channel1, i_brand_id as i_brand_id1 ,i_class_id as i_class_id1 ,i_category_id as i_category_id1
+        ,sum(ss_quantity*ss_list_price) sales1, count(*) number_sales1
  from store_sales 
      ,item
      ,date_dim
@@ -986,8 +988,8 @@ with  cross_items as
                        and d_dom = 16)
  group by i_brand_id,i_class_id,i_category_id
  having sum(ss_quantity*ss_list_price) > (select average_sales from avg_sales)) this_year,
- (select 'store' channel, i_brand_id,i_class_id
-        ,i_category_id, sum(ss_quantity*ss_list_price) sales, count(*) number_sales
+ (select 'store'::text as channel2, i_brand_id as i_brand_id2, i_class_id as i_class_id2
+        ,i_category_id as i_category_id2, sum(ss_quantity*ss_list_price) sales2, count(*) number_sales2
  from store_sales
      ,item
      ,date_dim
@@ -1001,11 +1003,13 @@ with  cross_items as
                        and d_dom = 16)
  group by i_brand_id,i_class_id,i_category_id
  having sum(ss_quantity*ss_list_price) > (select average_sales from avg_sales)) last_year
- where this_year.i_brand_id= last_year.i_brand_id
-   and this_year.i_class_id = last_year.i_class_id
-   and this_year.i_category_id = last_year.i_category_id
- order by this_year.channel, this_year.i_brand_id, this_year.i_class_id, this_year.i_category_id
+ where this_year.i_brand_id1 = last_year.i_brand_id2
+   and this_year.i_class_id1 = last_year.i_class_id2
+   and this_year.i_category_id1 = last_year.i_category_id2
+ order by this_year.channel1, this_year.i_brand_id1, this_year.i_class_id1, this_year.i_category_id1
  limit 100;
+
+create view q14 as select count(*) from q14_1 union all select count(*) from q14_2;
 
 -- end query 1 in stream 0 using template query14.tpl
 -- start query 1 in stream 0 using template query15.tpl
@@ -1253,7 +1257,7 @@ limit 100;
 
 -- end query 1 in stream 0 using template query22.tpl
 -- start query 1 in stream 0 using template query23.tpl
-create view q23 as 
+create view q23_1 as 
 with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
   from store_sales
@@ -1303,6 +1307,8 @@ from
          and ws_item_sk in (select item_sk from frequent_ss_items)
          and ws_bill_customer_sk in (select c_customer_sk from best_ss_customer))) y
  limit 100;
+
+create view q23_2 as
 with frequent_ss_items as
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
   from store_sales
@@ -1358,6 +1364,7 @@ with frequent_ss_items as
        group by c_last_name,c_first_name)) y
      order by c_last_name,c_first_name,sales
   limit 100;
+create view q23 as select count(*) from q23_1 UNION ALL select count(*) from q23_2;
 
 -- end query 1 in stream 0 using template query23.tpl
 -- start query 1 in stream 0 using template query24.tpl
@@ -1411,10 +1418,7 @@ having sum(netpaid) > (select 0.05*avg(netpaid)
                                  from ssales)
 ;
 
-/*
-WHY Have 2 Queries?
-*/
-create view q24_2
+create view q24_2 as
 with ssales as
 (select c_last_name
       ,c_first_name
@@ -1896,19 +1900,19 @@ select
   cd_gender,
   cd_marital_status,
   count(*) cnt1,
-  avg(cd_dep_count),
-  max(cd_dep_count),
-  sum(cd_dep_count),
+  avg(cd_dep_count) avg1,
+  max(cd_dep_count) max1,
+  sum(cd_dep_count) sum1,
   cd_dep_employed_count,
   count(*) cnt2,
-  avg(cd_dep_employed_count),
-  max(cd_dep_employed_count),
-  sum(cd_dep_employed_count),
+  avg(cd_dep_employed_count) avg2,
+  max(cd_dep_employed_count) max2,
+  sum(cd_dep_employed_count) sum2,
   cd_dep_college_count,
   count(*) cnt3,
-  avg(cd_dep_college_count),
-  max(cd_dep_college_count),
-  sum(cd_dep_college_count)
+  avg(cd_dep_college_count) avg3,
+  max(cd_dep_college_count) max3,
+  sum(cd_dep_college_count) sum3
  from
   customer c,customer_address ca,customer_demographics
  where
@@ -2039,8 +2043,8 @@ with inv as
         and d_year =2002
       group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
  where case mean when 0 then 0 else stdev/mean end > 1)
-select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
-        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+select inv1.w_warehouse_sk as wsk1 ,inv1.i_item_sk as isk1, inv1.d_moy as moy1, inv1.mean as m1, inv1.cov as c1
+        ,inv2.w_warehouse_sk as wsk2, inv2.i_item_sk as isk2, inv2.d_moy as moy2, inv2.mean as m2, inv2.cov as c2
 from inv inv1,inv inv2
 where inv1.i_item_sk = inv2.i_item_sk
   and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
@@ -2065,8 +2069,8 @@ with inv as
         and d_year =2002
       group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
  where case mean when 0 then 0 else stdev/mean end > 1)
-select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
-        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+select inv1.w_warehouse_sk as wsk1 ,inv1.i_item_sk as isk1, inv1.d_moy as moy1, inv1.mean as m1, inv1.cov as c1
+        ,inv2.w_warehouse_sk as wsk2,inv2.i_item_sk as isk2,inv2.d_moy as moy2, inv2.mean as m2, inv2.cov as c2
 from inv inv1,inv inv2
 where inv1.i_item_sk = inv2.i_item_sk
   and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
@@ -2977,9 +2981,9 @@ with wss as
  group by d_week_seq,ss_store_sk
  )
   select  s_store_name1,s_store_id1,d_week_seq1
-       ,sun_sales1/sun_sales2,mon_sales1/mon_sales2
-       ,tue_sales1/tue_sales2,wed_sales1/wed_sales2,thu_sales1/thu_sales2
-       ,fri_sales1/fri_sales2,sat_sales1/sat_sales2
+       ,sun_sales1/sun_sales2 as c1 ,mon_sales1/mon_sales2 as c2
+       ,tue_sales1/tue_sales2 as c3 ,wed_sales1/wed_sales2 as c4, thu_sales1/thu_sales2 as c5
+       ,fri_sales1/fri_sales2 as c6 ,sat_sales1/sat_sales2 as c7
  from
  (select s_store_name s_store_name1,wss.d_week_seq d_week_seq1
         ,s_store_id s_store_id1,sun_sales sun_sales1
@@ -3293,16 +3297,16 @@ select cs1.product_name
      ,cs1.c_street_name
      ,cs1.c_city
      ,cs1.c_zip
-     ,cs1.syear
-     ,cs1.cnt
-     ,cs1.s1
-     ,cs1.s2
-     ,cs1.s3
-     ,cs2.s1
-     ,cs2.s2
-     ,cs2.s3
-     ,cs2.syear
-     ,cs2.cnt
+     ,cs1.syear as sy1
+     ,cs1.cnt as cnt1
+     ,cs1.s1 as s11
+     ,cs1.s2 as s12
+     ,cs1.s3 as s13
+     ,cs2.s1 as s21
+     ,cs2.s2 as s22
+     ,cs2.s3 as s23
+     ,cs2.syear as sy2
+     ,cs2.cnt as cnt2
 from cross_sales cs1,cross_sales cs2
 where cs1.item_sk=cs2.item_sk and
      cs1.syear = 2000 and
@@ -4227,7 +4231,7 @@ ss as
    )
  select 
 ss_sold_year, ss_item_sk, ss_customer_sk,
-round(ss_qty/(coalesce(ws_qty+cs_qty,1)),2) ratio,
+round((ss_qty/(coalesce(ws_qty+cs_qty,1)))::numeric,2) ratio,
 ss_qty store_qty, ss_wc store_wholesale_cost, ss_sp store_sales_price,
 coalesce(ws_qty,0)+coalesce(cs_qty,0) other_chan_qty,
 coalesce(ws_wc,0)+coalesce(cs_wc,0) other_chan_wholesale_cost,
@@ -4510,9 +4514,9 @@ select  c_customer_id as customer_id
 -- start query 1 in stream 0 using template query85.tpl
 create view q85 as
 select  substr(r_reason_desc,1,20)
-       ,avg(ws_quantity)
-       ,avg(wr_refunded_cash)
-       ,avg(wr_fee)
+       ,avg(ws_quantity) as avg1
+       ,avg(wr_refunded_cash) as avg2
+       ,avg(wr_fee) as avg3
  from web_sales, web_returns, web_page, customer_demographics cd1,
       customer_demographics cd2, customer_address, date_dim, reason 
  where ws_web_page_sk = wp_web_page_sk

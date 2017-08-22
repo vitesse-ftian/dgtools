@@ -34,7 +34,7 @@ CREATE TABLE tpcds.call_center (
     cc_gmt_offset double precision, 
     cc_tax_percentage double precision 
 )
-DISTRIBUTED BY cc_call_center_sk;
+DISTRIBUTED BY (cc_call_center_sk);
 
 CREATE TABLE tpcds.catalog_page (
     cp_catalog_page_sk integer NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE tpcds.catalog_page (
     cp_description character varying(100),
     cp_type character varying(100)
 )
-DISTRIBUTED BY cp_catalog_page_sk;
+DISTRIBUTED BY (cp_catalog_page_sk);
 
 CREATE TABLE tpcds.catalog_returns (
     cr_returned_date_sk integer,
