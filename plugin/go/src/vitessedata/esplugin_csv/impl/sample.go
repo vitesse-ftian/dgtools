@@ -9,24 +9,8 @@ import (
 )
 
 
-func GetPreferenceShards(shards []int) string {
-	if len(shards) == 0 {
-		return ""
-	}
-	s := "_shards:"
-	for i := 0 ; i < len(shards) ; i++ {
-		s = fmt.Sprintf("%s%d", s, shards[i])
-		if i < len(shards) - 1 {
-			s = fmt.Sprintf("%s,", s)
-		}
-	}
-	return s
-}
-
-// DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
-// a sequence of PluginDataReply to stdout.   It should end the data stream with a
-// trivial (Errcode == 0, but there is no data) message.
-func DoRead() error {
+// similar to DoRead and size and from parameters to the HTTP request
+func DoSample() error {
 	var req xdrive.ReadRequest
 	err := plugin.DelimRead(&req)
 	if err != nil {
@@ -56,6 +40,8 @@ func DoRead() error {
 	
 	params := make(map[string]string)
 	params["preference"] = preference
+	params["size"] = "20"
+	params["from"] = "0"
 
 	//
 	// Filter:

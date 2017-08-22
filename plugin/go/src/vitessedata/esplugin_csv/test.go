@@ -43,7 +43,13 @@ eshitpath := [][]string {
 
 	es := impl.ESClient{"customer", 5, "http://localhost:9200", "access_key_id", "access_key", "token"}
 	//u, err := es.Search("index", "type", "_shards:0", "user apple*")
-	u, err := es.Search("customer", "", "", "")
+
+	params := make(map[string]string)
+	params["size"] = "3"
+	params["from"] = "0"
+	params["preference"] = "_shards:0,2"
+
+	u, err := es.Search("customer", "", params, "")
 	if err != nil {
 		panic(err)
 	}

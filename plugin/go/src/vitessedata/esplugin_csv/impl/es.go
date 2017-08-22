@@ -59,7 +59,7 @@ func (es *ESClient) GetShards(fragid, fragcnt int32) []int {
 	return shards
 }
 
-func (es *ESClient) makeURL(action string, index string, _type string, preference string, q string) (string, awsauth.Credentials) {
+func (es *ESClient) makeURL(action string, index string, _type string, params map[string]string, q string) (string, awsauth.Credentials) {
 	var endpoint, path string
 
 	cred := awsauth.Credentials{ AccessKeyID: es.AccessKeyID,
@@ -81,9 +81,13 @@ func (es *ESClient) makeURL(action string, index string, _type string, preferenc
 	}
 
 	data := url.Values{}
-	if (preference != "") {
-		data.Add("preference", preference)
+
+	if params != nil {
+		for k, v := range params {
+			data.Add(k, v)
+		}
 	}
+
 	if (q != "") {
 		data.Add("q", q)
 	}
@@ -97,9 +101,9 @@ func (es *ESClient) makeURL(action string, index string, _type string, preferenc
 
 }
 
-func (es *ESClient) Search(index string, _type string, preference string, q string) ([] byte, error) {
+func (es *ESClient) Search(index string, _type string, params map[string]string, q string) ([] byte, error) {
 
-	urlStr, cred := es.makeURL("search", index, _type, preference, q)
+	urlStr, cred := es.makeURL("search", index, _type, params, q)
 	client := new(http.Client)
 	req, err := http.NewRequest("GET", urlStr, nil)
 	awsauth.Sign4(req, cred)
@@ -109,17 +113,18 @@ func (es *ESClient) Search(index string, _type string, preference string, q stri
         }
         defer resp.Body.Close()
 
-        fmt.Println("response Status:", resp.Status)
-        fmt.Println("response Headers:", resp.Header)
+	plugin.DbgLog("HTTP request:", urlStr)
+        plugin.DbgLog("response Status:", resp.Status)
+        plugin.DbgLog("response Headers:", resp.Header)
         body, err2 := ioutil.ReadAll(resp.Body)
-        fmt.Println("response Body:", string(body))
+        plugin.DbgLog("response Body:", string(body))
 
 	return body, err2
 }
 
-func (es *ESClient) Count(index string, _type string, preference string, q string) ([] byte, error) {
+func (es *ESClient) Count(index string, _type string, params map[string]string, q string) ([] byte, error) {
 
-	urlStr, cred := es.makeURL("count", index, _type, preference, q)
+	urlStr, cred := es.makeURL("count", index, _type, params, q)
 	client := new(http.Client)
 	req, err := http.NewRequest("GET", urlStr, nil)
 	awsauth.Sign4(req, cred)
@@ -129,19 +134,19 @@ func (es *ESClient) Count(index string, _type string, preference string, q strin
         }
         defer resp.Body.Close()
 
-        fmt.Println("response Status:", resp.Status)
-        fmt.Println("response Headers:", resp.Header)
+        plugin.DbgLog("response Status:", resp.Status)
+        plugin.DbgLog("response Headers:", resp.Header)
         body, err2 := ioutil.ReadAll(resp.Body)
-        fmt.Println("response Body:", string(body))
+        plugin.DbgLog("response Body:", string(body))
 
 	return body, err2
 }
 
-func (es *ESClient) Bulk(index string, _type string, json [] byte) ([] byte, error) {
+func (es *ESClient) Bulk(index string, _type string, json *bytes.Buffer) ([] byte, error) {
 
-	urlStr, cred := es.makeURL("bulk", index, _type, "", "")
+	urlStr, cred := es.makeURL("bulk", index, _type, nil, "")
 	client := new(http.Client)
-	req, err := http.NewRequest("POST", urlStr, bytes.NewBuffer(json))
+	req, err := http.NewRequest("POST", urlStr, json)
 	req.Header.Set("Content-Type", "application/x-ndjson")
 	awsauth.Sign4(req, cred)
 	resp, err := client.Do(req)
@@ -150,10 +155,10 @@ func (es *ESClient) Bulk(index string, _type string, json [] byte) ([] byte, err
 	}
 	defer resp.Body.Close()
 
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
+	plugin.DbgLog("response Status:", resp.Status)
+	plugin.DbgLog("response Headers:", resp.Header)
 	body, err2 := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
+	plugin.DbgLog("response Body:", string(body))
 
 
 	return body, err2
