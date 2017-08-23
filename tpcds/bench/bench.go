@@ -11,8 +11,7 @@ import (
 )
 
 func Dir() string {
-	pwd, _ := os.Getwd()
-	return pwd
+	return os.Getenv("TPCDS_BENCH_DIR")
 }
 
 type Config struct {
@@ -23,6 +22,8 @@ type Config struct {
 	Scale   int
 	DDL     string
 	Ext     string
+	Orca    int
+	Vitesse int
 }
 
 type tomlConfig struct {

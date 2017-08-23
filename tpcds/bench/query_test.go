@@ -8,17 +8,17 @@ import (
 )
 
 func runQ(b *testing.B, conn *xtable.Deepgreen, n int) {
-	err := conn.Execute(fmt.Sprintf("select * from q%d", n))
+	err := conn.Execute(fmt.Sprintf("select * from tpcds.q%d", n))
 	if err != nil {
 		b.Errorf("Cannot run query %d.  error: %s", n, err.Error())
 	}
 }
 
 func BenchmarkQuery(b *testing.B) {
-	// conf, err := GetConfig()
-	// if err != nil {
-	//		b.Errorf("Configuration error: %s", err.Error())
-	//}
+	conf, err := GetConfig()
+	if err != nil {
+		b.Errorf("Configuration error: %s", err.Error())
+	}
 
 	conn, err := Connect()
 	if err != nil {
@@ -27,10 +27,20 @@ func BenchmarkQuery(b *testing.B) {
 	defer conn.Disconnect()
 
 	// Gucs.
-	// err = conn.Execute("set gp_autostats_mode = 'none'")
-	// if err != nil {
-	//	b.Errorf("Cannot set guc gp_autostats_mode.  error: %s", err.Error())
-	// }
+	if conf.Orca != 0 {
+		err = conn.Execute("set optimizer = on")
+		if err != nil {
+			b.Errorf("Cannot set guc optimizer = on.   error: %s", err.Error())
+		}
+	}
+
+	if conf.Vitesse == 0 {
+		err = conn.Execute("set vitesse.enable = 0")
+		if err != nil {
+			b.Errorf("Cannot set guc vitesse.enable to 0.  error: %s", err.Error())
+		}
+	}
+
 	for i := 0; i <= 99; i++ {
 		runid := fmt.Sprintf("Step=q%d", i)
 		b.Run(runid, func(b *testing.B) {
