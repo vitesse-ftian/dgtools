@@ -35,7 +35,7 @@ func DoSample() error {
 		// return 0 record
 		return nil
 	}
-	preference := GetPreferenceShards(shards)
+	preference := es.GetPreferenceShards(shards)
 	plugin.DbgLog("shards preference: %s", preference)	
 	
 	params := make(map[string]string)

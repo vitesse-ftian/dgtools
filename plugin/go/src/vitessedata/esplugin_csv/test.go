@@ -114,14 +114,16 @@ eshitpath := [][]string {
 
 
 	fmt.Println("Shards start...")
-	fragcnt := 8
+	fragcnt := 3
 	for i := 0 ; i < fragcnt ; i++ {
 		shards := es.GetShards(int32(i), int32(fragcnt))
+		pref := es.GetPreferenceShards(shards)
 		fmt.Print("shards for fragid ", i, ":")
 		for j := 0 ; j < len(shards) ; j++ {
 			fmt.Print(shards[j], ",")
 		}
 		fmt.Println()
+		fmt.Println(pref)
 	
 	}
 

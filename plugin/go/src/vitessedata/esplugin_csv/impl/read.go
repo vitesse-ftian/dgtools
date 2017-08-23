@@ -8,21 +8,6 @@ import (
 	"vitessedata/plugin"
 )
 
-
-func GetPreferenceShards(shards []int) string {
-	if len(shards) == 0 {
-		return ""
-	}
-	s := "_shards:"
-	for i := 0 ; i < len(shards) ; i++ {
-		s = fmt.Sprintf("%s%d", s, shards[i])
-		if i < len(shards) - 1 {
-			s = fmt.Sprintf("%s,", s)
-		}
-	}
-	return s
-}
-
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
 // trivial (Errcode == 0, but there is no data) message.
@@ -51,7 +36,7 @@ func DoRead() error {
 		// return 0 record
 		return nil
 	}
-	preference := GetPreferenceShards(shards)
+	preference := es.GetPreferenceShards(shards)
 	plugin.DbgLog("shards preference: %s", preference)	
 	
 	params := make(map[string]string)

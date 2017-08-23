@@ -97,6 +97,8 @@ func DoWrite() error {
 
 		buf.Write([]byte("\n"))
 
+		plugin.DbgLog(buf.String())
+
 		// bulk write to elastic search
 		result, err := es.Bulk(es.Index, "", &buf)
 		plugin.DbgLog(string(result))

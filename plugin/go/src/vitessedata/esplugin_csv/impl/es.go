@@ -45,6 +45,23 @@ func (es *ESClient) CreateUsingRinfo() {
 	
 }
 
+
+
+func (es *ESClient) GetPreferenceShards(shards []int) string {
+	if len(shards) == 0 {
+		return ""
+	}
+	s := "_shards:"
+	for i := 0 ; i < len(shards) ; i++ {
+		s = fmt.Sprintf("%s%d", s, shards[i])
+		if i < len(shards) - 1 {
+			s = fmt.Sprintf("%s,", s)
+		}
+	}
+	return s
+}
+
+
 func (es *ESClient) GetShards(fragid, fragcnt int32) []int {
 	var shards [] int
 
