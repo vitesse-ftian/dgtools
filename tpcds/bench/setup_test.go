@@ -113,7 +113,7 @@ func TestSetup(t *testing.T) {
 
 		if conf.Ext == "XDR" {
 			locf = func(t string) string {
-				return fmt.Sprintf("xdrive://localhost:31416/tpcds-scale-%d/seg-#SEGID#/%s.tbl*", conf.Scale, t)
+				return fmt.Sprintf("xdrive://localhost:31416/tpcds-scale-%d/seg-#SEGID#/%s*.dat", conf.Scale, t)
 			}
 		} else {
 			locf = func(t string) string {

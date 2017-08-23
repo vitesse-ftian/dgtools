@@ -11,7 +11,8 @@ import (
 )
 
 func Dir() string {
-	return os.Getenv("BENCH_DIR")
+	pwd, _ := os.Getwd()
+	return pwd
 }
 
 type Config struct {
