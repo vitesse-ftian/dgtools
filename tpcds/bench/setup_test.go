@@ -113,14 +113,14 @@ func TestSetup(t *testing.T) {
 
 		if conf.Ext == "XDR" {
 			locf = func(t string) string {
-				return fmt.Sprintf("xdrive://localhost:31416/tpcds-scale-%d/seg-#SEGID#/%s*.dat", conf.Scale, t)
+				return fmt.Sprintf("xdrive://localhost:31416/tpcds-scale-%d/seg-#SEGID#/%s_[0-9]*.dat", conf.Scale, t)
 			}
 		} else {
 			locf = func(t string) string {
 				prefix := ""
 				ret := ""
 				for h, _ := range seghosts {
-					ret = ret + prefix + fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-*/%s*.dat", h, conf.Scale, t)
+					ret = ret + prefix + fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-*/%s_[0-9]*.dat", h, conf.Scale, t)
 				}
 				return ret
 			}
