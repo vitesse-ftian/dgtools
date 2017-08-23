@@ -6,5 +6,5 @@
 	Scale = 1
 	DDL = "tabf_aocslz4_part.sql"
 	Ext = "XDR"
-	Orca = 0
+	Orca = 1
 	Vitesse = 1
