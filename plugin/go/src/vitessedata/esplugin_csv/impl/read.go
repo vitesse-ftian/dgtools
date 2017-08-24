@@ -5,9 +5,13 @@ import (
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	//"os"
 	//"time"
+	"strings"
 	"vitessedata/plugin"
 )
 
+// the reference URI search protocol can be found on the below link.
+// https://www.elastic.co/guide/en/elasticsearch/reference/current/search-uri-request.html
+//
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
 // trivial (Errcode == 0, but there is no data) message.
@@ -41,7 +45,7 @@ func DoRead() error {
 	
 	params := make(map[string]string)
 	params["preference"] = preference
-
+	params["timeout"] = "30000"
 	//
 	// Filter:
 	// req may contains a list of Filters that got pushed down from XDrive server.
@@ -52,21 +56,40 @@ func DoRead() error {
 	// filter called "QUERY", which allow users to send any query to plugin.  Here as
 	// an example, we implement a poorman's fault injection.
 	//
-	var query string
+	var query, _type string
 	for _, f := range req.Filter {
 		// f cannot be nil
 		if f.Op == "QUERY" {
 			query= f.Args[0]
+			p := strings.Split(query, "&")
+
+			for _, pp := range p {
+				plugin.DbgLog(pp)
+				ppp := strings.SplitN(pp, "=", 2)
+				if len(ppp) == 2 {
+					params[ppp[0]] = ppp[1]
+				}
+			}
+
+		} else if f.Column == "_type" && f.Op == "==" {
+			_type = f.Args[0]
+		} else {
+			params[f.Column] = f.Args[0]
 		}
 	}
 
-	body, err := es.Search(es.Index, "", params, query)
+
+	body, err := es.Search(es.Index, _type, params)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "ElasticSearch failed. Error %v", err)
 		plugin.ReplyError(-2, "elasticSearch access failed: " + err.Error())
 		return err
 	}
+/*
+	plugin.DbgLog("type=%s",  _type)
 
+	body := []byte(`{"timed_out":false, "took":1, "_shards":{}, "hits":{ "total":1, "hits":[{"_id":"1", "_type":"online", "_score":"1", "_routing":"vip", "_source":{ "age":12, "gender":"female", "name":"eric"}}]}}`)
+*/
 	plugin.DbgLog(string(body))
 
 

@@ -67,12 +67,15 @@ func (h *ESReader) Init(fspec *xdrive.FileSpec, coldesc []*xdrive.ColumnDesc, pr
 */
 
 	for _, c := range h.collist {
-		if c == "_id" || c == "_type" || c == "_index" || c == "_score" {
+		if c == "_id" || c == "_type" || c == "_index" || c == "_score" || c == "_routing" {
 			h.eshitpath = append(h.eshitpath, []string{c})
 		} else {
 			h.eshitpath = append(h.eshitpath, []string{"_source", c})
 		}
+		plugin.DbgLog("col %s", c)
 	}
+
+	plugin.DbgLog("%v", h.eshitpath)
 }
 
 func (h* ESReader) process(json []byte) error {

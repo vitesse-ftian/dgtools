@@ -126,3 +126,41 @@ CREATE EXTERNAL TABLE s3xxr
 LOCATION ('xdrive://localhost:31416/tpch1fs3/w/x*.csv') 
 FORMAT 'CSV';
 
+DROP EXTERNAL TABLE IF EXISTS esfs;
+CREATE EXTERNAL TABLE esfs
+	(
+	_id text,
+	_type text,
+	name text,
+	age int,
+	gender text,
+	_routing text
+	)
+LOCATION ('xdrive://localhost:31416/fs/es.csv')
+FORMAT 'CSV';
+
+DROP EXTERNAL TABLE IF EXISTS esr;
+CREATE EXTERNAL TABLE esr
+      (
+        _id  text,
+        _type text,
+        name text,
+	age int,
+	gender text,
+	_routing text
+        )
+LOCATION ('xdrive://localhost:31416/es/')
+FORMAT 'CSV';
+
+DROP EXTERNAL TABLE IF EXISTS esw;
+CREATE WRITABLE EXTERNAL TABLE esw
+      (
+        _id  text,
+        _type text,
+        name text,
+	age int,
+	gender text,
+	_routing text
+        )
+LOCATION ('xdrive://localhost:31416/es/')
+FORMAT 'CSV';

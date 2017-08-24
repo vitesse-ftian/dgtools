@@ -22,18 +22,21 @@ func DoWrite() error {
 
 		if req.Rowset == nil {
 			plugin.DbgLog("Done writing")
+			plugin.ReplyWriteError(0, "")
 			return nil
 		}
 
 		ncol := len(req.Rowset.Columns)
 		if ncol == 0 {
 			plugin.DbgLog("Done writing")
+			plugin.ReplyWriteError(0, "")
 			return nil
 		}
 		
 		nrow := req.Rowset.Columns[0].Nrow
 		coldesc := req.Columndesc
 
+		plugin.DbgLog("nrow = %d", nrow)
 		var buf bytes.Buffer
 
 		for row := int32(0) ; row < nrow ; row++ {
@@ -49,7 +52,7 @@ func DoWrite() error {
 
 				switch {
 				case req.Rowset.Columns[col].Sdata != nil:
-					if colname == "_index" || colname == "_type" || colname == "_id" {
+					if colname == "_index" || colname == "_type" || colname == "_id" || colname =="_routing" {
 						// add to meta 
 						if req.Rowset.Columns[col].Nullmap[row] {
 							meta[colname] = ""
@@ -100,6 +103,7 @@ func DoWrite() error {
 		plugin.DbgLog(buf.String())
 
 		// bulk write to elastic search
+
 		result, err := es.Bulk(es.Index, "", &buf)
 		plugin.DbgLog(string(result))
 		if err != nil {
@@ -107,6 +111,9 @@ func DoWrite() error {
 			return err
 		}
 
+
 	}
+
 	return nil
+
 }

@@ -26,3 +26,11 @@ name = "tpch1fs3"
 scheme = "s3plugin"
 root = "/"
 conf = "bucket=tpch1f,region=us-west-1"
+
+[[xdrive.mount]]
+name = "es"
+scheme = "esplugin"
+root = "http://localhost:9200"
+conf = "index=customer,nshards=5,access_key_id=id,secret_access_key=secret,security_token=token"
+
+

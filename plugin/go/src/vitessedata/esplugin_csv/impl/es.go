@@ -41,6 +41,10 @@ func (es *ESClient) CreateUsingRinfo() {
 		}
 	}	
 
+	plugin.DbgLog("URI = %s", es.Uri)
+	plugin.DbgLog("Index = %s", es.Index)
+	plugin.DbgLog("Shard = %d", es.NShards)
+
 	plugin.FatalIf(es.Index == "" || es.NShards == 0, "ES requires index, nshards, access_key_id, secret_access_key and security_token")
 	
 }
@@ -76,7 +80,7 @@ func (es *ESClient) GetShards(fragid, fragcnt int32) []int {
 	return shards
 }
 
-func (es *ESClient) makeURL(action string, index string, _type string, params map[string]string, q string) (string, awsauth.Credentials) {
+func (es *ESClient) makeURL(action string, index string, _type string, params map[string]string) (string, awsauth.Credentials) {
 	var endpoint, path string
 
 	cred := awsauth.Credentials{ AccessKeyID: es.AccessKeyID,
@@ -105,22 +109,20 @@ func (es *ESClient) makeURL(action string, index string, _type string, params ma
 		}
 	}
 
-	if (q != "") {
-		data.Add("q", q)
-	}
-	
 	u, _ := url.ParseRequestURI(es.Uri)
 	u.Path = path
 	u.RawQuery = data.Encode()
 	urlStr := fmt.Sprintf("%v", u)
 
+	plugin.DbgLog("Request URL = %s", urlStr)
+
 	return urlStr, cred
 
 }
 
-func (es *ESClient) Search(index string, _type string, params map[string]string, q string) ([] byte, error) {
+func (es *ESClient) Search(index string, _type string, params map[string]string) ([] byte, error) {
 
-	urlStr, cred := es.makeURL("search", index, _type, params, q)
+	urlStr, cred := es.makeURL("search", index, _type, params)
 	client := new(http.Client)
 	req, err := http.NewRequest("GET", urlStr, nil)
 	awsauth.Sign4(req, cred)
@@ -139,9 +141,9 @@ func (es *ESClient) Search(index string, _type string, params map[string]string,
 	return body, err2
 }
 
-func (es *ESClient) Count(index string, _type string, params map[string]string, q string) ([] byte, error) {
+func (es *ESClient) Count(index string, _type string, params map[string]string) ([] byte, error) {
 
-	urlStr, cred := es.makeURL("count", index, _type, params, q)
+	urlStr, cred := es.makeURL("count", index, _type, params)
 	client := new(http.Client)
 	req, err := http.NewRequest("GET", urlStr, nil)
 	awsauth.Sign4(req, cred)
@@ -161,7 +163,7 @@ func (es *ESClient) Count(index string, _type string, params map[string]string, 
 
 func (es *ESClient) Bulk(index string, _type string, json *bytes.Buffer) ([] byte, error) {
 
-	urlStr, cred := es.makeURL("bulk", index, _type, nil, "")
+	urlStr, cred := es.makeURL("bulk", index, _type, nil)
 	client := new(http.Client)
 	req, err := http.NewRequest("POST", urlStr, json)
 	req.Header.Set("Content-Type", "application/x-ndjson")
