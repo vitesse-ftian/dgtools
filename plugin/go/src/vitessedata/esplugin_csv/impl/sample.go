@@ -12,10 +12,10 @@ import (
 // the reference URI search protocol can be found on the below link.
 // https://www.elastic.co/guide/en/elasticsearch/reference/current/search-uri-request.html
 //
-// DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
+// DoSample servies XDrive read requests.   It read a ReadRequest from stdin and reply
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
 // trivial (Errcode == 0, but there is no data) message.
-func DoRead() error {
+func DoSample() error {
 	var req xdrive.ReadRequest
 	err := plugin.DelimRead(&req)
 	if err != nil {
