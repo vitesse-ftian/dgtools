@@ -27,6 +27,10 @@ tests3:
 	echo "Running fsplugin test ..."
 	go test wetestdata/s3plugin 
 
+testes:
+	echo "Running esplugin test ..."
+	go test wetestdata/esplugin
+
 wetestdata:
 	-psql -c 'drop database wetestdata' template1
 	psql -c 'create database wetestdata' template1
