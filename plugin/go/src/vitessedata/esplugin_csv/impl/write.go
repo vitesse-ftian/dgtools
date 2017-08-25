@@ -43,7 +43,7 @@ func DoWrite() error {
 
 			action := make(map[string]interface{})
 			meta := make(map[string]interface{})
-			meta["_index"] = es.Index
+			//meta["_index"] = es.Index   // if index is provided by URI, no need to add this
 			action["index"] = meta
 			source := make(map[string]interface{})
 			

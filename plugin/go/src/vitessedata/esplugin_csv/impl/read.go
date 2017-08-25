@@ -45,7 +45,7 @@ func DoRead() error {
 	
 	params := make(map[string]string)
 	params["preference"] = preference
-	params["timeout"] = "30000"
+	params["timeout"] = "30s"
 	//
 	// Filter:
 	// req may contains a list of Filters that got pushed down from XDrive server.

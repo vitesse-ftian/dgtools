@@ -84,8 +84,8 @@ func (es *ESClient) makeURL(action string, index string, _type string, params ma
 	var endpoint, path string
 
 	cred := awsauth.Credentials{ AccessKeyID: es.AccessKeyID,
-			SecretAccessKey: es.SecretAccessKey,
-			SecurityToken: es.SecurityToken, }
+			SecretAccessKey: es.SecretAccessKey, }
+		//SecurityToken: es.SecurityToken, }
 
 	if (action == "search") {
 		endpoint = "/_search"
