@@ -10,12 +10,12 @@ import (
 func TestSetup(t *testing.T) {
 	conf, err := GetConfig()
 	if err != nil {
-		t.Errorf("Configuration error: %s", err.Error())
+		t.Fatalf("Configuration error: %s", err.Error())
 	}
 
 	segs, err := Segs()
 	if err != nil {
-		t.Errorf("Cannot get deepgreen segs, error: %s.", err.Error())
+		t.Fatalf("Cannot get deepgreen segs, error: %s.", err.Error())
 	}
 
 	seghosts := make(map[string]bool)
@@ -32,6 +32,10 @@ func TestSetup(t *testing.T) {
 	})
 
 	t.Run("Step=xdrtoml", func(t *testing.T) {
+		if conf.Ext != "XDR" {
+			return
+		}
+
 		tomlf := Dir() + "/gen/xdrive.toml"
 		xf, err := os.Create(tomlf)
 		if err != nil {
@@ -117,20 +121,21 @@ func TestSetup(t *testing.T) {
 				// xdrive syntax for nation, region is exactly the same as other tables.   In fact, for a
 				// cluster running xdrive as single cluster mode, we must add a * wildcard -- otherwise,
 				// if xdrive sees no wildcard, it will enforce the file exists, otherwise, error.
-				return fmt.Sprintf("xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*", conf.Scale, t)
+				return fmt.Sprintf("'xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*'", conf.Scale, t)
 			}
 			locallf = func(t string) string {
-				return fmt.Sprintf("xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*", conf.Scale, t)
+				return fmt.Sprintf("'xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*'", conf.Scale, t)
 			}
 		} else {
 			loc1f = func(t string) string {
-				return fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-0/%s.tbl", segs[0].Addr, conf.Scale, t)
+				return fmt.Sprintf("'gpfdist://%s:22222/tpch/scale-%d/seg-0/%s.tbl'", segs[0].Addr, conf.Scale, t)
 			}
 			locallf = func(t string) string {
 				prefix := ""
 				ret := ""
 				for h, _ := range seghosts {
-					ret = ret + prefix + fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-*/%s.tbl.*", h, conf.Scale, t)
+					ret = ret + prefix + fmt.Sprintf("'gpfdist://%s:22222/tpch/scale-%d/seg-*/%s.tbl.*'", h, conf.Scale, t)
+					prefix = ","
 				}
 				return ret
 			}
@@ -144,7 +149,7 @@ func TestSetup(t *testing.T) {
                             N_REGIONKEY  INTEGER, 
                             N_COMMENT    VARCHAR(152),
 							DUMMY TEXT) 
-				   LOCATION ('%s') 
+				   LOCATION (%s) 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(nation, conf.Ext, loc1f("nation")))
@@ -154,7 +159,7 @@ func TestSetup(t *testing.T) {
                             R_NAME       VARCHAR(25) /*CHAR(25)*/, 
                             R_COMMENT    VARCHAR(152), 
 						DUMMY TEXT)
-				   LOCATION ('%s') 
+				   LOCATION (%s) 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(region, conf.Ext, loc1f("region")))
@@ -170,10 +175,15 @@ func TestSetup(t *testing.T) {
                           P_RETAILPRICE DOUBLE PRECISION /*DECIMAL(15,2)*/, 
                           P_COMMENT     VARCHAR(23), 
 						  DUMMY TEXT) 
-				   LOCATION ('%s') 
+				   LOCATION (%s) 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
-		conn.Execute(fmt.Sprintf(part, conf.Ext, locallf("part")))
+		partsql := fmt.Sprintf(part, conf.Ext, locallf("part"))
+		err = conn.Execute(partsql) 
+		if err != nil {
+			t.Errorf("Cannot create ext table part.   DDS is %s", partsql)
+		}
+		
 
 		// supplier
 		supplier := `CREATE EXTERNAL TABLE %s.SUPPLIER ( S_SUPPKEY     INTEGER, 
@@ -184,7 +194,7 @@ func TestSetup(t *testing.T) {
                              S_ACCTBAL     DOUBLE PRECISION /*DECIMAL(15,2)*/, 
                              S_COMMENT     VARCHAR(101), 
 							 DUMMY TEXT) 
-				   LOCATION ('%s') 
+				   LOCATION (%s) 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(supplier, conf.Ext, locallf("supplier")))
@@ -195,7 +205,7 @@ func TestSetup(t *testing.T) {
                              PS_SUPPLYCOST  DOUBLE PRECISION /*DECIMAL(15,2)*/, 
                              PS_COMMENT     VARCHAR(199),
 							 DUMMY TEXT) 
-				   LOCATION ('%s') 
+				   LOCATION (%s) 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(partsupp, conf.Ext, locallf("partsupp")))
@@ -209,12 +219,12 @@ func TestSetup(t *testing.T) {
                              C_MKTSEGMENT  VARCHAR(10) /*CHAR(10)*/,
                              C_COMMENT     VARCHAR(117),
 							 DUMMY TEXT) 
-				   LOCATION ('%s') 
+				   LOCATION (%s) 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(customer, conf.Ext, locallf("customer")))
 
-		orders := `CREATE EXTERNAL TABLE %s.ORDERS  ( O_ORDERKEY       INTEGER, 
+		orders := `CREATE EXTERNAL TABLE %s.ORDERS  ( O_ORDERKEY       BIGINT, 
                            O_CUSTKEY        INTEGER,
                            O_ORDERSTATUS    VARCHAR(1)/*CHAR(1)*/,
                            O_TOTALPRICE     DOUBLE PRECISION /*DECIMAL(15,2)*/,
@@ -224,12 +234,12 @@ func TestSetup(t *testing.T) {
                            O_SHIPPRIORITY   INTEGER,
                            O_COMMENT        VARCHAR(79), 
 						   DUMMY TEXT) 
-				   LOCATION ('%s') 
+				   LOCATION (%s) 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(orders, conf.Ext, locallf("orders")))
 
-		lineitem := `CREATE EXTERNAL TABLE %s.LINEITEM ( L_ORDERKEY INTEGER,
+		lineitem := `CREATE EXTERNAL TABLE %s.LINEITEM ( L_ORDERKEY BIGINT, 
                              L_PARTKEY     INTEGER,
                              L_SUPPKEY     INTEGER,
                              L_LINENUMBER  INTEGER,
@@ -246,7 +256,7 @@ func TestSetup(t *testing.T) {
                              L_SHIPMODE     VARCHAR(10) /*CHAR(10)*/,
                              L_COMMENT      VARCHAR(44),
 							 DUMMY TEXT) 
-				   LOCATION ('%s') 
+				   LOCATION (%s) 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(lineitem, conf.Ext, locallf("lineitem")))

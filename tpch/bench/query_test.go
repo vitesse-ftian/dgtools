@@ -26,17 +26,26 @@ func BenchmarkQuery(b *testing.B) {
 	}
 	defer conn.Disconnect()
 
-	// Gucs.
+	// Gucs.   Only set if not default
 	if conf.Orca == 1 {
 		err = conn.Execute("set optimizer = on")
 		if err != nil {
 			b.Errorf("Cannot set guc optimizer = on.  error: %s", err.Error())
 		}
 	}
+
+	// For greenplum, either leave this as 1 or, set it to some invalid value like -1.
 	if conf.Vitesse == 0 {
 		err = conn.Execute("set vitesse.enable = 0")
 		if err != nil {
 			b.Errorf("Cannot set guc vitesse.enable = 0. error: %s", err.Error())
+		}
+	}
+
+	if conf.StatementMem != 0 { 
+		err = conn.Execute(fmt.Sprintf("set statement_mem = %d", conf.StatementMem)) 
+		if err != nil {
+			b.Errorf("Cannot set statement_mem = %d, error: %s", conf.StatementMem, err.Error())
 		}
 	}
 

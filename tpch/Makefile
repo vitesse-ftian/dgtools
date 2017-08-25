@@ -10,4 +10,4 @@ load:
 	go test -run=NONO -bench=Load -benchtime=0s -timeout 24h ./bench
 
 run:
-	go test -run=NONO -bench=Query -benchtime=0s -timeout -24h ./bench
+	go test -run=NONO -bench=Query -benchtime=0s -timeout 24h ./bench
