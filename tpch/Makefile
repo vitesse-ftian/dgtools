@@ -1,33 +1,13 @@
-tpch1f:
-	createdb tpch1f
-	psql -f mktab-f.sql tpch1f
-	psql -f mkview-n.sql tpch1f
-	psql -f load1.sql tpch1f
+gendata:
+	go test -timeout 24h -run=GenData ./bench
+	@echo "NOTE: You still need to start xdrive or gpfdist manually.   Automate gpfdist is too fragile."
+	@echo "For xdrive, just xdrctl start gen/xdrive.toml"
+	@echo "For gpfdist, you need to start gpfdist on each seg hosts on port 22222"
 
-tpch10f:
-	createdb tpch10f
-	psql -f mktab-f.sql tpch10f
-	psql -f mkview-n.sql tpch10f
-	psql -f load10.sql tpch10f
+load:
+	@echo "NOTE: Make sure you have started xdrive or gpfdist !!!" 
+	go test -run=Setup ./bench
+	go test -run=NONO -bench=Load -benchtime=0s -timeout 24h ./bench
 
-tpch10fao:
-	createdb tpch10fao
-	psql -f mktab-fao.sql tpch10fao
-	psql -f mkview-n.sql tpch10fao
-	psql -f load10.sql tpch10fao
-
-start:
-	echo "Setup/Deploy xdrive ..." 
-	rm -fr /tmp/wetestdata/xdrive
-	mkdir -p /tmp/wetestdata/xdrive/data
-	xdrctl deploy ./xdrive.toml
-	echo "Start xdrive ..."
-	xdrctl start ./xdrive.toml
-	echo "Sym linking ..." 
-	ln -s ${PWD}/data1  /tmp/wetestdata/xdrive/data/tpch1
-
-stop:
-	echo "Stop xdrive ..."
-	xdrctl stop ./xdrive.toml
-
-
+run:
+	go test -run=NONO -bench=Query -benchtime=0s -timeout -24h ./bench
