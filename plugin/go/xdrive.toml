@@ -31,7 +31,7 @@ conf = "bucket=tpch1f,region=us-west-1"
 name = "es"
 scheme = "esplugin"
 root = "https://search-whaasa-f25e2tplbjslk44nkmv3d2iszq.us-east-1.es.amazonaws.com"
-conf = "index=customer,nshards=5,access_key_id=AKIAJI5JCS7A5344LOUQ,secret_access_key=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"
+conf = "index=customer,nshards=5,access_key_id=ID,secret_access_key=KEY"
 
 
 [[xdrive.mount]]
