@@ -10,12 +10,12 @@ import (
 func TestSetup(t *testing.T) {
 	conf, err := GetConfig()
 	if err != nil {
-		t.Errorf("Configuration error: %s", err.Error())
+		t.Fatalf("Configuration error: %s", err.Error())
 	}
 
 	segs, err := Segs()
 	if err != nil {
-		t.Errorf("Cannot get deepgreen segs, error: %s.", err.Error())
+		t.Fatalf("Cannot get deepgreen segs, error: %s.", err.Error())
 	}
 
 	seghosts := make(map[string]bool)
@@ -32,6 +32,10 @@ func TestSetup(t *testing.T) {
 	})
 
 	t.Run("Step=xdrtoml", func(t *testing.T) {
+		if conf.Ext != "XDR" {
+			return
+		}
+
 		tomlf := Dir() + "/gen/xdrive.toml"
 		xf, err := os.Create(tomlf)
 		if err != nil {
@@ -113,14 +117,15 @@ func TestSetup(t *testing.T) {
 
 		if conf.Ext == "XDR" {
 			locf = func(t string) string {
-				return fmt.Sprintf("xdrive://localhost:31416/tpcds-scale-%d/seg-#SEGID#/%s_[0-9]*.dat", conf.Scale, t)
+				return fmt.Sprintf("'xdrive://localhost:31416/tpcds-scale-%d/seg-#SEGID#/%s_[0-9]*.dat'", conf.Scale, t)
 			}
 		} else {
 			locf = func(t string) string {
 				prefix := ""
 				ret := ""
 				for h, _ := range seghosts {
-					ret = ret + prefix + fmt.Sprintf("gpfdist://%s:22222/tpch/scale-%d/seg-*/%s_[0-9]*.dat", h, conf.Scale, t)
+					ret = ret + prefix + fmt.Sprintf("'gpfdist://%s:22222/tpch/scale-%d/seg-*/%s_[0-9]*.dat'", h, conf.Scale, t)
+					prefix = ","
 				}
 				return ret
 			}
@@ -159,7 +164,7 @@ func TestSetup(t *testing.T) {
 			cc_country character varying(20),
 			cc_gmt_offset double precision, 
 			cc_tax_percentage double precision 
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(cc, conf.Ext, locf("call_center")))
 
@@ -173,7 +178,7 @@ func TestSetup(t *testing.T) {
 			cp_catalog_page_number integer,
 			cp_description character varying(100),
 			cp_type character varying(100)
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(cp, conf.Ext, locf("catalog_page")))
 
@@ -205,7 +210,7 @@ func TestSetup(t *testing.T) {
 			cr_reversed_charge double precision, 
 			cr_store_credit double precision, 
 			cr_net_loss double precision 
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(cr, conf.Ext, locf("catalog_returns")))
 
@@ -244,7 +249,7 @@ func TestSetup(t *testing.T) {
 			cs_net_paid_inc_ship double precision,
 			cs_net_paid_inc_ship_tax double precision,
 			cs_net_profit double precision
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(cs, conf.Ext, locf("catalog_sales")))
 
@@ -267,7 +272,7 @@ func TestSetup(t *testing.T) {
 			c_login character varying(13),
 			c_email_address character varying(50),
 			c_last_review_date character varying(10)
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(c, conf.Ext, locf("customer")))
 
@@ -285,7 +290,7 @@ func TestSetup(t *testing.T) {
 			ca_country character varying(20),
 			ca_gmt_offset numeric(5,2),
 			ca_location_type character varying(20)
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(ca, conf.Ext, locf("customer_address")))
 
@@ -299,7 +304,7 @@ func TestSetup(t *testing.T) {
 			cd_dep_count integer,
 			cd_dep_employed_count integer,
 			cd_dep_college_count integer
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(cd, conf.Ext, locf("customer_demographics")))
 
@@ -332,7 +337,7 @@ func TestSetup(t *testing.T) {
 			d_current_month character varying (1),
 			d_current_quarter character varying (1),
 			d_current_year character varying (1)
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(d, conf.Ext, locf("date_dim")))
 
@@ -342,7 +347,7 @@ func TestSetup(t *testing.T) {
 			hd_buy_potential character varying(15),
 			hd_dep_count integer,
 			hd_vehicle_count integer
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(hd, conf.Ext, locf("household_demographics")))
 
@@ -350,7 +355,7 @@ func TestSetup(t *testing.T) {
 			ib_income_band_sk integer, 
 			ib_lower_bound integer,
 			ib_upper_bound integer
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(ib, conf.Ext, locf("income_band")))
 
@@ -359,7 +364,7 @@ func TestSetup(t *testing.T) {
 			inv_item_sk integer, 
 			inv_warehouse_sk integer, 
 			inv_quantity_on_hand integer
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(inv, conf.Ext, locf("inventory")))
 
@@ -386,7 +391,7 @@ func TestSetup(t *testing.T) {
 			i_container character varying(10),
 			i_manager_id integer,
 			i_product_name character varying(50)
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(i, conf.Ext, locf("item")))
 
@@ -410,7 +415,7 @@ func TestSetup(t *testing.T) {
 			p_channel_details character varying(100),
 			p_purpose character varying(15),
 			p_discount_active character varying (1)
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(p, conf.Ext, locf("promotion")))
 
@@ -418,7 +423,7 @@ func TestSetup(t *testing.T) {
 			r_reason_sk integer, 
 			r_reason_id character varying(16), 
 			r_reason_desc character varying(100)
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(r, conf.Ext, locf("reason")))
 
@@ -429,7 +434,7 @@ func TestSetup(t *testing.T) {
 			sm_code character varying(10),
 			sm_carrier character varying(20),
 			sm_contract character varying(20)
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(sm, conf.Ext, locf("ship_mode")))
 
@@ -463,7 +468,7 @@ func TestSetup(t *testing.T) {
 			s_country character varying(20),
 			s_gmt_offset double precision, 
 			s_tax_precentage double precision 
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(s, conf.Ext, locf("store")))
 
@@ -488,7 +493,7 @@ func TestSetup(t *testing.T) {
 			sr_reversed_charge double precision,
 			sr_store_credit double precision,
 			sr_net_loss double precision
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(sr, conf.Ext, locf("store_returns")))
 
@@ -516,7 +521,7 @@ func TestSetup(t *testing.T) {
 			ss_net_paid double precision,
 			ss_net_paid_inc_tax double precision,
 			ss_net_profit double precision
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(ss, conf.Ext, locf("store_sales")))
 
@@ -531,7 +536,7 @@ func TestSetup(t *testing.T) {
 			t_shift character varying (20),
 			t_sub_shift character varying (20),
 			t_meal_time character varying (20)
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(ttt, conf.Ext, locf("time_dim")))
 
@@ -550,7 +555,7 @@ func TestSetup(t *testing.T) {
 			w_zip character varying(10),
 			w_country character varying(20),
 			w_gmt_offset double precision 
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(w, conf.Ext, locf("warehouse")))
 
@@ -569,7 +574,7 @@ func TestSetup(t *testing.T) {
 			wp_link_count integer,
 			wp_image_count integer,
 			wp_max_ad_count integer
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(wp, conf.Ext, locf("web_page")))
 
@@ -598,7 +603,7 @@ func TestSetup(t *testing.T) {
 			wr_reversed_charge double precision,
 			wr_account_credit double precision,
 			wr_net_loss double precision
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(wr, conf.Ext, locf("web_returns")))
 
@@ -637,7 +642,7 @@ func TestSetup(t *testing.T) {
 			ws_net_paid_inc_ship double precision,
 			ws_net_paid_inc_ship_tax double precision,
 			ws_net_profit double precision
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(ws, conf.Ext, locf("web_sales")))
 
@@ -668,7 +673,7 @@ func TestSetup(t *testing.T) {
 			web_country character varying(20),
 			web_gmt_offset double precision, 
 			web_tax_percentage double precision 
-		) LOCATION ('%s') FORMAT 'CSV' (DELIMITER '|') 
+		) LOCATION (%s) FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(web, conf.Ext, locf("web_site")))
 	})

@@ -15,15 +15,16 @@ func Dir() string {
 }
 
 type Config struct {
-	DGHost  string
-	DGPort  int
-	Staging string
-	Db      string
-	Scale   int
-	DDL     string
-	Ext     string
-	Orca    int
-	Vitesse int
+	DGHost       string
+	DGPort       int
+	Staging      string
+	Db           string
+	Scale        int
+	DDL          string
+	Ext          string
+	Orca         int
+	Vitesse      int
+	StatementMem int
 }
 
 type tomlConfig struct {

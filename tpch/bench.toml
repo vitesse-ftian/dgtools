@@ -1,9 +1,9 @@
 [TPCH]
 	DGHost = "localhost"
 	DGPort = 5432
-	Db = "tpch1000"
+	Db = "tpch1"
 	Staging = "/data/bench/staging"
-	Scale = 1000
+	Scale = 1
 	DDL = "mktab-f.sql" 
 	Ext = "GPF"
 	Orca = 0
