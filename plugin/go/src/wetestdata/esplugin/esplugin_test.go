@@ -46,19 +46,25 @@ func TestPlugin(t *testing.T) {
 
 	t.Run("xtables", func(t *testing.T) {
 		cnt := countRows(t, &dg, "select * from esfs")
-		checkCond(t, cnt == 5, fmt.Sprintf("esfs %d bad result", cnt))
-
-		cnt = countRows(t, &dg, "select * from esr")
-		checkCond(t, cnt == 5, fmt.Sprintf("esr %d bad result", cnt))
-
-		cnt = countRows(t, &dg, "select * from esr where dg_utils.xdrive_query($$q=female$$)")
-		checkCond(t, cnt == 2, fmt.Sprintf("esr female %d bad result", cnt))
-
-		cnt = countRows(t, &dg, "select * from esr where dg_utils.xdrive_query($$routing=gold$$)")
-		checkCond(t, cnt == 2, fmt.Sprintf("esr routing %d bad result", cnt))
+		checkCond(t, cnt == 20, fmt.Sprintf("esfs %d bad result", cnt))
 
 		err = dg.Execute("insert into esw select * from esfs")
 		checkError(t, err)
+
+		cnt = countRows(t, &dg, "select * from esr")
+		checkCond(t, cnt == 10, fmt.Sprintf("esr %d bad result", cnt))
+
+		cnt = countRows(t, &dg, "select * from esr where dg_utils.xdrive_query($$q=female$$)")
+		checkCond(t, cnt == 10, fmt.Sprintf("esr female %d bad result", cnt))
+
+		cnt = countRows(t, &dg, "select * from esr where dg_utils.xdrive_query($$routing=gold$$)")
+		checkCond(t, cnt == 8, fmt.Sprintf("esr routing %d bad result", cnt))
+
+		cnt = countRows(t, &dg, "select * from esr where dg_utils.xdrive_query($$from=2&size=5&routing=gold$$)")
+		checkCond(t, cnt == 5, fmt.Sprintf("esr routing/size/from %d bad result", cnt))
+
+		cnt = countRows(t, &dg, "select * from esr where dg_utils.xdrive_query($$from=2&size=5&_type=offline$$)")
+		checkCond(t, cnt == 5, fmt.Sprintf("esr _type/size/from %d bad result", cnt))
 
 	})
 }
