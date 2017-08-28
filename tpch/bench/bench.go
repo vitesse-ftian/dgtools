@@ -24,6 +24,7 @@ type Config struct {
 	Ext     string
 	Orca    int
 	Vitesse int
+	StatementMem int
 }
 
 type tomlConfig struct {

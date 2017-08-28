@@ -41,6 +41,13 @@ func BenchmarkQuery(b *testing.B) {
 		}
 	}
 
+	if conf.StatementMem != 0 {
+		err = conn.Execute(fmt.Sprintf("set statement_mem = %d", conf.StatementMem))
+		if err != nil {
+			b.Errorf("Cannot set statement_mem = %d, error :%s", conf.StatementMem, err.Error())
+		}
+	}
+
 	for i := 0; i <= 99; i++ {
 		runid := fmt.Sprintf("Step=q%d", i)
 		b.Run(runid, func(b *testing.B) {

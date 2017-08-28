@@ -49,7 +49,7 @@ CREATE TABLE CUSTOMER ( C_CUSTKEY     INTEGER NOT NULL,
                              C_COMMENT     VARCHAR(117) NOT NULL)
                     WITH (appendonly=true, orientation=column);
 
-CREATE TABLE ORDERS  ( O_ORDERKEY       INTEGER NOT NULL,
+CREATE TABLE ORDERS  ( O_ORDERKEY       BIGINT NOT NULL,
                            O_CUSTKEY        INTEGER NOT NULL,
                            O_ORDERSTATUS    VARCHAR(1)/*CHAR(1)*/ NOT NULL,
                            O_TOTALPRICE     DOUBLE PRECISION /*DECIMAL(15,2)*/ NOT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE ORDERS  ( O_ORDERKEY       INTEGER NOT NULL,
                            O_COMMENT        VARCHAR(79) NOT NULL)
                     WITH (appendonly=true, orientation=column);
 
-CREATE TABLE LINEITEM ( L_ORDERKEY    INTEGER NOT NULL,
+CREATE TABLE LINEITEM ( L_ORDERKEY    BIGINT NOT NULL,
                              L_PARTKEY     INTEGER NOT NULL,
                              L_SUPPKEY     INTEGER NOT NULL,
                              L_LINENUMBER  INTEGER NOT NULL,
