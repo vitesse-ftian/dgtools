@@ -21,6 +21,25 @@ type ESClient struct {
 }
 
 
+const IndexField string = "_index"
+const TypeField string = "_type"
+const SourceField string = "_source"
+const RoutingField string = "_routing"
+const ScoreField string = "_score"
+const TimedOutField string = "timed_out"
+const HitsField string = "hits"
+const ShardsField string = "_shards"
+const TookField string = "took"
+const TotalField string = "total"
+const IdField string = "_id"
+const ErrorsField string = "errors"
+const ItemsField string = "items"
+const IndexActionField string = "index"
+const UpdateActionField string = "update"
+const CreateActionField string = "create"
+const DeleteActionField string = "delete"
+
+
 func (es *ESClient) CreateUsingRinfo() {
 	
 	rinfo := plugin.RInfo()

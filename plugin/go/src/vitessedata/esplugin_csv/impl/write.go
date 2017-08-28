@@ -7,7 +7,9 @@ import (
         //"io"
         "vitessedata/plugin"
 	"bytes"
+	"github.com/buger/jsonparser"
 )
+
 
 // DoWrite services xdrive write request.  It read a sequence of PluginWriteRequest
 // from stdin and write to file system.
@@ -111,6 +113,44 @@ func DoWrite() error {
 			return err
 		}
 
+		var esbulkrespath = [][]string {
+			[]string{TookField},
+			[]string{ErrorsField},
+			[]string{ItemsField},
+		}
+
+		bulkerrors := false
+
+		jsonparser.EachKey(result, func(idx int, value []byte, vt jsonparser.ValueType, err error) {
+
+			if idx == 0 {
+				// took
+
+			} else if idx == 1 {
+				// errors
+				var err error
+
+				bulkerrors, err = jsonparser.ParseBoolean(value)
+				if err != nil {
+					plugin.DbgLog("Parse _bulk result errors failed. %v", err)
+					plugin.ReplyWriteError(-2, err.Error())
+					return
+				}
+				
+				if bulkerrors {
+					plugin.ReplyWriteError(-100, "Bulk operations has errors. " + string(result))
+					return
+				}
+			} else if idx == 2 {
+				// items
+
+			}
+			
+		}, esbulkrespath...)
+
+		if bulkerrors {
+			return fmt.Errorf("bulk operation error")
+		}
 
 	}
 

@@ -52,10 +52,10 @@ func (h *ESReader) Init(fspec *xdrive.FileSpec, coldesc []*xdrive.ColumnDesc, pr
 
 	// initialize es path
 	h.esresultpath =[][]string {
-		[]string{"timed_out"},
-                []string{"took"},
-                []string{"_shards"},
-		[]string{"hits"},
+		[]string{TimedOutField},
+                []string{TookField},
+                []string{ShardsField},
+		[]string{HitsField},
         }
 /*
 	h.eshitpath = [][]string {
@@ -67,10 +67,10 @@ func (h *ESReader) Init(fspec *xdrive.FileSpec, coldesc []*xdrive.ColumnDesc, pr
 */
 
 	for _, c := range h.collist {
-		if c == "_id" || c == "_type" || c == "_index" || c == "_score" || c == "_routing" {
+		if c == IdField || c == IndexField || c == TypeField || c == ScoreField || c == RoutingField {
 			h.eshitpath = append(h.eshitpath, []string{c})
 		} else {
-			h.eshitpath = append(h.eshitpath, []string{"_source", c})
+			h.eshitpath = append(h.eshitpath, []string{SourceField, c})
 		}
 		plugin.DbgLog("col %s", c)
 	}
@@ -137,10 +137,29 @@ func (h* ESReader) process(json []byte, default_size int) error {
 	}
 
 	jsonparser.EachKey(json, func(idx int, value []byte, vt jsonparser.ValueType, err error) {
+
+		if idx == 0 {
+			// timed_out
+			timed_out, err2 := jsonparser.ParseBoolean(value)
+
+			if err2 != nil {
+				plugin.DbgLog("ES: Failed to get the timed_out. %v", err2)
+				return
+			}
+			if timed_out {
+				plugin.ReplyError(-100, "Connection timed out")
+				return
+			}
+		} else if idx == 1 {
+			// took
+
+		} else if idx == 2 {
+			// _shards
 		
-		// hits
-		if idx == 3 {
-			total, err2 := jsonparser.GetInt(value, "total") 
+		} else if idx == 3 {
+			// hits
+			
+			total, err2 := jsonparser.GetInt(value, TotalField) 
 			if err2 != nil {
 				plugin.DbgLog("ES: Failed to get total count. %v", err2)
 				return
@@ -212,7 +231,7 @@ func (h* ESReader) process(json []byte, default_size int) error {
 
 			rowidx = 0
 			// parse the hits array
-			jsonparser.ArrayEach(value, arrhandler, "hits")
+			jsonparser.ArrayEach(value, arrhandler, HitsField)
 		}
 	}, h.esresultpath...)
 
