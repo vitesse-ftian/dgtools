@@ -6,6 +6,7 @@ import (
 	//"os"
 	//"time"
 	"strings"
+	"strconv"
 	"vitessedata/plugin"
 )
 
@@ -32,6 +33,7 @@ func DoRead() error {
 	}
 
 	var es ESClient
+
 	es.CreateUsingRinfo()
 
 	shards := es.GetShards(req.FragId, req.FragCnt)
@@ -42,10 +44,15 @@ func DoRead() error {
 	}
 	preference := es.GetPreferenceShards(shards)
 	plugin.DbgLog("shards preference: %s", preference)	
-	
+
+	// default value of the parameters
+	var _type string
+	default_size := 10
+	default_timeout := "30s"
+
 	params := make(map[string]string)
 	params["preference"] = preference
-	params["timeout"] = "30s"
+	params["timeout"] = default_timeout
 	//
 	// Filter:
 	// req may contains a list of Filters that got pushed down from XDrive server.
@@ -56,26 +63,32 @@ func DoRead() error {
 	// filter called "QUERY", which allow users to send any query to plugin.  Here as
 	// an example, we implement a poorman's fault injection.
 	//
-	var query, _type string
 	for _, f := range req.Filter {
 		// f cannot be nil
 		if f.Op == "QUERY" {
-			query= f.Args[0]
-			p := strings.Split(query, "&")
+			p := strings.Split(f.Args[0], "&")
 
 			for _, pp := range p {
 				plugin.DbgLog(pp)
 				ppp := strings.SplitN(pp, "=", 2)
 				if len(ppp) == 2 {
-					params[ppp[0]] = ppp[1]
+					switch ppp[0] {
+					case "_type":
+						_type = ppp[1]
+					case "size":
+						default_size, err = strconv.Atoi(ppp[1])
+						if err != nil {
+							plugin.ReplyError(-100, "Invalid size " + ppp[1])
+							return err
+						}
+						params[ppp[0]] = ppp[1]
+					default:
+						params[ppp[0]] = ppp[1]
+					}
 				}
 			}
 
-		} else if f.Column == "_type" && f.Op == "==" {
-			_type = f.Args[0]
-		} else {
-			params[f.Column] = f.Args[0]
-		}
+		} 
 	}
 
 
@@ -96,7 +109,7 @@ func DoRead() error {
 	var reader ESReader
 	reader.Init(req.Filespec, req.Columndesc, req.Columnlist)
 
-	err = reader.process(body)
+	err = reader.process(body, default_size)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "Parse Json result failed.")
 		plugin.ReplyError(-20, "JSON result has invalid data")

@@ -96,7 +96,7 @@ func DoSample() error {
 	var reader ESReader
 	reader.Init(req.Filespec, req.Columndesc, req.Columnlist)
 
-	err = reader.process(body)
+	err = reader.process(body, 10)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "Parse Json result failed.")
 		plugin.ReplyError(-20, "JSON result has invalid data")

@@ -78,9 +78,9 @@ func (h *ESReader) Init(fspec *xdrive.FileSpec, coldesc []*xdrive.ColumnDesc, pr
 	plugin.DbgLog("%v", h.eshitpath)
 }
 
-func (h* ESReader) process(json []byte) error {
+func (h* ESReader) process(json []byte, default_size int) error {
 
-	var rowidx int = 0
+	var rowidx int32 = 0
 	var dataReply xdrive.PluginDataReply
 
 	var keyhandler = func(col int, value []byte, vt jsonparser.ValueType, err error) {
@@ -146,9 +146,13 @@ func (h* ESReader) process(json []byte) error {
 				return
 			}
 
-			plugin.DbgLog("ES: Total number of row = %d", total)
+			plugin.DbgLog("ES: Total number of row = %d, size = %d", total, default_size)
 			// initialize the rows
-			h.RowCnt = int(total)
+			if default_size < int(total) {
+				h.RowCnt = default_size
+			} else {
+				h.RowCnt = int(total)
+			}
 
 			// Build reply message. Errcode initialized to 0, which is what we want.
 			dataReply.Rowset = new(xdrive.XRowSet)
@@ -158,7 +162,7 @@ func (h* ESReader) process(json []byte) error {
 				xcol := new(xdrive.XCol)
 				dataReply.Rowset.Columns[col] = xcol
 				xcol.Colname = h.collist[col]
-				xcol.Nrow = int32(total)
+				xcol.Nrow = int32(h.RowCnt)
 				xcol.Nullmap = make([]bool, xcol.Nrow)
 
 
@@ -212,7 +216,29 @@ func (h* ESReader) process(json []byte) error {
 		}
 	}, h.esresultpath...)
 
-
+	// total may not be equal to numbe of row if param size is specified in the URI request
+	for col := 0 ; col < h.ncol ; col++ {
+		xcol := dataReply.Rowset.Columns[col]
+		if rowidx < dataReply.Rowset.Columns[col].Nrow {
+			xcol.Nrow = rowidx
+			xcol.Nullmap = xcol.Nullmap[:rowidx]
+			if xcol.Sdata != nil {
+				xcol.Sdata = xcol.Sdata[:rowidx]
+			} 
+			if xcol.F32Data != nil {
+				xcol.F32Data = xcol.F32Data[:rowidx]
+			}
+			if xcol.I32Data != nil {
+				xcol.I32Data = xcol.I32Data[:rowidx]
+			}
+			if xcol.F64Data != nil {
+				xcol.F64Data = xcol.F64Data[:rowidx]
+			}
+			if xcol.I64Data != nil {
+				xcol.I64Data = xcol.I64Data[:rowidx]
+			}
+		}
+	}
 
 	plugin.DbgLog("Done Building Rowset, %d rows, %d cols", rowidx, h.ncol)
         err := plugin.DelimWrite(&dataReply)
