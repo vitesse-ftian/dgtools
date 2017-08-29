@@ -14,6 +14,13 @@ whole system.
 Build
 -----
 Install golang from http://www.golang.org/ 
+
+To build, we require current dir in GOPATH.   Usually, cd to dgza dir, the following 
+will work.
+```
+export GOPATH=~/go:$PWD
+```
+
 Check the Makefile.   Basically,
 ```
 cd src/vitessedata/dgza && go get . && go install
