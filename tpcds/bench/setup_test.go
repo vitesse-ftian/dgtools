@@ -120,6 +120,7 @@ func TestSetup(t *testing.T) {
 				return fmt.Sprintf("'xdrive://localhost:31416/tpcds-scale-%d/seg-#SEGID#/%s_[0-9]*.dat'", conf.Scale, t)
 			}
 		} else {
+			panic("TPCDS only support XDR at this moment.  Please use DeepGreen.")
 			locf = func(t string) string {
 				prefix := ""
 				ret := ""
