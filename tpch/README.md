@@ -1,7 +1,6 @@
 Copyright (c) 2017, VitesseData Inc.  
 
 # TPCH Benchmark
-
 Make sure dg, psql, xdrctl is in $PATH.   To test Greenplum, just
 put greenplumn bin before deepgreen bin in $PATH.   Test need to 
 set up two env variable.   Just source ./env.sh.
@@ -10,6 +9,17 @@ Test config is in bench.toml file.  We use golang test.  See golang
 testing package for how to run a test or subtest. There are a bunch 
 of makefile target in the Makefile.  In general one should
 just use make to drive the tests.   The following are details,
+
+# Use Make
+To run the benchmark, edit bench.toml, source ./env.sh, then
+```
+make gendata
+make ddl
+xdrctl deploy gen/xdrive.toml
+xdrctl start gen/xdrive.toml
+make load
+make run
+```
 
 # GenData
 Generate data.   Costly.   Not timed/measured.

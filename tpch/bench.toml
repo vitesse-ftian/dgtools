@@ -5,7 +5,7 @@
 	Staging = "/data/bench/staging"
 	Scale = 1
 	DDL = "mktab-f.sql" 
-	Ext = "GPF"
+	Ext = "XDR"
 	Orca = 0
 	Vitesse = 1
 	StatementMem = 2000000
