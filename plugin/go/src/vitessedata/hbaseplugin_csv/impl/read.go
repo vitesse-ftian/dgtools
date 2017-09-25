@@ -56,19 +56,16 @@ func DoRead() error {
 					return err
 				}
 			}
-
-
 			writer.Write(r)
-			/*
-			for _, e := range r.Cells {
-				plugin.DbgLog("%s %s %s %s\n", string(e.Row), string(e.Family),
-					string(e.Qualifier), string(e.Value))
-			}
-*/
 		}
 	}
 
-	writer.Close()
+	err = writer.Close()
+	if err != nil {
+		fmt.Errorf("%v", err)
+		plugin.ReplyError(-100, "Error when close")
+		return err
+	}
 	plugin.ReplyError(0, "")
 	return nil
 }

@@ -201,6 +201,10 @@ func (h *HBWriter) Write(r *hrpc.Result) {
 			xcol.Nullmap[h.rowidx] = false
 		}
 
+		plugin.DbgLog("%s %s %s %s\n", string(c.Row), string(c.Family),
+			string(c.Qualifier), string(c.Value))		
+		
+
 		h.rowidx++
 
 		if h.rowidx == MAXROW {
@@ -208,9 +212,6 @@ func (h *HBWriter) Write(r *hrpc.Result) {
 		}
 
 			
-		plugin.DbgLog("%s %s %s %s\n", string(c.Row), string(c.Family),
-			string(c.Qualifier), string(c.Value))		
-		
 	}
 
 
@@ -246,18 +247,20 @@ func (h *HBWriter) flush() error {
 	}
 
 	
-	err := plugin.DelimWrite(&h.dataReply)
-	if err != nil {
-		return err
+	if h.rowidx > 0 {
+		err := plugin.DelimWrite(&h.dataReply)
+		if err != nil {
+			return err
+		}
+		
+		h.RowCnt += h.rowidx
+		// reset the h.rowidx = 0 and do resetData
+		h.resetData()
 	}
-
-	h.RowCnt += h.rowidx
-	// reset the h.rowidx = 0 and do resetData
-	h.resetData()
 
 	return nil
 }
 
-func (h *HBWriter) Close() {
-	h.flush()
+func (h *HBWriter) Close() error {
+	return h.flush()
 }
