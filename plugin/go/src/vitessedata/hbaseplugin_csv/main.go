@@ -9,7 +9,7 @@ package main
 import (
 	"fmt"
 	"vitessedata/plugin"
-	"vitessedata/esplugin_csv/impl"
+	"vitessedata/hbaseplugin_csv/impl"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 
 	// The first message from xdrive will always be an RmgrInfo.  Scheme can pass configurations
 	// to plugin via RmgrInfo.Conf, which reads from xdrive.toml file.
-	plugin.DbgLog("Starting read rinfo ...\n")
+	plugin.DbgLog("HBASE Starting read rinfo ...\n")
 	err := plugin.ReadRInfo()
 	plugin.DbgLogIfErr(err, "Cannot read rinfo message from server.")
 	plugin.DbgLog("Serving %s\n", plugin.PluginOp())

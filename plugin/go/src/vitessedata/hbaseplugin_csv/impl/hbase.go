@@ -11,6 +11,7 @@ import (
 	"vitessedata/plugin"
 	"fmt"
 	"context"
+	"strings"
 )
 
 type HBClient struct {
@@ -23,11 +24,12 @@ type HBClient struct {
 }
 
 
-func (hb *HBClient) CreateUsingRinfo(table string) {
+func (hb *HBClient) CreateUsingRinfo() {
 
 	rinfo := plugin.RInfo()
-	hb.host = rinfo.Rpath
-	hb.table = table
+	ss := strings.Split(rinfo.Rpath, "/")
+	hb.host = ss[0]
+	hb.table = ss[1]
 	
 	conf := rinfo.GetConf()
 	for _, kv := range conf.GetKv() {
@@ -35,6 +37,8 @@ func (hb *HBClient) CreateUsingRinfo(table string) {
 			hb.user = kv.GetValue()
 		}
 	}
+
+	plugin.DbgLog("host: '%s', table: '%s', user: '%s'", hb.host, hb.table, hb.user)
 	
 	hb.client = gohbase.NewClient(hb.host, gohbase.EffectiveUser(hb.user))	
 	hb.getmetaregions()
@@ -56,22 +60,26 @@ func (hb *HBClient) Close() {
 func (hb *HBClient) getmetaregions() {
 	
 	filterstr := fmt.Sprintf("%s,", hb.table)
+
 	f := filter.NewPrefixFilter([]byte(filterstr))
 	family := map[string][]string{"info": []string{"regioninfo", "server"}}
+
+	plugin.DbgLog(filterstr)
+
 	scanreq, _ := hrpc.NewScanStr(context.Background(), "hbase:meta", hrpc.Families(family), hrpc.Filters(f))
 	scanner := hb.client.Scan(scanreq)
-	
+
 	for {
 		r, err := scanner.Next()
+
 		if err == io.EOF {
 			break
 		}
 		region, _, err := region.ParseRegionInfo(r)
 		if err != nil {
-			fmt.Print(err)
+			plugin.DbgLog("Error %v", err)
 			return
 		}
-		//fmt.Printf("addr = %s, region value = %s\n", addr, region.String())
 
 		hb.metaregions = append(hb.metaregions, region)
 	}

@@ -2,7 +2,7 @@ package impl
 
 import (
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
-        "fmt"
+        //"fmt"
         //"io"
         "vitessedata/plugin"
 	//"github.com/tsuna/gohbase"                                                                                       
@@ -15,7 +15,7 @@ import (
   Row []byte, Family []byte, Qualifier []byte, Timestamp uint64, Value []byte
 */
 
-var HBASETABLEDESC = [5]string {"row", "family", "qualifier", "timestamp", "value"}
+var HBASETABLEDESC = [5]string {"_row", "_family", "_qualifier", "_timestamp", "_value"}
 const MAXROW = 100
 
 type HBWriter struct {
@@ -166,35 +166,35 @@ func (h *HBWriter) Write(r *hrpc.Result) {
 
 
 
-		col, ok := h.colmap["row"]
+		col, ok := h.colmap["_row"]
 		if ok {
 			xcol := h.dataReply.Rowset.Columns[col]
 			xcol.Sdata[h.rowidx] = string(c.Row)
 			xcol.Nullmap[h.rowidx] = false
 		}
 
-		col, ok = h.colmap["family"]
+		col, ok = h.colmap["_family"]
 		if ok {
 			xcol := h.dataReply.Rowset.Columns[col]
 			xcol.Sdata[h.rowidx] = string(c.Family)
 			xcol.Nullmap[h.rowidx] = false
 		}
 
-		col, ok = h.colmap["qualifier"]
+		col, ok = h.colmap["_qualifier"]
 		if ok {
 			xcol := h.dataReply.Rowset.Columns[col]
 			xcol.Sdata[h.rowidx] = string(c.Qualifier)
 			xcol.Nullmap[h.rowidx] = false
 		}
 
-		col, ok = h.colmap["timestamp"]
+		col, ok = h.colmap["_timestamp"]
 		if ok {
 			xcol := h.dataReply.Rowset.Columns[col]
 			xcol.I64Data[h.rowidx] = int64(*c.Timestamp)
 			xcol.Nullmap[h.rowidx] = false
 		}
 
-		col, ok = h.colmap["value"]
+		col, ok = h.colmap["_value"]
 		if ok {
 			xcol := h.dataReply.Rowset.Columns[col]
 			xcol.Sdata[h.rowidx] = string(c.Value)
@@ -208,7 +208,7 @@ func (h *HBWriter) Write(r *hrpc.Result) {
 		}
 
 			
-		fmt.Printf("%s %s %s %s\n", string(c.Row), string(c.Family),
+		plugin.DbgLog("%s %s %s %s\n", string(c.Row), string(c.Family),
 			string(c.Qualifier), string(c.Value))		
 		
 	}

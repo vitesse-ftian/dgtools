@@ -27,10 +27,7 @@ func DoRead() error {
 
 
 	var hbase HBClient
-	
-	path := req.Filespec.GetPath()
-	table := path[1:]  // get rid of "/"
-	hbase.CreateUsingRinfo(table)
+	hbase.CreateUsingRinfo()
 
 	regions := hbase.GetRegions(req.FragId, req.FragCnt)
 
@@ -38,19 +35,17 @@ func DoRead() error {
 	
 	// filter
 
-
 	var writer HBWriter
 	writer.Init(req.Filespec, req.Columndesc, req.Columnlist)
 
 
 	for _, rg := range regions {
-
 		scanner, err := hbase.Scan(rg, nil, nil)
 		if err != nil {
 			fmt.Errorf("Scan failed. %v", err)
 			return err
 		}
-		
+
 		for {
 			r, err := scanner.Next()
 			if err != nil {
@@ -64,12 +59,13 @@ func DoRead() error {
 
 
 			writer.Write(r)
+			/*
 			for _, e := range r.Cells {
-				fmt.Printf("%s %s %s %s\n", string(e.Row), string(e.Family),
+				plugin.DbgLog("%s %s %s %s\n", string(e.Row), string(e.Family),
 					string(e.Qualifier), string(e.Value))
 			}
+*/
 		}
-
 	}
 
 	writer.Close()
