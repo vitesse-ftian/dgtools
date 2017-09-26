@@ -2,7 +2,7 @@ package impl
 
 import (
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
-        //"fmt"
+        "fmt"
         //"io"
         "vitessedata/plugin"
 	//"github.com/tsuna/gohbase"                                                                                       
@@ -12,10 +12,18 @@ import (
 /*
   Hbase table definition matching to DG
 
-  Row []byte, Family []byte, Qualifier []byte, Timestamp uint64, Value []byte
+  Row []byte, Column []byte, Timestamp uint64, Value []byte
+
+  query format:
+
+  {"COLUMNS" : ["cf:a", "cf:b"], "FILTERS": [{"PrefixFilter": ["row2"]}, {"QualifierFilter" : [">=", "binary:xyz"] } , { "TimestampsFilter": [123, 456]}],
+   "LIMIT" : 5, "STARTROW": "row1", "ENDROW": "rowN", "TIMERANGE" : [123, 456]}
+
+"((PrefixFilter("row2") AND (QualifierFilter (>=, 'binary:xyz'))) AND (TimestampsFilter (123, 456))"}
+
 */
 
-var HBASETABLEDESC = [5]string {"_row", "_family", "_qualifier", "_timestamp", "_value"}
+var HBASETABLEDESC = [4]string {"_row", "_column", "_timestamp", "_value"}
 const MAXROW = 100
 
 type HBWriter struct {
@@ -173,19 +181,21 @@ func (h *HBWriter) Write(r *hrpc.Result) {
 			xcol.Nullmap[h.rowidx] = false
 		}
 
-		col, ok = h.colmap["_family"]
+		col, ok = h.colmap["_column"]
 		if ok {
 			xcol := h.dataReply.Rowset.Columns[col]
-			xcol.Sdata[h.rowidx] = string(c.Family)
+			xcol.Sdata[h.rowidx] = fmt.Sprintf("%s:%s", string(c.Family), string(c.Qualifier))
 			xcol.Nullmap[h.rowidx] = false
 		}
 
+/*
 		col, ok = h.colmap["_qualifier"]
 		if ok {
 			xcol := h.dataReply.Rowset.Columns[col]
 			xcol.Sdata[h.rowidx] = string(c.Qualifier)
 			xcol.Nullmap[h.rowidx] = false
 		}
+*/
 
 		col, ok = h.colmap["_timestamp"]
 		if ok {

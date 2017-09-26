@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"context"
 	"strings"
+	"bytes"
 )
 
 type HBClient struct {
@@ -100,12 +101,29 @@ func (hb *HBClient) GetRegions(fragid, fragcnt int32) []hrpc.RegionInfo {
 	return regions
 }
 
-func (hb *HBClient) Scan(region hrpc.RegionInfo, families map[string][]string, pfilter filter.Filter) (hrpc.Scanner, error) {
+func (hb *HBClient) Scan(region hrpc.RegionInfo, startrow []byte, endrow []byte, families map[string][]string, pfilter filter.Filter) (hrpc.Scanner, error) {
 	
 	table := region.Table()
 	startkey := region.StartKey()
 	endkey := region.StopKey()
 	
+
+	if len(startkey) > 0 {
+		if  bytes.Compare(startkey, startrow) < 0 && bytes.Compare(startrow, endkey) < 0 {
+			startkey = startrow
+		}
+	} else {
+		startkey = startrow
+	}
+
+	if len(endkey) > 0 {
+		if  bytes.Compare(startkey, endrow) < 0 && bytes.Compare(endrow, endkey) < 0 {
+			endkey = endrow
+		}
+	} else {
+		endkey = endrow
+	}
+
 	scanRequest, err := hrpc.NewScanRange(context.Background(), table, startkey, endkey, hrpc.Families(families), hrpc.Filters(pfilter))
 	if err != nil {
 		return nil, err
@@ -113,4 +131,91 @@ func (hb *HBClient) Scan(region hrpc.RegionInfo, families map[string][]string, p
 	
 	scanner := hb.client.Scan(scanRequest)
 	return scanner, nil
+}
+
+func (hb *HBClient) NewFilter(filtername string, param string) (filter.Filter, error) {
+	switch filtername {
+	case "ColumnCountGetFilter":
+		plugin.DbgLog("ColumnCountGetFilter")
+		//return filter.NewColumnCountGetFilter(limit int32)
+	case "ColumnPaginationFilter":
+		plugin.DbgLog("ColumnPaginationFilter")
+		//return filter.NewColumnPaginationFilter(limit offset int32, columnoffset []byte)
+	case "ColumnPrefixFilter":
+		plugin.DbgLog("ColumnPrefixFilter")
+		return filter.NewColumnPrefixFilter([]byte(param)), nil
+	case "ColumnRangeFilter":
+		plugin.DbgLog("ColumnRangeFilter")
+		//return filter.NewColumnRangeFilter(mincol, maxcol []byte, false, false)
+	case "CompareFilter":
+		plugin.DbgLog("CompareFilter")
+		//return filter.NewCompareFilter(compareOp, comparetor)
+	case "DependentColumnFilter":
+		plugin.DbgLog("DependentColumnFilter")
+		//return filter.NewDependentColumnFilter(comparefilter, cf, cq, true)
+	case "FamilyFilter":
+		plugin.DbgLog("FamilyFilter")
+		//return filter.NewFamilyFilter(comprefilter)
+	case "FirstKeyOnlyFilter":
+		plugin.DbgLog("FirstKeyOnlyFilter")
+		return filter.NewFirstKeyOnlyFilter(), nil
+	case "FirstKeyValueMatchingQualifiersFilter":
+		plugin.DbgLog("FirstKeyValueMatchingQualifierFilter")
+		//return filter.NewFirstKeyValueMatchingQualifiersFilter(qualifiers[][]byte)
+	case "InclusiveStopFilter":
+		plugin.DbgLog("InclusiveStopFilter")
+		return filter.NewInclusiveStopFilter([]byte(param)), nil
+	case "KeyOnlyFilter":
+		plugin.DbgLog("KeyOnlyFilter")
+		return filter.NewKeyOnlyFilter(true), nil
+	case "MultipleColumnPrefixFilter":
+		plugin.DbgLog("MultipleColumnPrefixFilter")
+		//return filter.NewMultipleColumnPrefixFilter(sortedPrefixes)
+	case "NewPageFilter":
+		plugin.DbgLog("PageFilter")
+		//return filter.NewPageFilter(pageSize)
+	case "PrefixFilter":
+		plugin.DbgLog("PrefixFilter")
+		return filter.NewPrefixFilter([]byte(param)), nil
+	case "QualifierFilter":
+		plugin.DbgLog("QualifierFilter")
+		//return filter.NewQualifierFilter(compareFilter)
+	case "RandomRowFilter":
+		plugin.DbgLog("RandomRowFilter")
+		//return filter.NewRandomRowFilter(chance)
+	case "RowFilter":
+		plugin.DbgLog("RowFilter")
+		//return filter.NewRowFilter(compareFilter)
+	case "SingleColumnValueFilter":
+		plugin.DbgLog("SingleColumnValueFilter")
+		//return filter.NewSingleColumnValueFilter
+	case "SingleColumnValueExcludeFilter":
+		plugin.DbgLog("SingleColumnValueExcludeFilter")
+		//return filter.NewColumnValueExcludeFilter
+	case "SkipFilter":
+		plugin.DbgLog("SkipFilter")
+		//return filter.NewSkipFilter(skippingFilter)
+	case "TimstampsFilter":
+		plugin.DbgLog("TimestampsFilter")
+		//return filter.newTimestampsFilter(timestamps)
+	case "ValueFilter":
+		plugin.DbgLog("ValueFilter")
+		//return filter.NewValueFilter(compareFilter)
+	case "WhileMatchFilter":
+		plugin.DbgLog("WhileMatchFilter")
+		//return filter.NewWhileMatchFilter(matchingFilter)
+	case "AllFilter":
+		plugin.DbgLog("AllFilter")
+		//return filter.NewAllFilter()
+	case "RowRange":
+		plugin.DbgLog("RowRange")
+		//return filter.NewRowRange(startrow, stoprow, false, false)
+	case "MultiRowRangeFilter":
+		plugin.DbgLog("MultiRowRangeFilter")
+		//return filter.NewMultiRowRangeFilter(rowRangeList)
+	}
+
+	
+	return nil, nil
+
 }
