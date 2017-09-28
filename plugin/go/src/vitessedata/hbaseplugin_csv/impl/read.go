@@ -6,6 +6,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"errors"
 	"vitessedata/plugin"
 //        "github.com/tsuna/gohbase"
         "github.com/tsuna/gohbase/hrpc"
@@ -89,7 +90,7 @@ func DoRead() error {
 					tt := strings.SplitN(ppp[1], ",", 2)
 					if len(tt) != 2 {
 						plugin.ReplyError(-100, "Invalid timerange. format: starttime,endtime. " + ppp[1])
-						return nil
+						return errors.New("Invalid timerange")
 					}
 					stime, err = strconv.ParseInt(tt[0], 10, 64)
 					if err != nil {
