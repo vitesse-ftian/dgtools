@@ -229,7 +229,7 @@ func (h *HBWriter) Write(r *hrpc.Result) {
 
 func (h *HBWriter) flush() error {
 	// write to plugin
-	if h.rowidx < MAXROW {
+	if h.rowidx > 0 && h.rowidx < MAXROW {
 		// shrink the result
 		for col := 0 ; col < h.ncol ; col++ {
 			xcol := h.dataReply.Rowset.Columns[col]
