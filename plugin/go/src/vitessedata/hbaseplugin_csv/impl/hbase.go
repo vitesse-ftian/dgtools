@@ -230,7 +230,7 @@ func (hb *HBClient) getBitCompareOp(op string) (filter.BitComparatorBitwiseOp, e
 }
 
 // compareOp, comparator
-func (hb *HBClient) newCompareFilter(param string) (filter.Filter, error) {
+func (hb *HBClient) newCompareFilter(param string) (*filter.CompareFilter, error) {
 	var compareType filter.CompareType
 	var bitwiseop filter.BitComparatorBitwiseOp
 	var err error
@@ -267,27 +267,37 @@ func (hb *HBClient) newCompareFilter(param string) (filter.Filter, error) {
 			return filter.NewCompareFilter(compareType, filter.NewBinaryPrefixComparator(filter.NewByteArrayComparable(key))), nil
 		}
 	case "bit":
+		pp := strings.SplitN(param, FIELD_SEPARATOR, 4)
+		if len(pp) != 4 {
+			return nil, errors.New("CompareFilter: Invalid parameters. "  + param)
+		}
+
+		compareType, err = hb.getCompareOp(pp[1])
+		if err != nil {
+                        return nil, errors.New("Invalid compare type " + pp[1] + ". e.g. lt, le, eq, gt, ge")
+                }
+
+
+		bitwiseop, err = hb.getBitCompareOp(pp[2])
+		if err != nil {
+			return nil, errors.New("BitCompareFilter: Invalid compare type " + pp[2] + ". e.g. and, or, xor")
+		}
+
+		key = []byte(pp[3])
+		return filter.NewCompareFilter(compareType, filter.NewBitComparator(bitwiseop, filter.NewByteArrayComparable(key))), nil
+	case "substring":
+		// substring, regex
 		pp := strings.SplitN(param, FIELD_SEPARATOR, 3)
 		if len(pp) != 3 {
 			return nil, errors.New("CompareFilter: Invalid parameters. "  + param)
 		}
 
-		compareType = filter.NoOp
-
-		bitwiseop, err = hb.getBitCompareOp(pp[1])
+                compareType, err = hb.getCompareOp(pp[1])
 		if err != nil {
-			return nil, errors.New("BitCompareFilter: Invalid compare type " + pp[1] + ". e.g. and, or, xor")
-		}
+			return nil, errors.New("Invalid compare type " + pp[1] + ". e.g. lt, le, eq, gt, ge")
+                }
 
-		key = []byte(pp[2])
-		return filter.NewCompareFilter(filter.NoOp, filter.NewBitComparator(bitwiseop, filter.NewByteArrayComparable(key))), nil
-	case "substring":
-		// substring, regex
-		pp := strings.SplitN(param, FIELD_SEPARATOR, 2)
-		if len(pp) != 2 {
-			return nil, errors.New("CompareFilter: Invalid parameters. "  + param)
-		}
-		return filter.NewCompareFilter(filter.NoOp, filter.NewSubstringComparator(pp[1])), nil		
+		return filter.NewCompareFilter(compareType, filter.NewSubstringComparator(pp[2])), nil		
 	case "regex":
 		return nil, errors.New("Regex CompareFilter not supported yet.")	
 
@@ -295,94 +305,6 @@ func (hb *HBClient) newCompareFilter(param string) (filter.Filter, error) {
 	
 	return nil, errors.New("CompareFilter not supported yet. " + typ)
 }		
-
-		
-
-
-// compareOp, comparator
-func (hb *HBClient) newLongCompareFilter(param string) (filter.Filter, error) {
-
-
-	pp := strings.SplitN(param, FIELD_SEPARATOR, 2)
-	if len(pp) != 2 {
-		return nil, errors.New("LongCompareFilter: Invalid parameters. " + param)
-	}
-	
-	compareType, err := hb.getCompareOp(pp[0])
-	if err != nil {
-		return nil, errors.New("Invalid compare type " + pp[0] + ". e.g. lt, le, eq, gt, ge")
-	}
-
-	return filter.NewCompareFilter(compareType, filter.NewLongComparator(filter.NewByteArrayComparable([]byte(pp[1])))), nil
-}
-
-
-// compareOp, comparator
-func (hb *HBClient) newBinaryCompareFilter(param string) (filter.Filter, error) {
-
-
-	pp := strings.SplitN(param, FIELD_SEPARATOR, 2)
-	if len(pp) != 2 {
-		return nil, errors.New("BinaryCompareFilter: Invalid parameters. " + param)
-	}
-	
-	compareType, err := hb.getCompareOp(pp[0])
-	if err != nil {
-		return nil, errors.New("BinaryCompareFilter: Invalid compare type " + pp[0] + ". e.g. lt, le, eq, gt, ge")
-	}
-
-	return filter.NewCompareFilter(compareType, filter.NewBinaryComparator(filter.NewByteArrayComparable([]byte(pp[1])))), nil
-}
-
-
-// compareOp, comparator
-func (hb *HBClient) newBinaryPrefixCompareFilter(param string) (filter.Filter, error) {
-
-	pp := strings.SplitN(param, FIELD_SEPARATOR, 2)
-	if len(pp) != 2 {
-		return nil, errors.New("BinaryPrefixCompareFilter: Invalid parameters. " + param)
-	}
-	
-	compareType, err := hb.getCompareOp(pp[0])
-	if err != nil {
-		return nil, errors.New("Invalid compare type " + pp[0] + ". e.g. lt, le, eq, gt, ge")
-	}
-
-	return filter.NewCompareFilter(compareType, filter.NewBinaryPrefixComparator(filter.NewByteArrayComparable([]byte(pp[1])))), nil
-}
-
-
-
-// compareOp, comparator
-func (hb *HBClient) newBitCompareFilter(param string) (filter.Filter, error) {
-
-	pp := strings.SplitN(param, FIELD_SEPARATOR, 2)
-	if len(pp) != 2 {
-		return nil, errors.New("BitCompareFilter: Invalid parameters. " + param)
-	}
-	
-	bitwiseop, err := hb.getBitCompareOp(pp[0])
-	if err != nil {
-		return nil, errors.New("BitCompareFilter: Invalid compare type " + pp[0] + ". e.g. and, or, xor")
-	}
-
-	return filter.NewCompareFilter(filter.NoOp, filter.NewBitComparator(bitwiseop, filter.NewByteArrayComparable([]byte(pp[1])))), nil
-
-}
-
-// compareOp, comparator
-func (hb *HBClient) newRegexStringCompareFilter(param string) (filter.Filter, error) {
-
-	return nil, errors.New("CompareFilter not supported yet.")
-}
-
-
-
-// compareOp, comparator
-func (hb *HBClient) newSubstringCompareFilter(param string) (filter.Filter, error) {
-
-	return filter.NewCompareFilter(filter.NoOp, filter.NewSubstringComparator(param)), nil
-}
 
 // comparefilter, cf, cq, bool
 func (hb *HBClient) newDependentColumnFilter(param string) (filter.Filter, error) {
@@ -393,14 +315,22 @@ func (hb *HBClient) newDependentColumnFilter(param string) (filter.Filter, error
 
 // comparefilter
 func (hb *HBClient) newFamilyFilter(param string) (filter.Filter, error) {
-
-	return nil, errors.New("FamilyFilter not supported yet.")
+	cf, err := hb.newCompareFilter(param)
+	if err != nil {
+		return nil, err
+	}
+	return filter.NewFamilyFilter(cf), nil
 }
 
 // qualifiers[][]byte
 func (hb *HBClient) newFirstKeyValueMatchingQualifiersFilter(param string) (filter.Filter, error) {
+	pp := strings.Split(param, FIELD_SEPARATOR)
+	qualifiers := make([][]byte, len(pp))
+	for i, ppp := range pp {
+		qualifiers[i] = []byte(ppp)
+	}
 
-	return nil, errors.New("FirstKeyValueMatchingQualifiersFilter not supported yet.")
+	return filter.NewFirstKeyValueMatchingQualifiersFilter(qualifiers), nil
 }
 
 // bool
@@ -417,8 +347,13 @@ func (hb *HBClient) newKeyOnlyFilter(param string) (filter.Filter, error) {
 
 // [][]byte sortedPrefixes
 func (hb *HBClient) newMultipleColumnPrefixFilter(param string) (filter.Filter, error) {
+	pp := strings.Split(param, FIELD_SEPARATOR)
+	prefixes := make([][]byte, len(pp))
+	for i, ppp := range pp {
+		prefixes[i] = []byte(ppp)
+	}
 
-	return nil, errors.New("MultipleColumnPrefixFilter not supported yet.")
+	return filter.NewMultipleColumnPrefixFilter(prefixes), nil
 }
 
 // pageSize int64
@@ -435,8 +370,11 @@ func (hb *HBClient) newPageFilter(param string) (filter.Filter, error) {
 
 // comparefilter
 func (hb *HBClient) newQualifierFilter(param string) (filter.Filter, error) {
-
-	return nil, errors.New("QualifierFilter not supported yet.")
+	cf, err := hb.newCompareFilter(param)
+	if err != nil {
+		return nil, err
+	}
+	return filter.NewQualifierFilter(cf), nil
 }
 
 // chance float32
@@ -448,8 +386,11 @@ func (hb *HBClient) newRandomRowFilter(param string) (filter.Filter, error) {
 
 // comparefilter
 func (hb *HBClient) newRowFilter(param string) (filter.Filter, error) {
-
-	return nil, errors.New("RowFilter not supported yet.")
+	cf, err := hb.newCompareFilter(param)
+	if err != nil {
+		return nil, err
+	}
+	return filter.NewRowFilter(cf), nil
 }
 
 // columnFamily, columnQualifier [] byte, compareOp, comparatorObj, filterIfMissing, latestVersionOnly
@@ -472,14 +413,28 @@ func (hb *HBClient) newSkipFilter(param string) (filter.Filter, error) {
 
 // timestamps []int64
 func (hb *HBClient) newTimestampsFilter(param string) (filter.Filter, error) {
+	pp := strings.Split(param, FIELD_SEPARATOR)
+	tsarray := make([]int64, len(pp))
+	for i, ppp := range pp {
+		ts, err := strconv.ParseInt(ppp, 10, 64)
+		if err != nil {
+			return nil, errors.New("TimestampsFilter: invalid argument. int array is requested")
+		}
+		tsarray[i] = ts
+	}
 
-	return nil, errors.New("TimestampsFilter not supported yet.")
+	return filter.NewTimestampsFilter(tsarray), nil
+	//return nil, errors.New("TimestampsFilter not supported yet.")
 }
 
 // compareFilter
 func (hb *HBClient) newValueFilter(param string) (filter.Filter, error) {
-
-	return nil, errors.New("ValueFilter not supported yet.")
+	cf, err := hb.newCompareFilter(param)
+	if err != nil {
+		return nil, err
+	}
+	return filter.NewValueFilter(cf), nil
+	//return nil, errors.New("ValueFilter not supported yet.")
 }
 
 // matchingFilter
@@ -575,7 +530,7 @@ func (hb *HBClient) NewFilter(filtername string, param string) (filter.Filter, e
 	case "SkipFilter":
 		plugin.DbgLog("SkipFilter")
 		return hb.newSkipFilter(param)
-	case "TimstampsFilter":
+	case "TimestampsFilter":
 		plugin.DbgLog("TimestampsFilter")
 		return hb.newTimestampsFilter(param)
 	case "ValueFilter":
