@@ -17,6 +17,8 @@ import (
 	"errors"
 )
 
+var FIELD_SEPARATOR string = ","
+
 type HBClient struct {
 	host string
 	table string
@@ -38,6 +40,8 @@ func (hb *HBClient) CreateUsingRinfo() {
 	for _, kv := range conf.GetKv() {
 		if kv.GetKey() == "user" {
 			hb.user = kv.GetValue()
+		} else if kv.GetKey() == "field_separator" {
+			FIELD_SEPARATOR = kv.GetValue()
 		}
 	}
 
@@ -154,7 +158,7 @@ func (hb *HBClient) newColumnPaginationFilter(param string) (filter.Filter, erro
 	var pp []string
 	var limit, offset int
 	plugin.DbgLog("ColumnPaginationFilter")
-	if pp = strings.SplitN(param, ",", 3) ; len(pp) != 3 {
+	if pp = strings.SplitN(param, FIELD_SEPARATOR, 3) ; len(pp) != 3 {
 		plugin.DbgLog("ColumnPaginationFilter. Invalid argument. ColumnPaginationFilter=limit,offset,columnOffset. " + param)
 		return nil, errors.New("ColumnPaginationFilter: Invalid argument. " + param)
 	}
@@ -175,7 +179,7 @@ func (hb *HBClient) newColumnRangeFilter(param string) (filter.Filter, error) {
 	var pp[]string
 	var minColumnInclusive, maxColumnInclusive bool
 
-	if pp = strings.SplitN(param, ",", 4) ; len(pp) != 4 {
+	if pp = strings.SplitN(param, FIELD_SEPARATOR, 4) ; len(pp) != 4 {
 		return nil, errors.New("ColumnRangeFilter: Invalid argument.  minColumn, maxColumn, minColumnInclusive, maxColumnExclusive")
 	}
 
@@ -233,7 +237,7 @@ func (hb *HBClient) newCompareFilter(param string) (filter.Filter, error) {
 	var pp []string
 	var key []byte
 
-	idx := strings.Index(param, ",")
+	idx := strings.Index(param, FIELD_SEPARATOR)
 	if idx == -1 {
 		return nil, errors.New("CompareFilter: Invalid parameters. " + param)
 	}
@@ -241,7 +245,7 @@ func (hb *HBClient) newCompareFilter(param string) (filter.Filter, error) {
 
 	switch typ {
 	case "binary", "long", "binaryprefix":
-		pp = strings.SplitN(param, ",", 3)
+		pp = strings.SplitN(param, FIELD_SEPARATOR, 3)
 		if len(pp) != 3 {
 			return nil, errors.New("CompareFilter: Invalid parameters. "  + param)
 		}
@@ -263,7 +267,7 @@ func (hb *HBClient) newCompareFilter(param string) (filter.Filter, error) {
 			return filter.NewCompareFilter(compareType, filter.NewBinaryPrefixComparator(filter.NewByteArrayComparable(key))), nil
 		}
 	case "bit":
-		pp := strings.SplitN(param, ",", 3)
+		pp := strings.SplitN(param, FIELD_SEPARATOR, 3)
 		if len(pp) != 3 {
 			return nil, errors.New("CompareFilter: Invalid parameters. "  + param)
 		}
@@ -279,7 +283,7 @@ func (hb *HBClient) newCompareFilter(param string) (filter.Filter, error) {
 		return filter.NewCompareFilter(filter.NoOp, filter.NewBitComparator(bitwiseop, filter.NewByteArrayComparable(key))), nil
 	case "substring":
 		// substring, regex
-		pp := strings.SplitN(param, ",", 2)
+		pp := strings.SplitN(param, FIELD_SEPARATOR, 2)
 		if len(pp) != 2 {
 			return nil, errors.New("CompareFilter: Invalid parameters. "  + param)
 		}
@@ -299,7 +303,7 @@ func (hb *HBClient) newCompareFilter(param string) (filter.Filter, error) {
 func (hb *HBClient) newLongCompareFilter(param string) (filter.Filter, error) {
 
 
-	pp := strings.SplitN(param, ",", 2)
+	pp := strings.SplitN(param, FIELD_SEPARATOR, 2)
 	if len(pp) != 2 {
 		return nil, errors.New("LongCompareFilter: Invalid parameters. " + param)
 	}
@@ -317,7 +321,7 @@ func (hb *HBClient) newLongCompareFilter(param string) (filter.Filter, error) {
 func (hb *HBClient) newBinaryCompareFilter(param string) (filter.Filter, error) {
 
 
-	pp := strings.SplitN(param, ",", 2)
+	pp := strings.SplitN(param, FIELD_SEPARATOR, 2)
 	if len(pp) != 2 {
 		return nil, errors.New("BinaryCompareFilter: Invalid parameters. " + param)
 	}
@@ -334,7 +338,7 @@ func (hb *HBClient) newBinaryCompareFilter(param string) (filter.Filter, error) 
 // compareOp, comparator
 func (hb *HBClient) newBinaryPrefixCompareFilter(param string) (filter.Filter, error) {
 
-	pp := strings.SplitN(param, ",", 2)
+	pp := strings.SplitN(param, FIELD_SEPARATOR, 2)
 	if len(pp) != 2 {
 		return nil, errors.New("BinaryPrefixCompareFilter: Invalid parameters. " + param)
 	}
@@ -352,7 +356,7 @@ func (hb *HBClient) newBinaryPrefixCompareFilter(param string) (filter.Filter, e
 // compareOp, comparator
 func (hb *HBClient) newBitCompareFilter(param string) (filter.Filter, error) {
 
-	pp := strings.SplitN(param, ",", 2)
+	pp := strings.SplitN(param, FIELD_SEPARATOR, 2)
 	if len(pp) != 2 {
 		return nil, errors.New("BitCompareFilter: Invalid parameters. " + param)
 	}

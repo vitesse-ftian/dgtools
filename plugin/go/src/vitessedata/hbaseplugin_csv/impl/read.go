@@ -87,7 +87,7 @@ func DoRead() error {
 					erow = []byte(ppp[1])
 					plugin.DbgLog("stoprow = %s", string(erow))
 				case "timerange":
-					tt := strings.SplitN(ppp[1], ",", 2)
+					tt := strings.SplitN(ppp[1], FIELD_SEPARATOR, 2)
 					if len(tt) != 2 {
 						plugin.ReplyError(-100, "Invalid timerange. format: starttime,endtime. " + ppp[1])
 						return errors.New("Invalid timerange")
