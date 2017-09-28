@@ -58,7 +58,7 @@ func DoRead() error {
 	}
 
 	if query != "" {
-		p := strings.Split(query, "&")
+		p := strings.Split(query, TOKEN_SEPARATOR)
 		for _, pp := range p {
 			plugin.DbgLog(pp)
 			ppp := strings.SplitN(pp, "=", 2)

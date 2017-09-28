@@ -18,6 +18,7 @@ import (
 )
 
 var FIELD_SEPARATOR string = ","
+var TOKEN_SEPARATOR string = "&"
 
 type HBClient struct {
 	host string
@@ -42,6 +43,8 @@ func (hb *HBClient) CreateUsingRinfo() {
 			hb.user = kv.GetValue()
 		} else if kv.GetKey() == "field_separator" {
 			FIELD_SEPARATOR = kv.GetValue()
+		} else if kv.GetKey() == "token_separator" {
+			TOKEN_SEPARATOR = kv.GetValue()
 		}
 	}
 
@@ -434,7 +437,6 @@ func (hb *HBClient) newValueFilter(param string) (filter.Filter, error) {
 		return nil, err
 	}
 	return filter.NewValueFilter(cf), nil
-	//return nil, errors.New("ValueFilter not supported yet.")
 }
 
 // matchingFilter
@@ -481,10 +483,6 @@ func (hb *HBClient) NewFilter(filtername string, param string) (filter.Filter, e
 	case "ColumnRangeFilter":
 		plugin.DbgLog("ColumnRangeFilter")
 		return hb.newColumnRangeFilter(param)
-	case "CompareFilter":
-		plugin.DbgLog("CompareFilter")
-		//return hb.newCompareFilter(param)
-		return nil, errors.New("CompareFilter not supported yet.")
 	case "DependentColumnFilter":
 		plugin.DbgLog("DependentColumnFilter")
 		return hb.newDependentColumnFilter(param)
