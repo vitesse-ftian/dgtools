@@ -110,7 +110,7 @@ func (hb *HBClient) GetRegions(fragid, fragcnt int32) []hrpc.RegionInfo {
 	return regions
 }
 
-func (hb *HBClient) Scan(region hrpc.RegionInfo, startrow []byte, endrow []byte, families map[string][]string, pfilter filter.Filter, stime uint64, etime uint64) (hrpc.Scanner, error) {
+func (hb *HBClient) Scan(region hrpc.RegionInfo, startrow []byte, endrow []byte, families map[string][]string, pfilter filter.Filter, stime uint64, etime uint64, limit uint32, offset uint32) (hrpc.Scanner, error) {
 	var err error
 	table := region.Table()
 	regionstart := region.StartKey()
@@ -155,13 +155,24 @@ func (hb *HBClient) Scan(region hrpc.RegionInfo, startrow []byte, endrow []byte,
 
 	var scanRequest *hrpc.Scan
 	if stime > 0 && etime > 0 {
-		scanRequest, err = hrpc.NewScanRange(context.Background(), table, regionstart, regionend, hrpc.Families(families), 
-			hrpc.Filters(pfilter), hrpc.TimeRangeUint64(stime, etime))
-	} else {
-		scanRequest, err = hrpc.NewScanRange(context.Background(), table, regionstart, regionend, hrpc.Families(families), 
-			hrpc.Filters(pfilter))
-	}
+		if limit > 0 {
+			scanRequest, err = hrpc.NewScanRange(context.Background(), table, regionstart, regionend, hrpc.Families(families), 
+				hrpc.Filters(pfilter), hrpc.ResultOffset(offset), hrpc.TimeRangeUint64(stime, etime), hrpc.NumberOfRows(limit))
+		} else {
+			scanRequest, err = hrpc.NewScanRange(context.Background(), table, regionstart, regionend, hrpc.Families(families), 
+				hrpc.Filters(pfilter), hrpc.ResultOffset(offset), hrpc.TimeRangeUint64(stime, etime))
+		}
 
+	} else {
+		if limit > 0 {
+			scanRequest, err = hrpc.NewScanRange(context.Background(), table, regionstart, regionend, hrpc.Families(families), 
+				hrpc.Filters(pfilter), hrpc.ResultOffset(offset), hrpc.NumberOfRows(limit))
+		} else {
+			scanRequest, err = hrpc.NewScanRange(context.Background(), table, regionstart, regionend, hrpc.Families(families), 
+				hrpc.Filters(pfilter), hrpc.ResultOffset(offset))
+		}
+	}
+	
 	if err != nil {
 		plugin.DbgLog("%v", err)
 		return nil, err

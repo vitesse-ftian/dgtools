@@ -46,10 +46,10 @@ func DoRead() error {
 	filtercnt := 0
 
 	var rowrangelist []*filter.RowRange
-	var limit int
 	var srow, erow []byte
 	var stime, etime int64
 	var query string
+	var limit, offset int
 	
 	for _, f := range req.Filter {
 		// f cannot be nil
@@ -74,13 +74,20 @@ func DoRead() error {
 					a := families[cc[0]]
 					families[cc[0]] = append(a, cc[1])
 					plugin.DbgLog("families %v ", families)
+				case "offset":
+					offset, err = strconv.Atoi(ppp[1])
+					if err != nil {
+						plugin.ReplyError(-100, "Invalid offset datatype.  integer is required. " + ppp[1])
+						return err
+					}
+					plugin.DbgLog("offset = %d", offset)
 				case "limit":
 					limit, err = strconv.Atoi(ppp[1])
 					if err != nil {
 						plugin.ReplyError(-100, "Invalid limit datatype.  integer is required. " + ppp[1])
 						return err
 					}
-					plugin.DbgLog("Limit = %d", limit)
+					plugin.DbgLog("limit = %d", limit)
 				case "startrow":
 					srow = []byte(ppp[1])
 					plugin.DbgLog("startrow = %s", string(srow))
@@ -111,7 +118,7 @@ func DoRead() error {
 						if ppp[0] == "RowRangeFilter" {
 							rowrange, err := hbase.NewRowRange(ppp[1])
 							if err != nil {
-								plugin.ReplyError(-100, "RowRangeFilter: Invalid argument. startrow, stoprow,startRowInclusive,stopRowInclusive")
+								plugin.ReplyError(-100, err.Error())
 								return err
 							}
 							rowrangelist = append(rowrangelist, rowrange)
@@ -119,7 +126,7 @@ func DoRead() error {
 
 							filter, err := hbase.NewFilter(ppp[0], ppp[1])
 							if err != nil {
-								plugin.ReplyError(-100, "Invalid filter. " + ppp[0] + ": " + ppp[1])
+								plugin.ReplyError(-100, err.Error())
 								return err
 							}
 							if filter != nil {
@@ -155,9 +162,9 @@ func DoRead() error {
 	for _, rg := range regions {
 		var scanner hrpc.Scanner
 		if filtercnt == 0  {
-			scanner, err = hbase.Scan(rg, srow, erow, families, nil, uint64(stime), uint64(etime))
+			scanner, err = hbase.Scan(rg, srow, erow, families, nil, uint64(stime), uint64(etime), uint32(limit), uint32(offset))
 		} else {
-			scanner, err = hbase.Scan(rg, srow, erow, families, filters, uint64(stime), uint64(etime))
+			scanner, err = hbase.Scan(rg, srow, erow, families, filters, uint64(stime), uint64(etime), uint32(limit), uint32(offset))
 		}
 
 		if err != nil {
@@ -188,8 +195,7 @@ func DoRead() error {
 
 	err = writer.Close()
 	if err != nil {
-		fmt.Errorf("%v", err)
-		plugin.ReplyError(-100, "Error when close")
+		plugin.ReplyError(-100, err.Error())
 		return err
 	}
 	plugin.ReplyError(0, "")
