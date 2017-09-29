@@ -155,13 +155,13 @@ func DoRead() error {
 	for _, rg := range regions {
 		var scanner hrpc.Scanner
 		if filtercnt == 0  {
-			scanner, err = hbase.Scan(rg, srow, erow, families, nil)
+			scanner, err = hbase.Scan(rg, srow, erow, families, nil, uint64(stime), uint64(etime))
 		} else {
-			scanner, err = hbase.Scan(rg, srow, erow, families, filters)
+			scanner, err = hbase.Scan(rg, srow, erow, families, filters, uint64(stime), uint64(etime))
 		}
 
 		if err != nil {
-			fmt.Errorf("Scan failed. %v", err)
+			plugin.ReplyError(-100, err.Error())
 			return err
 		}
 
@@ -177,7 +177,8 @@ func DoRead() error {
 				if err == io.EOF {
 					break
 				} else {
-					fmt.Errorf("scan next failed. %s", err)
+					plugin.DbgLog("scan next failed. %v", err)
+					plugin.ReplyError(-100, err.Error())
 					return err
 				}
 			}
