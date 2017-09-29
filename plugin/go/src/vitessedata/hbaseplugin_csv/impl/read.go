@@ -104,25 +104,28 @@ func DoRead() error {
 						return err
 					}						
 					plugin.DbgLog("stime = %d, etime = %d", stime, etime)
-				case "rowrange":
-					rowrange, err := hbase.NewRowRange(ppp[1])
-					if err != nil {
-						plugin.ReplyError(-100, "RowRange: Invalid argument. startrow, stoprow,startRowInclusive,stopRowInclusive")
-						return err
-					}
-					rowrangelist = append(rowrangelist, rowrange)
 				default:
 					if strings.HasSuffix(ppp[0], "Filter") {
 						plugin.DbgLog("filter %s = %s", ppp[0], ppp[1])
+						
+						if ppp[0] == "RowRangeFilter" {
+							rowrange, err := hbase.NewRowRange(ppp[1])
+							if err != nil {
+								plugin.ReplyError(-100, "RowRangeFilter: Invalid argument. startrow, stoprow,startRowInclusive,stopRowInclusive")
+								return err
+							}
+							rowrangelist = append(rowrangelist, rowrange)
+						} else {
 
-						filter, err := hbase.NewFilter(ppp[0], ppp[1])
-						if err != nil {
-							plugin.ReplyError(-100, "Invalid filter. " + ppp[0] + ": " + ppp[1])
-							return err
-						}
-						if filter != nil {
-							filters.AddFilters(filter)
-							filtercnt++
+							filter, err := hbase.NewFilter(ppp[0], ppp[1])
+							if err != nil {
+								plugin.ReplyError(-100, "Invalid filter. " + ppp[0] + ": " + ppp[1])
+								return err
+							}
+							if filter != nil {
+								filters.AddFilters(filter)
+								filtercnt++
+							}
 						}
 					} else {
 						plugin.ReplyError(-100, "Invalid argument. " + ppp[0] + ": " + ppp[1])
