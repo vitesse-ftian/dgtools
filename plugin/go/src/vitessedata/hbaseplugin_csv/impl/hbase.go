@@ -119,6 +119,7 @@ func (hb *HBClient) Scan(region hrpc.RegionInfo, startrow []byte, endrow []byte,
 	if len(regionstart) > 0 && len(regionend) > 0 && len(startrow) > 0 && len(endrow) > 0 {
 		if bytes.Compare(endrow, regionstart) < 0 || bytes.Compare(regionend, startrow) < 0 {
 			// out of range and ignore the region
+			plugin.DbgLog("region out of range. skip this region")
 			return nil, nil
 		} else {
 			if  bytes.Compare(regionstart, startrow) < 0 && bytes.Compare(startrow, regionend) < 0 {
@@ -539,12 +540,6 @@ func (hb *HBClient) NewRowRange(param string) (*filter.RowRange, error) {
 	return filter.NewRowRange(startrow, stoprow, startRowInclusive, stopRowInclusive), nil
 }
 
-//rowRangeList[]*RowRange
-func (hb *HBClient) newMultiRowRangeFilter(param string) (filter.Filter, error) {
-
-	return nil, errors.New("MultiRowRangeFilter not supported yet.")
-}
-
 // filter[]byte, second []byte
 func (hb *HBClient) newBytesBytesPair(param string) (filter.Filter, error) {
 
@@ -625,12 +620,6 @@ func (hb *HBClient) NewFilter(filtername string, param string) (filter.Filter, e
 	case "WhileMatchFilter":
 		plugin.DbgLog("WhileMatchFilter")
 		return hb.newWhileMatchFilter(param)
-	case "MultiRowRangeFilter":
-		plugin.DbgLog("MultiRowRangeFilter")
-		return hb.newMultiRowRangeFilter(param)
-	case "BytesBytesPair":
-		plugin.DbgLog("BytesBytesPair")
-		return hb.newBytesBytesPair(param)
 	case "FuzzyRowFilter":
 		plugin.DbgLog("FuzzyRowFilter")
 		return hb.newFuzzyRowFilter(param)

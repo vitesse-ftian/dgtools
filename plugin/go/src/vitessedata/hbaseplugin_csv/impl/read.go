@@ -167,6 +167,7 @@ func DoRead() error {
 
 		if scanner == nil {
 			// skip this region
+			plugin.DbgLog("Scanner skipped. Skip this region")
 			continue
 		}
 
