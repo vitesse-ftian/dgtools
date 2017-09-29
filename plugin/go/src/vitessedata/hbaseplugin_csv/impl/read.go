@@ -45,11 +45,12 @@ func DoRead() error {
 	//filters := filter.NewList(filter.MustPassOne)
 	filtercnt := 0
 
+	var rowrangelist []*filter.RowRange
 	var limit int
 	var srow, erow []byte
 	var stime, etime int64
 	var query string
-
+	
 	for _, f := range req.Filter {
 		// f cannot be nil
 		if f.Op == "QUERY" {
@@ -103,6 +104,13 @@ func DoRead() error {
 						return err
 					}						
 					plugin.DbgLog("stime = %d, etime = %d", stime, etime)
+				case "rowrange":
+					rowrange, err := hbase.NewRowRange(ppp[1])
+					if err != nil {
+						plugin.ReplyError(-100, "RowRange: Invalid argument. startrow, stoprow,startRowInclusive,stopRowInclusive")
+						return err
+					}
+					rowrangelist = append(rowrangelist, rowrange)
 				default:
 					if strings.HasSuffix(ppp[0], "Filter") {
 						plugin.DbgLog("filter %s = %s", ppp[0], ppp[1])
@@ -116,8 +124,10 @@ func DoRead() error {
 							filters.AddFilters(filter)
 							filtercnt++
 						}
+					} else {
+						plugin.ReplyError(-100, "Invalid argument. " + ppp[0] + ": " + ppp[1])
+						return errors.New("Invalid argument " + ppp[0] + ": " + ppp[1])
 					}
-					
 				}
 			}
 		}
@@ -126,6 +136,13 @@ func DoRead() error {
 	// families
 	plugin.DbgLog("Families %v", families)
 	// filter
+	// rowrange
+	if len(rowrangelist)  > 0 {
+		filters.AddFilters(filter.NewMultiRowRangeFilter(rowrangelist))
+		filtercnt++
+	}
+		
+
 	plugin.DbgLog("Filters %v", filters)
 
 	var writer HBWriter
@@ -143,6 +160,11 @@ func DoRead() error {
 		if err != nil {
 			fmt.Errorf("Scan failed. %v", err)
 			return err
+		}
+
+		if scanner == nil {
+			// skip this region
+			continue
 		}
 
 		for {
