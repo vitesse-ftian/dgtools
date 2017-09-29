@@ -164,3 +164,14 @@ CREATE WRITABLE EXTERNAL TABLE esw
         )
 LOCATION ('xdrive://localhost:31416/es/')
 FORMAT 'CSV';
+
+DROP EXTERNAL TABLE IF EXISTS hbr;
+CREATE EXTERNAL TABLE hbr
+(
+        _row text,
+        _column text,
+        _value text,
+        _timestamp bigint
+)
+LOCATION ('xdrive://localhost:31416/hbase/test')
+FORMAT 'CSV';

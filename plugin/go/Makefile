@@ -2,6 +2,7 @@ build:
 	(cd src/vitessedata/fsplugin_csv && go get . && go install)
 	(cd src/vitessedata/s3plugin_csv && go get . && go install)
 	(cd src/vitessedata/esplugin_csv && go get . && go install)
+	(cd src/vitessedata/hbaseplugin_csv && go get . && go install)
 
 start:
 	echo "Setup/Deploy xdrive ..." 
