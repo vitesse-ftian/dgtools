@@ -10,6 +10,12 @@ have a directory $HOME/go, then the following should do.
 ```
 go get -t ./bench
 ```
+You may see the following error message.  It is OK, just ignore. 
+```
+go install: no install location for directory /home/centos/p/dgtools/tpch/bench outside GOPATH
+	For more details see: 'go help gopath'
+
+```
 
 Test config is in bench.toml file.  We use golang test.  See golang 
 testing package for how to run a test or subtest. There are a bunch 
