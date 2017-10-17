@@ -5,6 +5,18 @@ Make sure dg, psql, xdrctl is in $PATH.   To test Greenplum, just
 put greenplumn bin before deepgreen bin in $PATH.   Test need to 
 set up two env variable.   Just source ./env.sh.
 
+You need to have go installed, plus all dependencies.  You need to
+have a directory $HOME/go, then the following should do.
+```
+go get -t ./bench
+```
+You may see the following error message.  It is OK, just ignore. 
+```
+go install: no install location for directory /home/centos/p/dgtools/tpch/bench outside GOPATH
+	For more details see: 'go help gopath'
+
+```
+
 Test config is in bench.toml file.  We use golang test.  See golang 
 testing package for how to run a test or subtest. There are a bunch 
 of makefile target in the Makefile.  In general one should
