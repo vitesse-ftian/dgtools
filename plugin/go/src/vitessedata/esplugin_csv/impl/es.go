@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"strconv"
 	"vitessedata/plugin"
+	"errors"
 )
 
 type ESClient struct {
@@ -144,9 +145,14 @@ func (es *ESClient) Search(index string, _type string, params map[string]string)
 	urlStr, cred := es.makeURL("search", index, _type, params)
 	client := new(http.Client)
 	req, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		plugin.DbgLog(err.Error())
+		return nil, err
+	}
 	awsauth.Sign4(req, cred)
 	resp, err := client.Do(req)
        	if err != nil {
+		plugin.DbgLog(err.Error())
                 return nil, err
         }
         defer resp.Body.Close()
@@ -154,10 +160,17 @@ func (es *ESClient) Search(index string, _type string, params map[string]string)
 	plugin.DbgLog("HTTP request:", urlStr)
         plugin.DbgLog("response Status:", resp.Status)
         plugin.DbgLog("response Headers:", resp.Header)
-        body, err2 := ioutil.ReadAll(resp.Body)
+        body, err := ioutil.ReadAll(resp.Body)
         plugin.DbgLog("response Body:", string(body))
+	if err != nil {
+		return nil, err
+	}
+		
+	if resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
 
-	return body, err2
+	return body, nil
 }
 
 func (es *ESClient) Count(index string, _type string, params map[string]string) ([] byte, error) {

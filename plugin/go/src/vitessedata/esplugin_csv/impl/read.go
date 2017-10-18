@@ -91,7 +91,6 @@ func DoRead() error {
 		} 
 	}
 
-
 	body, err := es.Search(es.Index, _type, params)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "ElasticSearch failed. Error %v", err)
@@ -104,8 +103,7 @@ func DoRead() error {
 	body := []byte(`{"timed_out":false, "took":1, "_shards":{}, "hits":{ "total":1, "hits":[{"_id":"1", "_type":"online", "_score":"1", "_routing":"vip", "_source":{ "age":12, "gender":"female", "name":"eric"}}]}}`)
 */
 	plugin.DbgLog(string(body))
-
-
+	
 	var reader ESReader
 	reader.Init(req.Filespec, req.Columndesc, req.Columnlist)
 

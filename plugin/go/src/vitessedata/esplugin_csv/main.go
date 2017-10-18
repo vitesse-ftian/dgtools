@@ -13,7 +13,8 @@ import (
 )
 
 func main() {
-	plugin.StartDbgLog()
+
+	plugin.StartDbgLogWithPrefix("/tmp/xdrive_esplugin")
 	defer plugin.StopDbgLog()
 
 	// The first message from xdrive will always be an RmgrInfo.  Scheme can pass configurations
