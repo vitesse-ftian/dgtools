@@ -3,6 +3,11 @@ build:
 	(cd src/vitessedata/s3plugin_csv && go get . && go install)
 	(cd src/vitessedata/esplugin_csv && go get . && go install)
 	(cd src/vitessedata/hbaseplugin_csv && go get . && go install)
+	rm -rf package ; mkdir package
+	(cd bin && tar -zcvf ../package/esplugin.tgz esplugin_csv)
+	(cd bin && tar -zcvf ../package/fsplugin.tgz fsplugin_csv)
+	(cd bin && tar -zcvf ../package/hbaseplugin.tgz hbaseplugin_csv)
+	(cd bin && tar -zcvf ../package/s3plugin.tgz s3plugin_csv)
 
 start:
 	echo "Setup/Deploy xdrive ..." 
@@ -10,7 +15,7 @@ start:
 	mkdir -p /tmp/wetestdata/xdrive/data
 	xdrctl deploy ./xdrive.toml
 	echo "Start deploy plugin bits ... " 
-	cp bin/* /tmp/wetestdata/xdrive/xdrplugin
+	cp -r package /tmp/wetestdata/xdrive/xdrplugin
 	echo "Start xdrive ..."
 	xdrctl start ./xdrive.toml
 	echo "Copying some file ..."
@@ -41,3 +46,14 @@ wetestdata:
 cpbin:
 	echo "Start deploy plugin bits ... " 
 	cp bin/* /tmp/wetestdata/xdrive/xdrplugin
+
+cppkg:
+	echo "Copy package to xdrplugin ... " 
+	cp -r package /tmp/wetestdata/xdrive/xdrplugin
+
+deploy:
+	echo "Start deply plugin bits ... "
+	xdrctl deployplugin xdrive.toml esplugin
+	xdrctl deployplugin xdrive.toml fsplugin
+	xdrctl deployplugin xdrive.toml hbaseplugin
+	xdrctl deployplugin xdrive.toml s3plugin
