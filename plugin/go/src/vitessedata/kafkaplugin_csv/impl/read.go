@@ -98,7 +98,7 @@ func DoRead() error {
 	}()
 	
 	<- doneCh
-
+	consumer.FlushOffsets()
 
 	plugin.ReplyError(0, "")
 	return nil

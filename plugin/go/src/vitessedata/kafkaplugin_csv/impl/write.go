@@ -7,8 +7,14 @@ import (
         "vitessedata/plugin"
         "bytes"
 	"strings"
+	"time"
 //        "github.com/buger/jsonparser"
 	"github.com/Shopify/sarama"
+)
+
+const (
+	tSleepSeconds = 5    // Time to pause, in seconds, between batches
+	batchSize     = 5000 // Number of rows per batch
 )
 
 // DoWrite services xdrive write request.  It read a sequence of PluginWriteRequest
@@ -19,6 +25,9 @@ func DoWrite() error {
 	ss := strings.Split(rinfo.Rpath, "/")
 	brokerList := ss[0]
 	topic := ss[1]
+
+	plugin.DbgLog("brokerlist = %s\n", brokerList)
+	plugin.DbgLog("topic = %s\n", topic) 
 
 	/*
         conf := rinfo.GetConf()
@@ -40,13 +49,14 @@ func DoWrite() error {
 	config.Producer.Partitioner = partitionerConstructor
 	// See https://github.com/Shopify/sarama/issues/816
 	config.Producer.Return.Successes = true
-	config.Producer.Flush.Messages = 5000
+	//config.Producer.Flush.Messages = 5000
 	producer, err := sarama.NewSyncProducer(strings.Split(brokerList, ","), config)
 	if err != nil {
 		return err
 	}
 	defer producer.Close()
-	
+
+	nLines := 1
 	for {
 		var req xdrive.PluginWriteRequest
 		plugin.DelimRead(&req)
@@ -109,6 +119,10 @@ func DoWrite() error {
 			plugin.DbgLog(buf.String())
 			// write to kafka
 
+			if nLines % batchSize == 0 {
+				time.Sleep(tSleepSeconds * time.Second)
+			}
+
 			valueEncoder = sarama.StringEncoder(buf.String())
 			_, _, err := producer.SendMessage(&sarama.ProducerMessage{
 				Topic: topic,
@@ -118,6 +132,8 @@ func DoWrite() error {
 			if err != nil {
 				return err
 			}	
+
+			plugin.DbgLog("write finish...")
 		}
 	}
 
