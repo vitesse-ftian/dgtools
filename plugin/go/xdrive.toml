@@ -15,6 +15,12 @@ root = "/tmp/wetestdata/xdrive/data"
 conf = "" 
 
 [[xdrive.mount]]
+name = "myxpw"
+scheme = "fsplugin"
+root = "/tmp/wetestdata/xdrive/data"
+conf = "poolwriter=true" 
+
+[[xdrive.mount]]
 name = "myexec"
 scheme = "fsplugin"
 root = "/tmp/wetestdata/xdrive/data"
