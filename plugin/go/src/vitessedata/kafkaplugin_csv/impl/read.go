@@ -2,8 +2,6 @@ package impl
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
 	"strings"
 	"time"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
@@ -72,32 +70,53 @@ func DoRead() error {
 		}
 	}()
 
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt)
-	
-	doneCh := make(chan struct{})
 	tStart := time.Now()
-	go func() {
 
-		for {
-			select {
-			case err := <- consumer.Errors():
-				plugin.DbgLogIfErr(err, "consumer error")
-			case msg := <- consumer.Messages():
-				plugin.DbgLog(string(msg.Value))
-				consumer.CommitUpto(msg)
-			case <- signals:
-				doneCh <- struct{}{}
-			default:
-				elapsed := time.Since(tStart)
-				if elapsed > waitMilliseconds*time.Millisecond {
-					signals <- os.Interrupt
+	var js JsonReader
+	js.Init(req.Filespec, req.Columndesc, req.Columnlist)
+
+
+	var messages [][]byte
+	running := true
+	for ; running ; {
+		select {
+		case err := <- consumer.Errors():
+			plugin.DbgLogIfErr(err, "consumer error")
+			plugin.ReplyError(-20, "Consumer Error")
+			return err
+		case msg := <- consumer.Messages():
+			plugin.DbgLog(string(msg.Value))
+			messages = append(messages, msg.Value)
+			consumer.CommitUpto(msg)
+			
+			if len(messages) == 1000 {
+				err = js.processAll(messages)
+				if err != nil {
+					plugin.DbgLogIfErr(err, "failed to write to deepgreen")
+					plugin.ReplyError(-20, "Failed to write to deepgreen")
+					return err
 				}
+				
+				messages = nil
+				consumer.FlushOffsets()
+			}
+			
+		default:
+			elapsed := time.Since(tStart)
+			if elapsed > waitMilliseconds*time.Millisecond {
+				running = false
 			}
 		}
-	}()
-	
-	<- doneCh
+	}
+
+	if len(messages) > 0 {
+		err = js.processAll(messages)
+		if err != nil {
+			plugin.DbgLogIfErr(err, "failed to write to deepgreen")
+			plugin.ReplyError(-20, "Failed to write to deepgreen")
+			return err
+		}
+	}
 	consumer.FlushOffsets()
 
 	plugin.ReplyError(0, "")
