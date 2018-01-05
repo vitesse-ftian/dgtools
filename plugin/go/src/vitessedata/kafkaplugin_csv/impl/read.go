@@ -85,7 +85,7 @@ func DoRead() error {
 			plugin.ReplyError(-20, "Consumer Error")
 			return err
 		case msg := <- consumer.Messages():
-			plugin.DbgLog(string(msg.Value))
+			//plugin.DbgLog(string(msg.Value))
 			messages = append(messages, msg.Value)
 			consumer.CommitUpto(msg)
 			
@@ -96,7 +96,7 @@ func DoRead() error {
 					plugin.ReplyError(-20, "Failed to write to deepgreen")
 					return err
 				}
-				
+				plugin.DbgLog("%d rows read", len(messages))
 				messages = nil
 				consumer.FlushOffsets()
 			}
@@ -104,6 +104,7 @@ func DoRead() error {
 		default:
 			elapsed := time.Since(tStart)
 			if elapsed > waitMilliseconds*time.Millisecond {
+				plugin.DbgLog("plugin timed out")
 				running = false
 			}
 		}
@@ -116,6 +117,7 @@ func DoRead() error {
 			plugin.ReplyError(-20, "Failed to write to deepgreen")
 			return err
 		}
+		plugin.DbgLog("%d rows read", len(messages))
 	}
 	consumer.FlushOffsets()
 

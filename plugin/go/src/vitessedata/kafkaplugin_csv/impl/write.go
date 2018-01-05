@@ -81,7 +81,7 @@ func DoWrite() error {
 		var buf bytes.Buffer
 
 		for row := int32(0) ; row < nrow ; row++ {
-			
+			nLines++
 			source := make(map[string]interface{})
 			
 			for col := 0 ; col < ncol ; col++ {
@@ -116,7 +116,7 @@ func DoWrite() error {
 			s, _ := json.Marshal(source)
 			buf.Write(s)
 
-			plugin.DbgLog(buf.String())
+			//plugin.DbgLog(buf.String())
 			// write to kafka
 
 			if nLines % batchSize == 0 {
@@ -133,10 +133,11 @@ func DoWrite() error {
 				return err
 			}	
 
-			plugin.DbgLog("write finish...")
+			plugin.DbgLog("wrote %d rows done...", nrow)
 		}
 	}
 
+	plugin.DbgLog("Total number of rows = %d", nLines)
 	return nil
 }	
 
