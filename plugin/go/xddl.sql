@@ -1,3 +1,22 @@
+DROP EXTERNAL TABLE IF EXISTS bug2;
+CREATE EXTERNAL TABLE bug2
+    (
+        i int,
+        t text
+    )
+LOCATION ('xdrive://localhost:31416/fs/bug2.csv')
+FORMAT 'CSV' (  ESCAPE '$');
+
+
+DROP EXTERNAL TABLE IF EXISTS bug3;
+CREATE EXTERNAL TABLE bug3
+    (
+        i int,
+        t text
+    )
+LOCATION ('xdrive://localhost:31416/myx/bug2.csv')
+FORMAT 'CSV' (  ESCAPE '$');
+
 DROP EXTERNAL TABLE IF EXISTS x1; 
 CREATE EXTERNAL TABLE x1
     (
@@ -165,6 +184,33 @@ CREATE WRITABLE EXTERNAL TABLE esw
 LOCATION ('xdrive://localhost:31416/es/')
 FORMAT 'CSV';
 
+DROP EXTERNAL TABLE IF EXISTS estest;
+CREATE EXTERNAL TABLE estest
+      (
+        _id  text,
+        _type text,
+        _routing text,
+        name text,
+        age int,
+        last_updated bigint
+        )
+LOCATION ('xdrive://localhost:31416/eslocal/')
+FORMAT 'CSV';
+
+DROP EXTERNAL TABLE IF EXISTS estest_write;
+CREATE EXTERNAL TABLE estest_write
+      (
+        _id  text,
+        _type text,
+        _routing text,
+        name text,
+        age int,
+        last_updated bigint
+        )
+LOCATION ('xdrive://localhost:31416/eslocal/')
+FORMAT 'CSV';
+
+
 DROP EXTERNAL TABLE IF EXISTS hbr;
 CREATE EXTERNAL TABLE hbr
 (
@@ -175,3 +221,36 @@ CREATE EXTERNAL TABLE hbr
 )
 LOCATION ('xdrive://localhost:31416/hbase/test')
 FORMAT 'CSV';
+
+DROP EXTERNAL TABLE IF EXISTS bugw;
+CREATE WRITABLE EXTERNAL TABLE bugw
+      (
+        _id  text,
+        _type text,
+        name text,
+        age int,
+        gender text,
+        _routing text
+        )
+LOCATION ('xdrive://localhost:31416/notexist/bigdata#UUID#.csv')
+FORMAT 'CSV';
+
+DROP EXTERNAL TABLE IF EXISTS kafkaw;
+CREATE WRITABLE EXTERNAL TABLE kafkaw
+(
+	id bigint,
+	name text,
+	age int
+)
+LOCATION ('xdrive://localhost:31416/kafka/person')
+FORMAT 'CSV';
+
+DROP EXTERNAL TABLE IF EXISTS kafkar;
+CREATE EXTERNAL TABLE kafkar
+(
+        id bigint,
+        name text,
+        age int
+)
+LOCATION ('xdrive://localhost:31416/kafka/person')
+FORMAT 'CSV';	

@@ -45,3 +45,10 @@ name = "hbase"
 scheme = "hbaseplugin"
 root = "localhost"
 conf = "user=hduser"
+
+[[xdrive.mount]]
+name = "kafka"
+scheme = "kafkaplugin"
+root = "localhost:9092"
+conf = "zookeeper=localhost:2181"
+
