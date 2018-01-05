@@ -109,6 +109,15 @@ CREATE WRITABLE EXTERNAL TABLE xxw
 LOCATION ('xdrive://localhost:31416/myx/x#UUID#.csv') 
 FORMAT 'CSV';
 
+DROP EXTERNAL TABLE IF EXISTS xxpw; 
+CREATE WRITABLE EXTERNAL TABLE xxpw
+    (
+        i int,
+        t text
+    )
+LOCATION ('xdrive://localhost:31416/myxpw/x#UUID#.csv') 
+FORMAT 'CSV';
+
 DROP EXTERNAL TABLE IF EXISTS s3nation;
 CREATE EXTERNAL TABLE s3nation (
     n_nationkey int,
