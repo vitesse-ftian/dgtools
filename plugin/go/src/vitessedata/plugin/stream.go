@@ -20,6 +20,18 @@ import (
 // golang binary.ReadUvarint requires a byte reader.
 var stdin *bufio.Reader = bufio.NewReader(os.Stdin)
 
+func loopread(buf []byte, msgsz int) (int, error) {
+	var sz int
+	for sz = 0; sz < msgsz; {
+		rsz, err := stdin.Read(buf[sz:])
+		if err != nil {
+			return sz, err
+		}
+		sz += rsz
+	}
+	return sz, nil
+}
+
 func DelimRead(pb proto.Message) error {
 	DbgLog("Delim read ... ")
 	msgsz, err := binary.ReadUvarint(stdin)
@@ -30,10 +42,10 @@ func DelimRead(pb proto.Message) error {
 
 	DbgLog("Delim read msg %d bytes ... ", msgsz)
 	buf := make([]byte, msgsz)
-	rsz, err := stdin.Read(buf)
+	rsz, err := loopread(buf, int(msgsz))
 
 	if uint64(rsz) != msgsz {
-		DbgLogIfErr(err, "Delim read data error, msgsz is %d", msgsz)
+		DbgLog("Delim read short read.  msgsz is %d, read %d, err %v.", msgsz, rsz, err)
 		// don't check err, because EOF is a real error here.
 		return fmt.Errorf("delim read short read msg")
 	}
