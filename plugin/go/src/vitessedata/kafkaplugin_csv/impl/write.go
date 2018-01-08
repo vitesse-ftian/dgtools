@@ -14,7 +14,7 @@ import (
 
 const (
 	tSleepSeconds = 5    // Time to pause, in seconds, between batches
-	batchSize     = 5000 // Number of rows per batch
+	batchSize     = 500 // Number of rows per batch
 )
 
 // DoWrite services xdrive write request.  It read a sequence of PluginWriteRequest
@@ -60,7 +60,7 @@ func DoWrite() error {
 	for {
 		var req xdrive.PluginWriteRequest
 		plugin.DelimRead(&req)
-		
+		plugin.DbgLog("Reading from xdrive ...")
 		if req.Rowset == nil {
 			plugin.DbgLog("Done writing")
 			plugin.ReplyWriteError(0, "")
@@ -78,12 +78,12 @@ func DoWrite() error {
 		coldesc := req.Columndesc
 
 		plugin.DbgLog("nrow = %d", nrow)
-		var buf bytes.Buffer
 
 		for row := int32(0) ; row < nrow ; row++ {
 			nLines++
 			source := make(map[string]interface{})
-			
+
+			var buf bytes.Buffer
 			for col := 0 ; col < ncol ; col++ {
 				colname := coldesc[col].Name
 
@@ -130,11 +130,12 @@ func DoWrite() error {
 				Value: valueEncoder,
 			})
 			if err != nil {
+				plugin.DbgLogIfErr(err, "Producer send message failed")
 				return err
 			}	
-
-			plugin.DbgLog("wrote %d rows done...", nrow)
 		}
+		plugin.DbgLog("wrote %d rows done...", nrow)
+		
 	}
 
 	plugin.DbgLog("Total number of rows = %d", nLines)

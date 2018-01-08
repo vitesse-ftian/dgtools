@@ -6,12 +6,13 @@ import (
 	"time"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"vitessedata/plugin"
-	//"github.com/Shopify/sarama"
+//	"github.com/Shopify/sarama"
 	"github.com/wvanbergen/kafka/consumergroup"
+	"github.com/wvanbergen/kazoo-go"
 )
 
 const (
-	waitMilliseconds = 250
+	waitMilliseconds = 1000
 	consumerGroupName = "deepgreen"
 )
 
@@ -49,10 +50,15 @@ func DoRead() error {
         }
 
 
-	zkPeers := strings.Split(zkString, ",")
+//	zkPeers := strings.Split(zkString, ",")
 	
 	config := consumergroup.NewConfig()
-	
+//	config.Offsets.ResetOffsets = true
+//	config.Offsets.Initial = sarama.OffsetNewest
+
+	var zkPeers []string
+	zkPeers, config.Zookeeper.Chroot = kazoo.ParseConnectionString(zkString)
+
 	consumer, consumerErr := consumergroup.JoinConsumerGroup(
 		consumerGroupName,
 		[]string{topic},
@@ -60,6 +66,8 @@ func DoRead() error {
 		config)
 	
 	if consumerErr != nil {
+		plugin.DbgLog("Failed to join consumer group")
+		plugin.ReplyError(-4, "join consumer group error")
 		return consumerErr
 	}
 
@@ -75,7 +83,6 @@ func DoRead() error {
 	var js JsonReader
 	js.Init(req.Filespec, req.Columndesc, req.Columnlist)
 
-
 	var messages [][]byte
 	running := true
 	for ; running ; {
@@ -85,10 +92,13 @@ func DoRead() error {
 			plugin.ReplyError(-20, "Consumer Error")
 			return err
 		case msg := <- consumer.Messages():
+			tStart = time.Now()
+
+			//plugin.DbgLog("message received...")
 			//plugin.DbgLog(string(msg.Value))
 			messages = append(messages, msg.Value)
 			consumer.CommitUpto(msg)
-			
+
 			if len(messages) == 1000 {
 				err = js.processAll(messages)
 				if err != nil {
@@ -117,9 +127,9 @@ func DoRead() error {
 			plugin.ReplyError(-20, "Failed to write to deepgreen")
 			return err
 		}
+		consumer.FlushOffsets()
 		plugin.DbgLog("%d rows read", len(messages))
 	}
-	consumer.FlushOffsets()
 
 	plugin.ReplyError(0, "")
 	return nil
