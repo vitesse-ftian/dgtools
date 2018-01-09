@@ -6,14 +6,13 @@ import (
 	"time"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"vitessedata/plugin"
-	"github.com/Shopify/sarama"
-	cluster "github.com/bsm/sarama-cluster"
-	//"github.com/wvanbergen/kafka/consumergroup"
-	//"github.com/wvanbergen/kazoo-go"
+//	"github.com/Shopify/sarama"
+	"github.com/wvanbergen/kafka/consumergroup"
+	"github.com/wvanbergen/kazoo-go"
 )
 
 const (
-	waitMilliseconds = 5000
+	waitMilliseconds = 1000
 	consumerGroupName = "deepgreen"
 )
 
@@ -23,7 +22,7 @@ func DoRead() error {
 
 	rinfo := plugin.RInfo()
 	ss := strings.Split(rinfo.Rpath, "/")
-	brokerList := ss[0]
+	//brokerList := ss[0]
 	topic = ss[1]
 
 	conf := rinfo.GetConf()
@@ -53,98 +52,85 @@ func DoRead() error {
 
 //	zkPeers := strings.Split(zkString, ",")
 	
-	config := cluster.NewConfig()
-	config.Consumer.Return.Errors = true
-	config.Group.Return.Notifications = true
-	config.Consumer.Offsets.Initial = sarama.OffsetOldest
+	config := consumergroup.NewConfig()
+//	config.Offsets.ResetOffsets = true
+//	config.Offsets.Initial = sarama.OffsetNewest
 
-	plugin.DbgLog("Cluster consumer start...")
-	consumer, err := cluster.NewConsumer(strings.Split(brokerList, ","),
+	var zkPeers []string
+	zkPeers, config.Zookeeper.Chroot = kazoo.ParseConnectionString(zkString)
+
+	consumer, consumerErr := consumergroup.JoinConsumerGroup(
 		consumerGroupName,
 		[]string{topic},
+		zkPeers,
 		config)
-
-	if err != nil {
-		plugin.DbgLogIfErr(err, "Failed to start consumer")
-		plugin.ReplyError(-4, "Failed to start consumer")
-		return err
+	
+	if consumerErr != nil {
+		plugin.DbgLog("Failed to create consumer. Exit gracefully!")
+		//plugin.ReplyError(-4, "join consumer group error")
+		// return no error so that the other consumer can continue to work
+		// bug in kakfa -- there is race between consumers and kafka returns "zk node already exist"
+		plugin.ReplyError(0, "")
+		return nil
 	}
 
-	defer consumer.Close()
 
-
-	// consume errors
-	go func() {
-		for err := range consumer.Errors() {
-			plugin.DbgLog("Error: %s\n", err.Error())
+	defer func() {
+		if closeErr := consumer.Close() ; closeErr != nil {
+			plugin.DbgLogIfErr(closeErr, "consumer close failed")
 		}
 	}()
 
-	// consume notifications
-	go func() {
-		for ntf := range consumer.Notifications() {
-			plugin.DbgLog("Rebalanced: %+v\n", ntf)
-		}
-	}()
-	
-	timeout := make(chan bool, 1)
-	go func() {
-		time.Sleep(waitMilliseconds * time.Millisecond)
-		timeout <- true
-	}()
+	tStart := time.Now()
 
-
-	//tStart := time.Now()
-	
 	var js JsonReader
 	js.Init(req.Filespec, req.Columndesc, req.Columnlist)
 
 	var messages [][]byte
-	firstmsg := true
-
 	running := true
 	for ; running ; {
 		select {
-		case msg, ok := <- consumer.Messages():
-			if ok {
-				//tStart = time.Now()
-				if firstmsg {
-					plugin.DbgLog("message received...")
-					firstmsg = false
-				}
-				//plugin.DbgLog(string(msg.Value))
-				messages = append(messages, msg.Value)
-				consumer.MarkOffset(msg, "")
-				
-				if len(messages) == 1000 {
-					plugin.DbgLog("%d messages write to db", len(messages))
-					err = js.processAll(messages)
-					if err != nil {
-						plugin.DbgLogIfErr(err, "failed to write to deepgreen")
-						plugin.ReplyError(-20, "Failed to write to deepgreen")
-						return err
-					}
-					plugin.DbgLog("%d rows read", len(messages))
-					messages = nil
-					//consumer.FlushOffsets()
-				}
-			}
+		case err := <- consumer.Errors():
+			plugin.DbgLogIfErr(err, "consumer error")
+			plugin.ReplyError(-20, "Consumer Error")
+			return err
+		case msg := <- consumer.Messages():
+			tStart = time.Now()
 
-			case <- timeout:
-			plugin.DbgLog("plugin timed out")
-			running = false
+			//plugin.DbgLog("message received...")
+			//plugin.DbgLog(string(msg.Value))
+			messages = append(messages, msg.Value)
+			consumer.CommitUpto(msg)
+
+			if len(messages) == 1000 {
+				err = js.processAll(messages)
+				if err != nil {
+					plugin.DbgLogIfErr(err, "failed to write to deepgreen")
+					plugin.ReplyError(-20, "Failed to write to deepgreen")
+					return err
+				}
+				plugin.DbgLog("%d rows read", len(messages))
+				messages = nil
+				consumer.FlushOffsets()
+			}
+			
+		default:
+			elapsed := time.Since(tStart)
+			if elapsed > waitMilliseconds*time.Millisecond {
+				plugin.DbgLog("plugin timed out")
+				running = false
+			}
 		}
 	}
 
 	if len(messages) > 0 {
-		plugin.DbgLog("%d messages write to db", len(messages))
 		err = js.processAll(messages)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "failed to write to deepgreen")
 			plugin.ReplyError(-20, "Failed to write to deepgreen")
 			return err
 		}
-//		consumer.FlushOffsets()
+		consumer.FlushOffsets()
 		plugin.DbgLog("%d rows read", len(messages))
 	}
 
