@@ -1,9 +1,9 @@
 [TPCH]
 	DGHost = "localhost"
-	DGPort = 5555
+	DGPort = 5432
 	Db = "tpch1f"
-	Staging = "/data/bench/staging"
-	Scale = 1 
+	Staging = "/home/ftian/oss/data/bench/staging"
+	Scale = 1
 	DDL = "mktab-f.sql" 
 	Ext = "XDR"
 	Orca = 0
