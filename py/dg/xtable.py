@@ -46,6 +46,7 @@ class XTable:
                     idx = int(xy[0])
                     rs.append(self.inputs[idx].alias)
                 elif len(xy) == 2:
+                    idx = int(xy[0])
                     tab = self.inputs[idx].alias
                     colidx = -1
                     col = ''
@@ -62,7 +63,7 @@ class XTable:
                     raise ValueError("sql place holder must be #x# or #x.y#")
             i += 1 
 
-        return " ".join(rs)
+        return "".join(rs)
 
     def build_sql(self): 
         if self.sql != None:
@@ -73,7 +74,7 @@ class XTable:
             self.sql = rsql
         else:
             self.sql = "WITH "
-            self.sql += ",\n".join([t.alias + " as " + t.sql for t in self.inputs])
+            self.sql += ",\n".join([t.alias + " as (" + t.sql + ")" for t in self.inputs])
             self.sql += "\n"
             self.sql += rsql
 
