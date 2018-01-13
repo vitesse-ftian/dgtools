@@ -133,3 +133,25 @@ def fromQuery(conn, qry, alias="", inputs=None):
     xt.explain()
     return xt
 
+def sameData(xt1, xt2):
+    st1 = fromQuery(xt1.conn, "select dg_utils.sha1_checksum(byteain(record_out(#0#.*))) from #0#", inputs = [xt1])
+    st2 = fromQuery(xt2.conn, "select dg_utils.sha1_checksum(byteain(record_out(#0#.*))) from #0#", inputs = [xt2])
+    res1 = st1.execute()
+    res2 = st2.execute()
+    return res1 == res2
+
+if __name__ == '__main__':
+    import dg.conn
+    c1 = dg.conn.Conn("host=localhost dbname=ftian")
+    c2 = dg.conn.Conn("host=localhost dbname=tpch1f")
+    t1 = fromTable(c1, "dg_utils.eachseg")
+    t2 = fromTable(c2, "dg_utils.eachseg")
+    t3 = fromTable(c1, "t")
+    t4 = fromTable(c2, "nation")
+
+    print("Same: {0}\n".format( sameData(t1, t2)))
+    print("Same: {0}\n".format( sameData(t4, t4)))
+    print("Not Same: {0}\n".format( sameData(t1, t3)))
+    print("Not Same: {0}\n".format( sameData(t1, t4)))
+
+
