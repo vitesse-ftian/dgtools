@@ -1,3 +1,5 @@
+import tabulate
+
 class XCol:
     def __init__(self, n, t):
         self.name = n
@@ -91,7 +93,7 @@ class XTable:
                 elif line.startswith(":total_cost"):
                     self.cost = float(line[len(":total_cost") + 1:])
                 elif line.startswith(":plan_rows"):
-                    self.rows = float(line[len(":total_rows") + 1:])
+                    self.rows = float(line[len(":plan_rows") + 1:])
                 elif line.startswith(":plan_width"):
                     self.row_width = float(line[len(":plan_width") + 1:])
                 elif line.startswith(":targetlist"):
@@ -116,6 +118,10 @@ class XTable:
     def execute(self):
         self.build_sql()
         return self.conn.execute(self.sql) 
+
+    def show(self, tablefmt='psql'):
+        res = self.execute()
+        return tabulate.tabulate(res, [col.name for col in self.schema], tablefmt)
 
 def fromTable(conn, tn, alias=""):
     xt = XTable(conn, "select * from " + tn, alias, None)
