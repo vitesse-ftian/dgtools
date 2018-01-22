@@ -165,7 +165,7 @@ CREATE EXTERNAL TABLE esfs
 	_routing text
 	)
 LOCATION ('xdrive://localhost:31416/fs/es.csv')
-FORMAT 'CSV';
+FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS esr;
 CREATE EXTERNAL TABLE esr
@@ -178,7 +178,7 @@ CREATE EXTERNAL TABLE esr
 	_routing text
         )
 LOCATION ('xdrive://localhost:31416/es/')
-FORMAT 'CSV';
+FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS esw;
 CREATE WRITABLE EXTERNAL TABLE esw
@@ -191,7 +191,7 @@ CREATE WRITABLE EXTERNAL TABLE esw
 	_routing text
         )
 LOCATION ('xdrive://localhost:31416/es/')
-FORMAT 'CSV';
+FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS estest;
 CREATE EXTERNAL TABLE estest
@@ -204,7 +204,7 @@ CREATE EXTERNAL TABLE estest
         last_updated bigint
         )
 LOCATION ('xdrive://localhost:31416/eslocal/')
-FORMAT 'CSV';
+FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS estest_write;
 CREATE EXTERNAL TABLE estest_write
@@ -217,7 +217,7 @@ CREATE EXTERNAL TABLE estest_write
         last_updated bigint
         )
 LOCATION ('xdrive://localhost:31416/eslocal/')
-FORMAT 'CSV';
+FORMAT 'SPQ';
 
 
 DROP EXTERNAL TABLE IF EXISTS hbr;
@@ -229,7 +229,7 @@ CREATE EXTERNAL TABLE hbr
         _timestamp bigint
 )
 LOCATION ('xdrive://localhost:31416/hbase/test')
-FORMAT 'CSV';
+FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS bugw;
 CREATE WRITABLE EXTERNAL TABLE bugw
@@ -252,7 +252,7 @@ CREATE WRITABLE EXTERNAL TABLE kafkaw
 	age int
 )
 LOCATION ('xdrive://localhost:31416/kafka/person')
-FORMAT 'CSV';
+FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS kafkar;
 CREATE EXTERNAL TABLE kafkar
@@ -262,4 +262,4 @@ CREATE EXTERNAL TABLE kafkar
         age int
 )
 LOCATION ('xdrive://localhost:31416/kafka/person')
-FORMAT 'CSV';	
+FORMAT 'SPQ';	
