@@ -59,7 +59,7 @@ CREATE EXTERNAL TABLE customer_kafka_read ( C_CUSTKEY     INTEGER ,
                              C_MKTSEGMENT  VARCHAR(10) /*CHAR(10)*/ ,
                              C_COMMENT     VARCHAR(117) )
 LOCATION ('xdrive://localhost:31416/kafka/customer')
-FORMAT 'CSV';
+FORMAT 'SPQ';
 ```
 
 kafka is the mount point name 
@@ -80,7 +80,7 @@ CREATE WRITABLE EXTERNAL TABLE customer_kafka_write ( C_CUSTKEY     INTEGER ,
                              C_MKTSEGMENT  VARCHAR(10) /*CHAR(10)*/,
                              C_COMMENT     VARCHAR(117))
 LOCATION ('xdrive://localhost:31416/kafka/customer')
-FORMAT 'CSV';
+FORMAT 'SPQ';
 ```
 where kafka is the mount point name and customer is the topic in kafka
 
