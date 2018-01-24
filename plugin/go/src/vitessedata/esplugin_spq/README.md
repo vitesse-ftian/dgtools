@@ -57,7 +57,7 @@ CREATE EXTERNAL TABLE esr
         last_updated bigint
         )
 LOCATION ('xdrive://localhost:31416/es/')
-FORMAT 'CSV';
+FORMAT 'SPQ';
 ```
 
 * Column \_id, \_type and \_routing are mandatory.
@@ -141,7 +141,7 @@ CREATE WRITABLE EXTERNAL TABLE esw
         gender text
         )
 LOCATION ('xdrive://localhost:31416/es/')
-FORMAT 'CSV';
+FORMAT 'SPQ';
 ```
 * Column \_id must be a non-empty
 
