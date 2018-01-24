@@ -38,7 +38,7 @@ LOCATION ('xdrive://localhost:31416/hbase/hbasetablename')FORMAT 'SPQ';
 
 The columns with underscore such as _row, _column, _value, _timestamp are mandatory fields and data type must be followed from the table shown above.  They are direct mapped to hbase table. 
 
-** Note:  Deepgreen uses text instead of byte array which is different from hbase.  **
+**Note:  Deepgreen uses text instead of byte array which is different from hbase.**
 
 Hbase table name are specified in the CREATE TABLE SQL statement.
 
