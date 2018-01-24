@@ -9,7 +9,7 @@ Setting of xdrive.toml
 setup the mount point in xdrive.toml as below,
 
 ```
-\# kafka mount point
+# kafka mount point
 [[xdrive.mount]]
 name = "kafka"
 scheme = "kafkaplugin"
@@ -81,9 +81,8 @@ CREATE WRITABLE EXTERNAL TABLE customer_kafka_write ( C_CUSTKEY     INTEGER ,
                              C_COMMENT     VARCHAR(117))
 LOCATION ('xdrive://localhost:31416/kafka/customer')
 FORMAT 'CSV';
-kafka is the mount point name
-customer is the topic in kafka
 ```
+where kafka is the mount point name and customer is the topic in kafka
 
 
 Use Case
@@ -112,7 +111,11 @@ CREATE TABLE customer_dest ( C_CUSTKEY     INTEGER ,
                              C_COMMENT     VARCHAR(117));
 ```
  
-At this point, you should be able to run a quick query to verify this is working: psql template1 -c "SELECT * FROM customer_kafka_read", which should run but return zero rows of output, since the Kafka topic is empty at this point.
+At this point, you should be able to run a quick query to verify this is working: 
+
+	% psql template1 -c "SELECT * FROM customer_kafka_read"
+
+, which should run but return zero rows of output, since the Kafka topic is empty at this point.
 
 If all is well, you can start a periodic load there. For the purposes of this demo, just run the query to load the table every five seconds: 
 
