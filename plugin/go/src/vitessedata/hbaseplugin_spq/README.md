@@ -109,6 +109,7 @@ substring,eq,abc
 
 Parameter name-value pair of the hbase query
 Here is the list of parameters,
+
 | Parameter name | Parameter value | Note |
 | -------------- | --------------- | ---- |
 | column | column_family:column_name,  e.g. cf:a | Multiple columns can be specified by having multiple column name-value pairs.  e.g. column=cf:a&column=cf:b |
