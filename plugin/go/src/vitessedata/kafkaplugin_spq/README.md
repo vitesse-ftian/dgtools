@@ -126,7 +126,7 @@ If all is well, you can start a periodic load there. For the purposes of this de
 In a separate terminal window, also logged into the deepgreen master host, as gpadmin, start the following command so you're able to track the progress of the load from Kafka: 
 
 ```
-while $(true) ; do psql template1 -c "SELECT COUNT(\*) FROM customer_dest" ; sleep 5 ; done
+while $(true) ; do psql template1 -c "SELECT COUNT(*) FROM customer_dest" ; sleep 5 ; done
 ```
 
 In a separate terminal window, start to write data from writable external table customer_kafka_write to Kafka: 
