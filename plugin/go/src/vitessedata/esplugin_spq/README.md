@@ -76,9 +76,7 @@ Parameters allowed in the query.
 
 | Name  | Description |
 |-------|-------------|
-| q  | The query string (maps to the query_string query, seeQuery String Query for more details). 
-
-See more: https://www.elastic.co/guide/en/elasticsearch/reference/5.6/query-dsl-query-string-query.html |
+| q  | The query string (maps to the query_string query, seeQuery String Query for more details).  See more: https://www.elastic.co/guide/en/elasticsearch/reference/5.6/query-dsl-query-string-query.html |
 | df | The default field to use when no field prefix is defined within the query. |
 | analyzer | The analyzer name to be used when analyzing the query string. |
 | analyze_wildcard | Should wildcard and prefix queries be analyzed or not. Defaults to false. |
