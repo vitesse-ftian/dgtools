@@ -65,7 +65,7 @@ FORMAT 'SPQ';
 Query SQL for query elasticsearch via deepgreen
 The query SQL contains the elasticsearch query string embedded with dg\_utils.xdrive\_query($$\*$$).  See the example below:
 ```
-SELECT name, email from esr where dg_utils.xdrive_query($$q=name:eric lam +email:eric*&_type=external&routing=offline$$)
+SELECT name, email from esr where dg_utils.xdrive_query($$q=name:eric lam +email:eric\*&\_type=external&routing=offline$$);
 
 ```
 See the link below for search uri request parameters.
