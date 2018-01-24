@@ -122,8 +122,8 @@ Here is the list of parameters,
 | ColumnPaginationFilter | limit,offset | e.g.ColumnPaginationFilter=10,100 |
 | ColumnPrefixFilter | prefix | ColumnPrefixFilter=prefix |
 | ColumnRangeFilter | mincol,maxcol,minColumnInclusive,maxColumnInclusive | e.g ColumnRangeFilter=c1,c5,true,true |
-| DependentColumnFilter | For binary or string filter, columnfamily:qualifier,[binary|long|binaryprefix|substring],[lt|le|eq|ne|ge|gt],filterstring or For bitwise, columnfamily:qualifier,bits,[and|or|xor],filterstring | e.g.  DependentColumnFilter=cf:a,substring,eq,apple  |
-| FamilyFilter | [binary|long|binaryprefix|substring],[lt|le|eq|ne|ge|gt],filterstring or for bitwise, bits,[and|or|xor],filterstring | FamilyFilter=binary,ne,filter |
+| DependentColumnFilter | For binary or string filter, columnfamily:qualifier,[binary\|long\|binaryprefix\|substring],[lt\|le\|eq\|ne\|ge\|gt],filterstring or For bitwise, columnfamily:qualifier,bits,[and\|or\|xor],filterstring | e.g.  DependentColumnFilter=cf:a,substring,eq,apple  |
+| FamilyFilter | [binary\|long\|binaryprefix\|substring],[lt\|le\|eq\|ne\|ge\|gt],filterstring or for bitwise, bits,[and\|or\|xor],filterstring | FamilyFilter=binary,ne,filter |
 | FirstKeyOnlyFilter | bool | FirstKeyOnlyFilter=true | 
 | FirstKeyValueMatchingQualifiersFilter | list of qualifier q1,q2,...,qN | FirstKeyValueMatchingQualifiersFilter=q1,q2,q3 |
 | InclusiveStopFilter | key of stoprow | InclusiveStopFilter=stoprow | 
@@ -131,14 +131,14 @@ Here is the list of parameters,
 | MultipleColumnPrefixFilter | list of prefixes prefix1,prefix2,...,prefixN | MultipleColumnPrefixFilter=p1,p2,p3 |
 | PageFilter | pagesize integer | PageFilter=20 |
 | PrefixFilter | prefix | PrefixFilter=prefix | 
-| QualifierFilter | [binary|long|binaryprefix|substring],[lt|le|eq|ne|ge|gt],filterstring or for bitwise, bits,[and|or|xor],filterstring | QualifierFilter=binary,eq,qualifier  |
+| QualifierFilter | [binary\|long\|binaryprefix\|substring],[lt\|le\|eq\|ne\|ge\|gt],filterstring or for bitwise, bits,[and\|or\|xor],filterstring | QualifierFilter=binary,eq,qualifier  |
 | RandomRowFilter | float | RandomRowFilter=0.9 |
-| RowFilter | [binary|long|binaryprefix|substring],[lt|le|eq|ne|ge|gt],filterstring or for bitwise, bits,[and|or|xor],filterstring | RowFilter=bitwise,and,abc |
-| SingleColumnValueFilter | For binary or string filter, columnfamily:qualifier,[binary|long|binaryprefix|substring],[lt|le|eq|ne|ge|gt],filterstring or For bitwise, columnfamily:qualifier,bits,[and|or|xor],filterstring | e.g.  SingleColumnValueFilter=cf:a,substring,eq,apple |
-| SingleColumnValueExcludeFilter | For binary or string filter, columnfamily:qualifier,[binary|long|binaryprefix|substring],[lt|le|eq|ne|ge|gt],filterstring or For bitwise, columnfamily:qualifier,bits,[and|or|xor],filterstring | e.g.  SingleColumnValueExcludeFilter=cf:a,substring,eq,apple |
+| RowFilter | [binary\|long\|binaryprefix\|substring],[lt\|le\|eq\|ne\|ge\|gt],filterstring or for bitwise, bits,[and\|or\|xor],filterstring | RowFilter=bitwise,and,abc |
+| SingleColumnValueFilter | For binary or string filter, columnfamily:qualifier,[binary\|long\|binaryprefix\|substring],[lt\|le\|eq\|ne\|ge\|gt],filterstring or For bitwise, columnfamily:qualifier,bits,[and\|or\|xor],filterstring | e.g.  SingleColumnValueFilter=cf:a,substring,eq,apple |
+| SingleColumnValueExcludeFilter | For binary or string filter, columnfamily:qualifier,[binary\|long\|binaryprefix\|substring],[lt\|le\|eq\|ne\|ge\|gt],filterstring or For bitwise, columnfamily:qualifier,bits,[and\|or\|xor],filterstring | e.g.  SingleColumnValueExcludeFilter=cf:a,substring,eq,apple |
 | SkipFilter | | Not supported yet |
 | TimestampsFilter | list of timestamps (int64) ts1,ts2,...,tsN | TimestampsFilter=123,456,789 |
-| ValueFilter | [binary|long|binaryprefix|substring],[lt|le|eq|ne|ge|gt],filterstring or for bitwise, bits,[and|or|xor],filterstring | ValueFilter=bitwise,and,abc |
+| ValueFilter | [binary\|long\|binaryprefix\|substring],[lt\|le\|eq\|ne\|ge\|gt],filterstring or for bitwise, bits,[and\|or\|xor],filterstring | ValueFilter=bitwise,and,abc |
 | WhileMatchFilter | | Not supported yet |
 | FuzzyRowFilter | | Not supported yet |
 | RowRangeFilter | startrow, stoprow, startrowinclusive, stoprowinclusive | Mulitple row ranges can be specified by multiple name-value pairs.  e.g RowRangeFilter=start1,stop1,false,false&RowRangeFilter=start2,stop2,false,true |
