@@ -36,14 +36,15 @@ func TestSetup(t *testing.T) {
 			return
 		}
 
-		tomlf := Dir() + "/gen/xdrive.toml"
+		tomlf := Dir() + "/gen/xdrive2.toml"
 		xf, err := os.Create(tomlf)
 		if err != nil {
-			t.Errorf("Cannot create xdrive.toml file.  error: %s", err.Error())
+			t.Errorf("Cannot create xdrive2.toml file.  error: %s", err.Error())
 		}
 
-		fmt.Fprintf(xf, "[xdrive]\n")
+		fmt.Fprintf(xf, "[xdrive2]\n")
 		fmt.Fprintf(xf, "dir = \"%s\"\n", conf.Staging)
+		fmt.Fprintf(xf, "pluginpath = [\"%s/plugin\"]\n", conf.Staging)
 		fmt.Fprintf(xf, "host = [")
 		prefix := " "
 		for k, _ := range seghosts {
@@ -52,11 +53,13 @@ func TestSetup(t *testing.T) {
 		}
 		fmt.Fprintf(xf, " ]\n\n")
 
-		fmt.Fprintf(xf, "[[xdrive.mount]]\n")
+		fmt.Fprintf(xf, "[[xdrive2.mount]]\n")
 		fmt.Fprintf(xf, "name = \"tpch-scale-%d\"\n", conf.Scale)
-		fmt.Fprintf(xf, "scheme = \"nfs\"\n")
-		fmt.Fprintf(xf, "root = \"./tpch/scale-%d\"\n", conf.Scale)
-		fmt.Fprintf(xf, "conf = \"\"\n")
+		fmt.Fprintf(xf, "argv = [\"xdr_fs\", \"csv\", \"./tpch/scale-%d\"]\n", conf.Scale)
+
+		fmt.Fprintf(xf, "\n[[xdrive2.mount]]\n")
+		fmt.Fprintf(xf, "name = \"xdrive_pipe\"\n")
+		fmt.Fprintf(xf, "argv = [\"xdrive_pipe\"]\n")
 
 		xf.Close()
 
@@ -179,11 +182,10 @@ func TestSetup(t *testing.T) {
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		partsql := fmt.Sprintf(part, conf.Ext, locallf("part"))
-		err = conn.Execute(partsql) 
+		err = conn.Execute(partsql)
 		if err != nil {
 			t.Errorf("Cannot create ext table part.   DDS is %s", partsql)
 		}
-		
 
 		// supplier
 		supplier := `CREATE EXTERNAL TABLE %s.SUPPLIER ( S_SUPPKEY     INTEGER, 
