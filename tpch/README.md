@@ -27,8 +27,8 @@ To run the benchmark, edit bench.toml, source ./env.sh, then
 ```
 make gendata
 make ddl
-xdrctl deploy gen/xdrive.toml
-xdrctl start gen/xdrive.toml
+xdrctl deploy gen/xdrive2.toml
+xdrctl start gen/xdrive2.toml
 make load
 make run
 ```
