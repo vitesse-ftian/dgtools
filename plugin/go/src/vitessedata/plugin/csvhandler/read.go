@@ -94,16 +94,13 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 	h.RowCnt += len(records)
 
 	// Build reply message.   Errcode initialized to 0, which is what we want.
-	var dataReply xdrive.PluginDataReply
-	// dataReply.Errcode = 0
-	dataReply.Rowset = new(xdrive.XRowSet)
-	dataReply.Rowset.Columns = make([]*xdrive.XCol, h.ncol)
+	coldatareply := make([]xdrive.XColDataReply, h.ncol)
 
 	plugin.DbgLog("Building Rowset, %d rows, %d cols", len(records), h.ncol)
 
 	for col := 0; col < h.ncol; col++ {
 		xcol := new(xdrive.XCol)
-		dataReply.Rowset.Columns[col] = xcol
+		coldatareply[col].Data = xcol
 		xcol.Colname = h.collist[col]
 		xcol.Nrow = int32(len(records))
 		xcol.Nullmap = make([]bool, xcol.Nrow)
@@ -126,7 +123,7 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 					xcol.Nullmap[idx] = false
 					iv, err := strconv.Atoi(val)
 					if err != nil {
-						plugin.ReplyError(-100, "Invalid int data "+val)
+						plugin.DataReply(-100, "Invalid int data "+val)
 						return err
 					}
 					xcol.I32Data[idx] = int32(iv)
@@ -147,7 +144,7 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 					xcol.Nullmap[idx] = false
 					xcol.I64Data[idx], err = strconv.ParseInt(val, 0, 64)
 					if err != nil {
-						plugin.ReplyError(-100, "Invalid int data "+val)
+						plugin.DataReply(-100, "Invalid int data "+val)
 						return err
 					}
 				}
@@ -167,7 +164,7 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 					xcol.Nullmap[idx] = false
 					fv, err := strconv.ParseFloat(val, 32)
 					if err != nil {
-						plugin.ReplyError(-100, "Invalid float data "+val)
+						plugin.DataReply(-100, "Invalid float data "+val)
 						return err
 					}
 					xcol.F32Data[idx] = float32(fv)
@@ -188,7 +185,7 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 					xcol.Nullmap[idx] = false
 					xcol.F64Data[idx], err = strconv.ParseFloat(val, 64)
 					if err != nil {
-						plugin.ReplyError(-100, "Invalid float data "+val)
+						plugin.DataReply(-100, "Invalid float data "+val)
 						return err
 					}
 				}
@@ -216,7 +213,14 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 		}
 	}
 
+	
+	for col := 0; col < h.ncol; col++ {
+		err = plugin.ReplyXColData(coldatareply[col])
+		if err != nil {
+			plugin.DbgLogIfErr(err, "write data column failed");
+			return err
+		}
+	}
 	plugin.DbgLog("Done Building Rowset, %d rows, %d cols", len(records), h.ncol)
-	err = plugin.DelimWrite(&dataReply)
-	return err
+	return nil
 }
