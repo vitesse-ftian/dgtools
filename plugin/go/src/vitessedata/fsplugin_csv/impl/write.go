@@ -18,7 +18,7 @@ var wf *os.File
 var tmpfn, path string
 var csvwriter *csv.Writer
 
-func WriteRequest(req xdrive.WriteRequest) error {
+func WriteRequest(req xdrive.WriteRequest, rootpath string) error {
 	wreq = req
 	ncol = len(wreq.Columndesc)
 	cols = make([]xdrive.XCol, ncol)
@@ -34,7 +34,9 @@ func WriteRequest(req xdrive.WriteRequest) error {
 	// transaction (all or nothing) semantics.
 	//
 	
-	path, err := plugin.WritePath(req)
+	path, err := plugin.WritePath(req, rootpath)
+	plugin.DbgLog("path %s", path)
+
 	if err != nil {
 		plugin.DbgLogIfErr(err, "write path failed")
 		return err

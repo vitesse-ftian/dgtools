@@ -9,7 +9,9 @@ program, and send requests to stdin, and read reply from stdout.
 package main
 
 import (
+	"os"
 	"fmt"
+	"path/filepath"
 	"vitessedata/fsplugin_csv/impl"
 	"vitessedata/plugin"
 )
@@ -19,18 +21,27 @@ func main() {
 	defer plugin.StopDbgLog()
 
 	// check argc
-
+	if len(os.Args) != 2 {
+		plugin.DbgLog("Wrong arguments.  Usage: fsplugin_csv rootpath")
+		os.Exit(1)
+	}
+	rootpath := os.Args[1]
+	plugin.DbgLog("rootpath = %s", rootpath)
+	if ! filepath.IsAbs(rootpath) {
+		plugin.DbgLog("rootpath must be an absolute path %s", rootpath)
+		os.Exit(1)
+	}
 
 	err := plugin.OpenXdriveIO()
 	if err != nil {
 		plugin.DbgLogIfErr(err, "open xdrive IO failed")
-		return
+		os.Exit(1)
 	}
 
 	opspec, err := plugin.GetOpSpec()
 	if err != nil {
 		plugin.DbgLogIfErr(err, "read request failed.")
-		return
+		os.Exit(1)
 	}
 
 	// The first message from xdrive will always be an RmgrInfo.  Scheme can pass configurations
@@ -50,7 +61,7 @@ func main() {
 			return
 		}
 		
-		err = impl.DoRead(rreq)
+		err = impl.DoRead(rreq, rootpath)
 	case "sample":
 		err := plugin.ReplyOpStatus(0, "")
 		if err != nil {
@@ -90,7 +101,7 @@ func main() {
                         return
                 }
 
-		err = impl.WriteRequest(wreq)
+		err = impl.WriteRequest(wreq, rootpath)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "impl write request failed")
 			return

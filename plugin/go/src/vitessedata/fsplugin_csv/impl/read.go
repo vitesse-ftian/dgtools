@@ -2,6 +2,7 @@ package impl
 
 import (
 	"fmt"
+	"strings"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"hash/fnv"
 	"os"
@@ -32,7 +33,7 @@ func inject_fault(fault string) error {
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
 // trivial (Errcode == 0, but there is no data) message.
-func DoRead(req xdrive.ReadRequest) error {
+func DoRead(req xdrive.ReadRequest, rootpath string) error {
 
 	// Check/validate frag info.  Again, not necessary, as xdriver server should always
 	// fill in good value.
@@ -68,7 +69,10 @@ func DoRead(req xdrive.ReadRequest) error {
 	}
 
 	// Glob:
-	path := req.Filespec.Path
+        idx := strings.Index(req.Filespec.Path[1:], "/")
+	path := req.Filespec.Path[idx+1:]
+	path = filepath.Join(rootpath, path)
+	plugin.DbgLog("path %s", path)
 	flist, err := filepath.Glob(path)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "Glob failed.  %s", path)
