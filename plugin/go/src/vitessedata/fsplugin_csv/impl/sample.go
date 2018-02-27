@@ -17,18 +17,13 @@ import (
 // the first Nrow data and return it.   For real impl, please refer to a good
 // alogirthm, like reservoir sampling.
 //
-func DoSample() error {
-	var req xdrive.SampleRequest
-	err := plugin.DelimRead(&req)
-	if err != nil {
-		return err
-	}
+func DoSample(req xdrive.SampleRequest) error {
 
 	// Glob:
-	rinfo := plugin.RInfo()
-	flist, err := filepath.Glob(rinfo.Rpath)
+	path := req.Filespec.Path
+	flist, err := filepath.Glob(path)
 	if err != nil {
-		plugin.ReplyError(-2, "rmgr glob failed: "+err.Error())
+		plugin.DataReply(-2, "rmgr glob failed: "+err.Error())
 		return err
 	}
 
@@ -66,17 +61,17 @@ func DoSample() error {
 
 		file, err := os.Open(f)
 		if err != nil {
-			plugin.ReplyError(-10, "Cannot open file "+f)
+			plugin.DataReply(-10, "Cannot open file "+f)
 			return err
 		}
 		err = csvh.ProcessEachFile(file)
 		if err != nil {
-			plugin.ReplyError(-20, "CSV file "+f+" has invalid data")
+			plugin.DataReply(-20, "CSV file "+f+" has invalid data")
 			return err
 		}
 	}
 
 	// Done!   Fill in an empty reply, indicating end of stream.
-	plugin.ReplyError(0, "")
+	plugin.DataReply(0, "")
 	return nil
 }

@@ -32,19 +32,13 @@ func inject_fault(fault string) error {
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
 // trivial (Errcode == 0, but there is no data) message.
-func DoRead() error {
-	var req xdrive.ReadRequest
-	err := plugin.DelimRead(&req)
-	if err != nil {
-		plugin.DbgLogIfErr(err, "Delim read req failed.")
-		return err
-	}
+func DoRead(req xdrive.ReadRequest) error {
 
 	// Check/validate frag info.  Again, not necessary, as xdriver server should always
 	// fill in good value.
 	if req.FragCnt <= 0 || req.FragId < 0 || req.FragId >= req.FragCnt {
 		plugin.DbgLog("Invalid read req %v", req)
-		plugin.ReplyError(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
+		plugin.DataReply(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
 		return fmt.Errorf("Invalid read request")
 	}
 
@@ -67,18 +61,18 @@ func DoRead() error {
 	}
 
 	if fault != "" {
-		err = inject_fault(fault)
+		err := inject_fault(fault)
 		if err != nil {
 			return err
 		}
 	}
 
 	// Glob:
-	rinfo := plugin.RInfo()
-	flist, err := filepath.Glob(rinfo.Rpath)
+	path := req.Filespec.Path
+	flist, err := filepath.Glob(path)
 	if err != nil {
-		plugin.DbgLogIfErr(err, "Glob failed.  Rinfo %v", *rinfo)
-		plugin.ReplyError(-2, "rmgr glob failed: "+err.Error())
+		plugin.DbgLogIfErr(err, "Glob failed.  %s", path)
+		plugin.DataReply(-2, "rmgr glob failed: "+err.Error())
 		return err
 	}
 
@@ -107,7 +101,7 @@ func DoRead() error {
 		}
 	}
 
-	plugin.DbgLog("fsplugin: path %s, frag (%d, %d) globed %v", rinfo.Rpath, req.FragId, req.FragCnt, myflist)
+	plugin.DbgLog("fsplugin: path %s, frag (%d, %d) globed %v", path, req.FragId, req.FragCnt, myflist)
 
 	// Csv Handler.
 	var csvh csvhandler.CsvReader
@@ -118,7 +112,7 @@ func DoRead() error {
 		file, err := os.Open(f)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "Open csv file %s failed.", f)
-			plugin.ReplyError(-10, "Cannot open file "+f)
+			plugin.DataReply(-10, "Cannot open file "+f)
 			return err
 		}
 
@@ -126,12 +120,12 @@ func DoRead() error {
 		err = csvh.ProcessEachFile(file)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "Parse csv file %s failed.", f)
-			plugin.ReplyError(-20, "CSV file "+f+" has invalid data")
+			plugin.DataReply(-20, "CSV file "+f+" has invalid data")
 			return err
 		}
 	}
 
 	// Done!   Fill in an empty reply, indicating end of stream.
-	plugin.ReplyError(0, "")
+	plugin.DataReply(0, "")
 	return nil
 }
