@@ -2,14 +2,17 @@ package plugin
 
 import (
         "fmt"
+	"path/filepath"
 	"github.com/satori/go.uuid"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"strconv"
 	"strings"
 	"os"
+//	"net"
 )
 
 var g_xdrfile *os.File
+//var g_conn net.Conn
 
 func XdriveFd() (int, error) {
 	fd := os.Getenv("XDRIVE_FD");
@@ -18,12 +21,18 @@ func XdriveFd() (int, error) {
 
 func OpenXdriveIO() error {
 	fdstr := os.Getenv("XDRIVE_FD");
+	if len(fdstr) == 0 {
+		return fmt.Errorf("XDRIVE_FD is empty")
+	}
+
 	fd, err := strconv.Atoi(fdstr);
 	if err != nil {
 		return err
 	}
-	g_xdrfile = os.NewFile(uintptr(fd), "pipe")
-	return nil
+	g_xdrfile = os.NewFile(uintptr(fd), "tcp")
+	//g_conn, err = net.FileConn(g_xdrfile)
+	
+	return err
 }
 
 func ReplyOpStatus(errcode int32, errmsg string) error {
@@ -48,8 +57,10 @@ func WriteReply(errcode int32, errmsg string) error {
 	return xdrive.ProtostreamWrite(g_xdrfile, &reply)
 }
 
-func WritePath(req xdrive.WriteRequest) (string, error) {
-        str := req.Filespec.Path
+func WritePath(req xdrive.WriteRequest, rootpath string) (string, error) {
+        idx := strings.Index(req.Filespec.Path[1:], "/")
+	str := req.Filespec.Path[idx+1:]
+	str = filepath.Join(rootpath, str)
         str = strings.Replace(str, "#SEGCOUNT#", strconv.Itoa(int(req.FragCnt)), -1)
         path := strings.Replace(str, "#SEGID#", strconv.Itoa(int(req.FragId)), -1)
         path = strings.Replace(path, "#UUID#", fmt.Sprintf("%s", uuid.NewV4()), -1)
