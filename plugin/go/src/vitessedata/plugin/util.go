@@ -35,10 +35,11 @@ func OpenXdriveIO() error {
 	return err
 }
 
-func ReplyOpStatus(errcode int32, errmsg string) error {
+func ReplyOpStatus(errcode int32, errmsg string, flag int32) error {
 	var status xdrive.OpStatus
 	status.Errcode = errcode
 	status.Errmsg = errmsg
+	status.Flag = flag
 	return xdrive.ProtostreamWrite(g_xdrfile, &status)
 }
 

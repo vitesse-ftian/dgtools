@@ -49,7 +49,8 @@ func main() {
 	plugin.DbgLog("Starting read op spec...\n")
 	switch opspec.GetOp() {
 	case "read":
-		err := plugin.ReplyOpStatus(0, "")
+		// OpStatus set flag to 1 to enable XCol protocol
+		err := plugin.ReplyOpStatus(0, "", 1)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "write op status failed")
 			return
@@ -63,7 +64,7 @@ func main() {
 		
 		err = impl.DoRead(rreq, rootpath)
 	case "sample":
-		err := plugin.ReplyOpStatus(0, "")
+		err := plugin.ReplyOpStatus(0, "", 1)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "write op status failed")
 			return
@@ -76,7 +77,7 @@ func main() {
                 }
 		err = impl.DoSample(req)
 	case "size_meta":
-		err := plugin.ReplyOpStatus(0, "")
+		err := plugin.ReplyOpStatus(0, "", 1)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "write op status failed")
 			return
@@ -89,7 +90,7 @@ func main() {
                 }
 		err = impl.DoSizeMeta(req)
 	case "write":
-		err := plugin.ReplyOpStatus(0, "")
+		err := plugin.ReplyOpStatus(0, "", 1)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "write op status failed")
 			return

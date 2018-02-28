@@ -130,6 +130,13 @@ func DoRead(req xdrive.ReadRequest, rootpath string) error {
 	}
 
 	// Done!   Fill in an empty reply, indicating end of stream.
-	plugin.DataReply(0, "")
+	var col xdrive.XColDataReply
+	err = plugin.ReplyXColData(col)
+	//err = plugin.DataReply(0, "")
+	if err != nil {
+		plugin.DbgLogIfErr(err, "DataReply failed.")
+		return err
+	}
+
 	return nil
 }
