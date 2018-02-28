@@ -15,7 +15,7 @@ var cols []xdrive.XCol
 var coldesc []xdrive.ColumnDesc
 var nextcol int
 var wf *os.File
-var tmpfn, path string
+var tmpfn, fnpath string
 var csvwriter *csv.Writer
 
 func WriteRequest(req xdrive.WriteRequest, rootpath string) error {
@@ -35,14 +35,15 @@ func WriteRequest(req xdrive.WriteRequest, rootpath string) error {
 	//
 	
 	path, err := plugin.WritePath(req, rootpath)
-	plugin.DbgLog("path %s", path)
+	fnpath = path
+	plugin.DbgLog("path %s", fnpath)
 
 	if err != nil {
 		plugin.DbgLogIfErr(err, "write path failed")
 		return err
 	}
 
-	tmpfn = path + ".part"
+	tmpfn = fnpath + ".part"
 	wf, err = os.Create(tmpfn)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "Cannot open file to write: "+path)
@@ -62,8 +63,8 @@ func DoWriteEnd() error {
 		if wf != nil {
 			wf.Close()
 		}
-		plugin.DbgLog("OK.  Close writer, then rename %s -> %s.", tmpfn, path)
-		os.Rename(tmpfn, path)
+		plugin.DbgLog("OK.  Close writer, then rename %s -> %s.", tmpfn, fnpath)
+		os.Rename(tmpfn, fnpath)
 		return nil
 	} else {
 		if wf != nil {
