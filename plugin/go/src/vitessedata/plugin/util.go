@@ -11,8 +11,11 @@ import (
 //	"net"
 )
 
+const OPSTATUS_FLAG_XCOL int32 = 1
+
 var g_xdrfile *os.File
 //var g_conn net.Conn
+
 
 func XdriveFd() (int, error) {
 	fd := os.Getenv("XDRIVE_FD");
