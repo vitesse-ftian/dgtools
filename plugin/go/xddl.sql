@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE bug2
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/fs/bug2.csv')
+LOCATION ('xdrive://localhost:50051/fs/bug2.csv')
 FORMAT 'CSV' (  ESCAPE '$');
 
 
@@ -14,7 +14,7 @@ CREATE EXTERNAL TABLE bug3
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/myx/bug2.csv')
+LOCATION ('xdrive://localhost:50051/myx/bug2.csv')
 FORMAT 'CSV' (  ESCAPE '$');
 
 DROP EXTERNAL TABLE IF EXISTS x1; 
@@ -23,7 +23,7 @@ CREATE EXTERNAL TABLE x1
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/fs/x1.csv') 
+LOCATION ('xdrive://localhost:50051/fs/x1.csv') 
 FORMAT 'CSV';
 
 DROP EXTERNAL TABLE IF EXISTS xx1; 
@@ -32,7 +32,7 @@ CREATE EXTERNAL TABLE xx1
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/myx/x1.csv') 
+LOCATION ('xdrive://localhost:50051/myx/x1.csv') 
 FORMAT 'CSV';
 
 DROP EXTERNAL TABLE IF EXISTS numbug; 
@@ -40,7 +40,7 @@ CREATE EXTERNAL TABLE numbug
     (
 		n numeric
     )
-LOCATION ('xdrive://localhost:31416/fs/num.csv') 
+LOCATION ('xdrive://localhost:50051/fs/num.csv') 
 FORMAT 'CSV';
 
 DROP EXTERNAL TABLE IF EXISTS numbug2; 
@@ -48,7 +48,7 @@ CREATE EXTERNAL TABLE numbug2
     (
 		n numeric
     )
-LOCATION ('xdrive://localhost:31416/myx/num.csv') 
+LOCATION ('xdrive://localhost:50051/myx/num.csv') 
 FORMAT 'CSV';
 
 
@@ -59,7 +59,7 @@ CREATE EXTERNAL TABLE xx1exec
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/myexec/x1.csv') 
+LOCATION ('xdrive://localhost:50051/myexec/x1.csv') 
 FORMAT 'CSV';
 
 
@@ -69,7 +69,7 @@ CREATE EXTERNAL TABLE xx2
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/myx/x?.csv') 
+LOCATION ('xdrive://localhost:50051/myx/x?.csv') 
 FORMAT 'CSV';
 
 DROP EXTERNAL TABLE IF EXISTS xx2exec; 
@@ -78,7 +78,7 @@ CREATE EXTERNAL TABLE xx2exec
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/myexec/x?.csv') 
+LOCATION ('xdrive://localhost:50051/myexec/x?.csv') 
 FORMAT 'CSV';
 
 
@@ -88,7 +88,7 @@ CREATE EXTERNAL TABLE x3
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/fs/x*.csv') 
+LOCATION ('xdrive://localhost:50051/fs/x*.csv') 
 FORMAT 'CSV';
 
 DROP EXTERNAL TABLE IF EXISTS xx3; 
@@ -97,7 +97,7 @@ CREATE EXTERNAL TABLE xx3
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/myx/x*.csv') 
+LOCATION ('xdrive://localhost:50051/myx/x*.csv') 
 FORMAT 'CSV';
 
 DROP EXTERNAL TABLE IF EXISTS xxw; 
@@ -106,7 +106,7 @@ CREATE WRITABLE EXTERNAL TABLE xxw
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/myx/x#UUID#.csv') 
+LOCATION ('xdrive://localhost:50051/myx/x#UUID#.csv') 
 FORMAT 'CSV';
 
 DROP EXTERNAL TABLE IF EXISTS xxpw; 
@@ -115,7 +115,7 @@ CREATE WRITABLE EXTERNAL TABLE xxpw
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/myxpw/x#UUID#.csv') 
+LOCATION ('xdrive://localhost:50051/myxpw/x#UUID#.csv') 
 FORMAT 'CSV';
 
 DROP EXTERNAL TABLE IF EXISTS s3nation;
@@ -124,7 +124,7 @@ CREATE EXTERNAL TABLE s3nation (
     n_name text,
     n_regionkey int,
     n_comment text)
-LOCATION('xdrive://localhost:31416/tpch1fs3/csv/nation.tbl')
+LOCATION('xdrive://localhost:50051/tpch1fs3/csv/nation.tbl')
 FORMAT 'CSV' (delimiter '|');
 
 DROP EXTERNAL TABLE IF EXISTS emptys3nation;
@@ -133,7 +133,7 @@ CREATE EXTERNAL TABLE emptys3nation (
     n_name text,
     n_regionkey int,
     n_comment text)
-LOCATION('xdrive://localhost:31416/emptys3/csv/nation.tbl')
+LOCATION('xdrive://localhost:50051/emptys3/csv/nation.tbl')
 FORMAT 'CSV' (delimiter '|');
 
 DROP EXTERNAL TABLE IF EXISTS s3xxw; 
@@ -142,7 +142,7 @@ CREATE WRITABLE EXTERNAL TABLE s3xxw
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/tpch1fs3/w/x#UUID#.csv') 
+LOCATION ('xdrive://localhost:50051/tpch1fs3/w/x#UUID#.csv') 
 FORMAT 'CSV';
 
 DROP EXTERNAL TABLE IF EXISTS s3xxr; 
@@ -151,7 +151,7 @@ CREATE EXTERNAL TABLE s3xxr
         i int,
         t text
     )
-LOCATION ('xdrive://localhost:31416/tpch1fs3/w/x*.csv') 
+LOCATION ('xdrive://localhost:50051/tpch1fs3/w/x*.csv') 
 FORMAT 'CSV';
 
 DROP EXTERNAL TABLE IF EXISTS esfs;
@@ -164,7 +164,7 @@ CREATE EXTERNAL TABLE esfs
 	gender text,
 	_routing text
 	)
-LOCATION ('xdrive://localhost:31416/fs/es.csv')
+LOCATION ('xdrive://localhost:50051/fs/es.csv')
 FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS esr;
@@ -177,7 +177,7 @@ CREATE EXTERNAL TABLE esr
 	gender text,
 	_routing text
         )
-LOCATION ('xdrive://localhost:31416/es/')
+LOCATION ('xdrive://localhost:50051/es/')
 FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS esw;
@@ -190,7 +190,7 @@ CREATE WRITABLE EXTERNAL TABLE esw
 	gender text,
 	_routing text
         )
-LOCATION ('xdrive://localhost:31416/es/')
+LOCATION ('xdrive://localhost:50051/es/')
 FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS estest;
@@ -203,7 +203,7 @@ CREATE EXTERNAL TABLE estest
         age int,
         last_updated bigint
         )
-LOCATION ('xdrive://localhost:31416/eslocal/')
+LOCATION ('xdrive://localhost:50051/eslocal/')
 FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS estest_write;
@@ -216,7 +216,7 @@ CREATE EXTERNAL TABLE estest_write
         age int,
         last_updated bigint
         )
-LOCATION ('xdrive://localhost:31416/eslocal/')
+LOCATION ('xdrive://localhost:50051/eslocal/')
 FORMAT 'SPQ';
 
 
@@ -228,7 +228,7 @@ CREATE EXTERNAL TABLE hbr
         _value text,
         _timestamp bigint
 )
-LOCATION ('xdrive://localhost:31416/hbase/test')
+LOCATION ('xdrive://localhost:50051/hbase/test')
 FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS bugw;
@@ -241,7 +241,7 @@ CREATE WRITABLE EXTERNAL TABLE bugw
         gender text,
         _routing text
         )
-LOCATION ('xdrive://localhost:31416/notexist/bigdata#UUID#.csv')
+LOCATION ('xdrive://localhost:50051/notexist/bigdata#UUID#.csv')
 FORMAT 'CSV';
 
 DROP EXTERNAL TABLE IF EXISTS kafkaw;
@@ -251,7 +251,7 @@ CREATE WRITABLE EXTERNAL TABLE kafkaw
 	name text,
 	age int
 )
-LOCATION ('xdrive://localhost:31416/kafka/person')
+LOCATION ('xdrive://localhost:50051/kafka/person')
 FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS kafkar;
@@ -261,5 +261,26 @@ CREATE EXTERNAL TABLE kafkar
         name text,
         age int
 )
-LOCATION ('xdrive://localhost:31416/kafka/person')
+LOCATION ('xdrive://localhost:50051/kafka/person')
 FORMAT 'SPQ';	
+
+DROP EXTERNAL TABLE IF EXISTS hdfsw;
+CREATE WRITABLE EXTERNAL TABLE hdfsw
+(
+        id bigint,
+        name text,
+        age int
+)
+LOCATION ('xdrive://localhost:50051/hdfs/person/data#UUID#.spq')
+FORMAT 'SPQ';
+
+DROP EXTERNAL TABLE IF EXISTS hdfsr;
+CREATE EXTERNAL TABLE hdfsr
+(
+        id bigint,
+        name text,
+        age int
+)
+LOCATION ('xdrive://localhost:50051/hdfs/person/*')
+FORMAT 'SPQ';
+

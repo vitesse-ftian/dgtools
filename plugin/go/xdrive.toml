@@ -1,60 +1,50 @@
-[xdrive]
-    dir = "/tmp/wetestdata/xdrive"
-    host = [ "localhost:31416" ]
+[xdrive2]
+dir = "/tmp/wetestdata/xdrive"
+host = [ "localhost:50051" ]
+pluginpath = ["/tmp/wetestdata/xdrive/plugin"]
 
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "fs" 
-scheme = "nfs"
-root = "/tmp/wetestdata/xdrive/data"
-conf = ""
+argv = ["xdr_fs", "csv", "/tmp/wetestdata/xdrive/data"]
 
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "myx"
-scheme = "fsplugin"
-root = "/tmp/wetestdata/xdrive/data"
-conf = "" 
+argv = ["fsplugin_csv", "/tmp/wetestdata/xdrive/data"]
 
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "myxpw"
-scheme = "fsplugin"
-root = "/tmp/wetestdata/xdrive/data"
-conf = "poolwriter=true" 
+argv = ["fsplugin_csv", "/tmp/wetestdata/xdrive/data"]
+env = ["poolwriter=true" ]
 
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "myexec"
-scheme = "fsplugin"
-root = "/tmp/wetestdata/xdrive/data"
-conf = "" 
-exec = "./xdrplugin/fsplugin_csv"
+argv = ["fsplugin_csv", "/tmp/wetestdata/xdrive/data"]
 
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "tpch1fs3"
-scheme = "s3plugin"
-root = "/"
-conf = "bucket=tpch1f,region=us-west-1"
+argv = ["s3plugin_csv", "/", "tpch1f", "us-west-1"]
 
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "es"
-scheme = "esplugin"
-root = "https://search-whaasa-f25e2tplbjslk44nkmv3d2iszq.us-east-1.es.amazonaws.com"
-conf = "index=customer,nshards=5,access_key_id=id,secret_access_key=secret"
+argv = ["esplugin_spq", "https://search-whaasa-f25e2tplbjslk44nkmv3d2iszq.us-east-1.es.amazonaws.com", "customer", "5", "access_key_id", "secret_access_key"]
 
-
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "eslocal"
-scheme = "esplugin"
-root = "http://localhost:9200"
-conf = "index=customer,nshards=5,access_key_id=id,secret_access_key=secret"
+argv = ["esplugin_spq", "http://localhost:9200", "customer", "5", "access_key_id", "secret_access_key"]
 
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "hbase"
-scheme = "hbaseplugin"
-root = "localhost"
-conf = "user=hduser"
+argv = ["hbaseplugin_spq", "localhost", "hduser"]
 
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "kafka"
-scheme = "kafkaplugin"
-root = "localhost:9092"
-conf = "zookeeper=localhost:2181"
+argv = ["kafkaplugin_spq", "localhost:9092", "localhost:2181"]
+
+[[xdrive2.mount]]
+  name = "hive_orc"
+  argv = ["/usr/bin/java", "-Xmx1G", "-cp", "vitessedata-file-plugin.jar",  "com.vitessedata.xdrive.orc.Main", "hdfs", "/user/hive/warehouse" , "localhost", "8020", "ericlam"]
+
+[[xdrive2.mount]]
+  name = "hive_parquet"
+  argv = ["/usr/bin/java", "-Xmx1G", "-cp", "vitessedata-file-plugin.jar",  "com.vitessedata.xdrive.parquet.Main", "hdfs", "/user/hive/warehouse" , "localhost", "8020", "ericlam"]
 
