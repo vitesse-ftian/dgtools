@@ -35,7 +35,7 @@ type HBWriter struct {
 	colmap  map[string]int
 	RowCnt  int32
 	rowidx  int32
-	dataReply xdrive.PluginDataReply
+	coldatareply []xdrive.XColDataReply
 }
 
 
@@ -74,12 +74,11 @@ func (h *HBWriter) Init(fspec *xdrive.FileSpec, coldesc []*xdrive.ColumnDesc, pr
 	}
 
 
-	h.dataReply.Rowset = new(xdrive.XRowSet)
-	h.dataReply.Rowset.Columns = make([]*xdrive.XCol, h.ncol)
+	h.coldatareply = make([]xdrive.XColDataReply, h.ncol)
 	
 	for col := 0 ; col < h.ncol ; col++ {
 		xcol := new(xdrive.XCol)
-		h.dataReply.Rowset.Columns[col] = xcol
+		h.coldatareply[col].Data = xcol
 		xcol.Colname = h.collist[col]
 		xcol.Nrow = int32(MAXROW)
 		xcol.Nullmap = make([]bool, xcol.Nrow)
@@ -132,7 +131,7 @@ func (h *HBWriter) resetData() {
 
 	h.rowidx = 0
 	for col := 0 ; col < h.ncol ; col++ {
-		xcol := h.dataReply.Rowset.Columns[col]
+		xcol := h.coldatareply[col].Data
 		switch xdrive.SpqType(h.typ[col]) {
 		case xdrive.SpqType_BOOL, xdrive.SpqType_INT16, xdrive.SpqType_INT32, xdrive.SpqType_DATE, xdrive.SpqType_TIME_MILLIS:
 			for i := 0 ; i < int(xcol.Nrow) ; i++ {
@@ -176,14 +175,14 @@ func (h *HBWriter) Write(r *hrpc.Result) {
 
 		col, ok := h.colmap["_row"]
 		if ok {
-			xcol := h.dataReply.Rowset.Columns[col]
+			xcol := h.coldatareply[col].Data
 			xcol.Sdata[h.rowidx] = string(c.Row)
 			xcol.Nullmap[h.rowidx] = false
 		}
 
 		col, ok = h.colmap["_column"]
 		if ok {
-			xcol := h.dataReply.Rowset.Columns[col]
+			xcol := h.coldatareply[col].Data
 			xcol.Sdata[h.rowidx] = fmt.Sprintf("%s:%s", string(c.Family), string(c.Qualifier))
 			xcol.Nullmap[h.rowidx] = false
 		}
@@ -199,14 +198,14 @@ func (h *HBWriter) Write(r *hrpc.Result) {
 
 		col, ok = h.colmap["_timestamp"]
 		if ok {
-			xcol := h.dataReply.Rowset.Columns[col]
+			xcol := h.coldatareply[col].Data
 			xcol.I64Data[h.rowidx] = int64(*c.Timestamp)
 			xcol.Nullmap[h.rowidx] = false
 		}
 
 		col, ok = h.colmap["_value"]
 		if ok {
-			xcol := h.dataReply.Rowset.Columns[col]
+			xcol := h.coldatareply[col].Data
 			xcol.Sdata[h.rowidx] = string(c.Value)
 			xcol.Nullmap[h.rowidx] = false
 		}
@@ -232,8 +231,8 @@ func (h *HBWriter) flush() error {
 	if h.rowidx > 0 && h.rowidx < MAXROW {
 		// shrink the result
 		for col := 0 ; col < h.ncol ; col++ {
-			xcol := h.dataReply.Rowset.Columns[col]
-			if h.rowidx < h.dataReply.Rowset.Columns[col].Nrow {
+			xcol := h.coldatareply[col].Data
+			if h.rowidx < xcol.Nrow {
 				xcol.Nrow = h.rowidx
 				xcol.Nullmap = xcol.Nullmap[:h.rowidx]
 				if xcol.Sdata != nil {
@@ -258,11 +257,14 @@ func (h *HBWriter) flush() error {
 
 	
 	if h.rowidx > 0 {
-		err := plugin.DelimWrite(&h.dataReply)
-		if err != nil {
-			return err
+
+		for col := 0 ; col < h.ncol ; col++ {
+			err := plugin.ReplyXColData(h.coldatareply[col])
+			if err != nil {
+				return err
+			}
 		}
-		
+
 		h.RowCnt += h.rowidx
 		// reset the h.rowidx = 0 and do resetData
 		h.resetData()

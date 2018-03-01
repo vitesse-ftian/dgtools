@@ -1,7 +1,10 @@
 package impl
 
+import (
+	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
+)
 
-func DoSizeMeta() error {
+func DoSizeMeta(req xdrive.SizeMetaRequest) error {
 
 
 

@@ -30,24 +30,19 @@ type HBClient struct {
 }
 
 
-func (hb *HBClient) CreateUsingRinfo() {
 
-	rinfo := plugin.RInfo()
-	ss := strings.Split(rinfo.Rpath, "/")
-	hb.host = ss[0]
-	hb.table = ss[1]
-	
-	conf := rinfo.GetConf()
-	for _, kv := range conf.GetKv() {
-		if kv.GetKey() == "user" {
-			hb.user = kv.GetValue()
-		} else if kv.GetKey() == "field_separator" {
-			FIELD_SEPARATOR = kv.GetValue()
-		} else if kv.GetKey() == "token_separator" {
-			TOKEN_SEPARATOR = kv.GetValue()
-		}
+func (hb *HBClient) Init(hbasehost, user, table, field_separator, token_separator string) {
+
+	hb.host = hbasehost
+	hb.table = table
+	hb.user = user
+	if len(field_separator) != 0 {
+		FIELD_SEPARATOR = field_separator
 	}
-
+	if len(token_separator) != 0 {
+		TOKEN_SEPARATOR = token_separator
+	}
+	
 	plugin.DbgLog("host: '%s', table: '%s', user: '%s'", hb.host, hb.table, hb.user)
 	
 	hb.client = gohbase.NewClient(hb.host, gohbase.EffectiveUser(hb.user))	

@@ -14,23 +14,20 @@ import (
 //        "github.com/tsuna/gohbase/region"
 )
 
-func DoRead() error {
-	var req xdrive.ReadRequest
-	err := plugin.DelimRead(&req)
-	if err != nil {
-		plugin.DbgLogIfErr(err, "Delim read req failed.")
-		return err
-	}
+func DoRead(req xdrive.ReadRequest, hbasehost, user, field_separator, token_separator string) error {
+	var err error
 
 	if req.FragCnt <= 0 || req.FragId < 0 || req.FragId >= req.FragCnt {
 		plugin.DbgLog("Invalid read req %v", req)
-		plugin.ReplyError(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
+		plugin.DataReply(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
 		return fmt.Errorf("Invalid read request")
 	}
 
+	idx := strings.LastIndex(req.Filespec.Path, "/")
+	table := req.Filespec.Path[idx+1:]
 
 	var hbase HBClient
-	hbase.CreateUsingRinfo()
+	hbase.Init(hbasehost, user, table, field_separator, token_separator)
 
 	regions := hbase.GetRegions(req.FragId, req.FragCnt)
 
@@ -68,8 +65,8 @@ func DoRead() error {
 				case "column":
 					cc := strings.SplitN(ppp[1], ":", 2)
 					if len(cc) != 2 {
-						plugin.ReplyError(-100, "Invalid column. Family + Qualifier. " + ppp[1])
-						return err
+						plugin.DataReply(-100, "Invalid column. Family + Qualifier. " + ppp[1])
+						return fmt.Errorf("Invalid column. Family + Qualifier. " + ppp[1])
 					}
 					a := families[cc[0]]
 					families[cc[0]] = append(a, cc[1])
@@ -77,14 +74,14 @@ func DoRead() error {
 				case "offset":
 					offset, err = strconv.Atoi(ppp[1])
 					if err != nil {
-						plugin.ReplyError(-100, "Invalid offset datatype.  integer is required. " + ppp[1])
+						plugin.DataReply(-100, "Invalid offset datatype.  integer is required. " + ppp[1])
 						return err
 					}
 					plugin.DbgLog("offset = %d", offset)
 				case "limit":
 					limit, err = strconv.Atoi(ppp[1])
 					if err != nil {
-						plugin.ReplyError(-100, "Invalid limit datatype.  integer is required. " + ppp[1])
+						plugin.DataReply(-100, "Invalid limit datatype.  integer is required. " + ppp[1])
 						return err
 					}
 					plugin.DbgLog("limit = %d", limit)
@@ -97,17 +94,17 @@ func DoRead() error {
 				case "timerange":
 					tt := strings.SplitN(ppp[1], FIELD_SEPARATOR, 2)
 					if len(tt) != 2 {
-						plugin.ReplyError(-100, "Invalid timerange. format: starttime,endtime. " + ppp[1])
+						plugin.DataReply(-100, "Invalid timerange. format: starttime,endtime. " + ppp[1])
 						return errors.New("Invalid timerange")
 					}
 					stime, err = strconv.ParseInt(tt[0], 10, 64)
 					if err != nil {
-						plugin.ReplyError(-100, "Invalid timerange. starttime invalid. " + ppp[1])
+						plugin.DataReply(-100, "Invalid timerange. starttime invalid. " + ppp[1])
 						return err
 					}
 					etime, err = strconv.ParseInt(tt[1], 10, 64)
 					if err != nil {
-						plugin.ReplyError(-100, "Invalid timerange. endtime invalid. " + ppp[1])
+						plugin.DataReply(-100, "Invalid timerange. endtime invalid. " + ppp[1])
 						return err
 					}						
 					plugin.DbgLog("stime = %d, etime = %d", stime, etime)
@@ -118,7 +115,7 @@ func DoRead() error {
 						if ppp[0] == "RowRangeFilter" {
 							rowrange, err := hbase.NewRowRange(ppp[1])
 							if err != nil {
-								plugin.ReplyError(-100, err.Error())
+								plugin.DataReply(-100, err.Error())
 								return err
 							}
 							rowrangelist = append(rowrangelist, rowrange)
@@ -126,7 +123,7 @@ func DoRead() error {
 
 							filter, err := hbase.NewFilter(ppp[0], ppp[1])
 							if err != nil {
-								plugin.ReplyError(-100, err.Error())
+								plugin.DataReply(-100, err.Error())
 								return err
 							}
 							if filter != nil {
@@ -135,7 +132,7 @@ func DoRead() error {
 							}
 						}
 					} else {
-						plugin.ReplyError(-100, "Invalid argument. " + ppp[0] + ": " + ppp[1])
+						plugin.DataReply(-100, "Invalid argument. " + ppp[0] + ": " + ppp[1])
 						return errors.New("Invalid argument " + ppp[0] + ": " + ppp[1])
 					}
 				}
@@ -168,7 +165,7 @@ func DoRead() error {
 		}
 
 		if err != nil {
-			plugin.ReplyError(-100, err.Error())
+			plugin.DataReply(-100, err.Error())
 			return err
 		}
 
@@ -185,7 +182,7 @@ func DoRead() error {
 					break
 				} else {
 					plugin.DbgLog("scan next failed. %v", err)
-					plugin.ReplyError(-100, err.Error())
+					plugin.DataReply(-100, err.Error())
 					return err
 				}
 			}
@@ -195,9 +192,9 @@ func DoRead() error {
 
 	err = writer.Close()
 	if err != nil {
-		plugin.ReplyError(-100, err.Error())
+		plugin.DataReply(-100, err.Error())
 		return err
 	}
-	plugin.ReplyError(0, "")
+	plugin.DataReply(0, "")
 	return nil
 }
