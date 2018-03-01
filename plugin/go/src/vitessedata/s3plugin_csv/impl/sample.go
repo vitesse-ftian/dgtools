@@ -1,28 +1,28 @@
 package impl
 
 import (
+	"strings"
+	"path/filepath"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"vitessedata/plugin"
 	"vitessedata/plugin/csvhandler"
 )
 
-func DoSample() error {
-	var req xdrive.SampleRequest
-	err := plugin.DelimRead(&req)
-	if err != nil {
-		return err
-	}
+func DoSample(req xdrive.SampleRequest, rootpath, bucket, region string) error {
 
 	// Init s3 bkt
 	var sb S3Bkt
-	sb.ConnectUsingRInfo()
+	sb.Connect(region, bucket)
 
 	// process path
-	rinfo := plugin.RInfo()
-	myflist, err := buildS3Flist(&sb, rinfo.Rpath, req.FragId, req.FragCnt)
+        idx := strings.Index(req.Filespec.Path[1:], "/")
+        path := filepath.Join(rootpath, req.Filespec.Path[idx+1:])
+        plugin.DbgLog("filepath = %s", path)
+
+	myflist, err := buildS3Flist(&sb, path, req.FragId, req.FragCnt)
 	if err != nil {
-		plugin.DbgLogIfErr(err, "S3 listdir failed.  Rinfo %v", *rinfo)
-		plugin.ReplyError(-2, "listdir failed: "+err.Error())
+		plugin.DbgLogIfErr(err, "S3 listdir failed.  Path %s", path)
+		plugin.DataReply(-2, "listdir failed: "+err.Error())
 		return err
 	}
 
@@ -41,17 +41,17 @@ func DoSample() error {
 
 		file, err := sb.GetObject(f.Name)
 		if err != nil {
-			plugin.ReplyError(-10, "Cannot open file "+f.Name)
+			plugin.DataReply(-10, "Cannot open file "+f.Name)
 			return err
 		}
 		err = csvh.ProcessEachFile(file)
 		if err != nil {
-			plugin.ReplyError(-20, "CSV file "+f.Name+" has invalid data")
+			plugin.DataReply(-20, "CSV file "+f.Name+" has invalid data")
 			return err
 		}
 	}
 
 	// Done!   Fill in an empty reply, indicating end of stream.
-	plugin.ReplyError(0, "")
+	plugin.DataReply(0, "")
 	return nil
 }

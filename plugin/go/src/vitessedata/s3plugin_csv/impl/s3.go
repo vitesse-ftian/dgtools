@@ -27,22 +27,6 @@ func (sb *S3Bkt) Connect(reg string, bkt string) {
 	sb.svc = s3.New(sess)
 }
 
-func (sb *S3Bkt) ConnectUsingRInfo() {
-	var region, bkt string
-	rinfo := plugin.RInfo()
-	conf := rinfo.GetConf()
-	for _, kv := range conf.GetKv() {
-		if kv.GetKey() == "region" {
-			region = kv.GetValue()
-		}
-		if kv.GetKey() == "bucket" {
-			bkt = kv.GetValue()
-		}
-	}
-	plugin.FatalIf(region == "" || bkt == "", "S3 request requires region and bkt config.")
-	sb.Connect(region, bkt)
-}
-
 type S3Item struct {
 	Name string
 	Size int64

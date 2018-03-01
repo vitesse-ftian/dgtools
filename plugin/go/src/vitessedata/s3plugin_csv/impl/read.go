@@ -2,6 +2,7 @@ package impl
 
 import (
 	"fmt"
+	"strings"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"hash/fnv"
 	"path/filepath"
@@ -64,32 +65,29 @@ func buildS3Flist(sb *S3Bkt, path string, fragid int32, fragcnt int32) ([]S3Item
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
 // trivial (Errcode == 0, but there is no data) message.
-func DoRead() error {
-	var req xdrive.ReadRequest
-	err := plugin.DelimRead(&req)
-	if err != nil {
-		plugin.DbgLogIfErr(err, "Delim read req failed.")
-		return err
-	}
+func DoRead(req xdrive.ReadRequest, rootpath, bucket, region string) error {
 
 	// Check/validate frag info.  Again, not necessary, as xdriver server should always
 	// fill in good value.
 	if req.FragCnt <= 0 || req.FragId < 0 || req.FragId >= req.FragCnt {
 		plugin.DbgLog("Invalid read req %v", req)
-		plugin.ReplyError(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
+		plugin.DataReply(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
 		return fmt.Errorf("Invalid read request")
 	}
 
 	// Init s3 bkt
 	var sb S3Bkt
-	sb.ConnectUsingRInfo()
+	sb.Connect(region, bucket)
 
 	// process path
-	rinfo := plugin.RInfo()
-	myflist, err := buildS3Flist(&sb, rinfo.Rpath, req.FragId, req.FragCnt)
+	idx := strings.Index(req.Filespec.Path[1:], "/")
+	path := filepath.Join(rootpath, req.Filespec.Path[idx+1:])
+	plugin.DbgLog("filepath = %s", path)
+
+	myflist, err := buildS3Flist(&sb, path, req.FragId, req.FragCnt)
 	if err != nil {
-		plugin.DbgLogIfErr(err, "S3 listdir failed.  Rinfo %v", *rinfo)
-		plugin.ReplyError(-2, "listdir failed: "+err.Error())
+		plugin.DbgLogIfErr(err, "S3 listdir failed.  %s", path)
+		plugin.DataReply(-2, "listdir failed: "+err.Error())
 		return err
 	} else {
 		plugin.DbgLog("Fragid %d, FragCnt %d, will process files %v", req.FragId, req.FragCnt, myflist)
@@ -104,7 +102,7 @@ func DoRead() error {
 		file, err := sb.GetObject(f.Name)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "Open csv file %s failed.", f.Name)
-			plugin.ReplyError(-10, "Cannot open file "+f.Name)
+			plugin.DataReply(-10, "Cannot open file "+f.Name)
 			return err
 		}
 
@@ -112,12 +110,12 @@ func DoRead() error {
 		err = csvh.ProcessEachFile(file)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "Parse csv file %s failed.", f)
-			plugin.ReplyError(-20, "CSV file "+f.Name+" has invalid data")
+			plugin.DataReply(-20, "CSV file "+f.Name+" has invalid data")
 			return err
 		}
 	}
 
 	// Done!   Fill in an empty reply, indicating end of stream.
-	plugin.ReplyError(0, "")
+	plugin.DataReply(0, "")
 	return nil
 }

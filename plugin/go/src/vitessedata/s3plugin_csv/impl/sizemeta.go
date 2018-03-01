@@ -3,23 +3,22 @@ package impl
 import (
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"vitessedata/plugin"
+	"strings"
+	"path/filepath"
 )
 
-func DoSizeMeta() error {
-	var req xdrive.SizeMetaRequest
-	err := plugin.DelimRead(&req)
-	if err != nil {
-		return err
-	}
+func DoSizeMeta(req xdrive.SizeMetaRequest, rootpath, bucket, region string) error {
 
 	// Init s3 bkt
 	var sb S3Bkt
-	sb.ConnectUsingRInfo()
+	sb.Connect(region, bucket)
 
 	// process path
-	rinfo := plugin.RInfo()
+	idx := strings.Index(req.Filespec.Path[1:], "/")
+	path := filepath.Join(rootpath, req.Filespec.Path[idx+1:])
+	plugin.DbgLog("filepath = %s", path)
 	// fragid = 0, fragcnt = 1 will return everything (no mod)
-	myflist, err := buildS3Flist(&sb, rinfo.Rpath, 0, 1)
+	myflist, err := buildS3Flist(&sb, path, 0, 1)
 	if err != nil {
 		return err
 	}
@@ -29,10 +28,5 @@ func DoSizeMeta() error {
 		sz += item.Size
 	}
 
-	var r xdrive.PluginSizeMetaReply
-	r.Sizemeta = new(xdrive.SizeMetaReply)
-	r.Sizemeta.Nrow = sz / 100
-	r.Sizemeta.Nbyte = sz
-	plugin.DelimWrite(&r)
-	return nil
+	return plugin.SizeMetaReply(sz/100, sz);
 }

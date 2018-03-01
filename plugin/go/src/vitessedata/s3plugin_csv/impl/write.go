@@ -1,35 +1,85 @@
 package impl
 
 import (
+	"io"
+	"encoding/csv"
 	"fmt"
 	"vitessedata/plugin"
 	"vitessedata/plugin/csvhandler"
+	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 )
+
+
+var wreq xdrive.WriteRequest
+var ncol int = 0
+var cols []xdrive.XCol
+var coldesc []xdrive.ColumnDesc
+var nextcol int
+var wf io.ReadWriteCloser
+var fnpath string
+var csvwriter *csv.Writer
+
+func WriteRequest(req xdrive.WriteRequest, rootpath, bucket, region string) error {
+	wreq = req
+	ncol = len(wreq.Columndesc)
+	cols = make([]xdrive.XCol, ncol)
+        coldesc = make([]xdrive.ColumnDesc, ncol)
+        nextcol = 0
+
 
 // DoWrite services xdrive write request.  It read a sequence of PluginWriteRequest
 // from stdin and write to file system.
-func DoWrite() error {
-	path, err := plugin.WritePath()
+
+	path, err := plugin.WritePath(req, rootpath)
+	fnpath = path
 	if err != nil {
-		plugin.ReplyWriteError(-1, err.Error())
+		plugin.DbgLogIfErr(err, "write path failed")
 		return err
 	}
 
 	var sb S3Bkt
-	sb.ConnectUsingRInfo()
+	sb.Connect(region, bucket)
 
-	wf, err := sb.ObjectWriter(path)
+	wf, err = sb.ObjectWriter(fnpath)
 	if err != nil {
-		plugin.ReplyWriteError(-2, "Cannot open file to write: "+path)
-		return fmt.Errorf("Cannot open file to write.")
+		return fmt.Errorf("Cannot open file to write: " + fnpath)
 	}
 
-	err = csvhandler.WritePart(wf)
-	if err == nil {
-		plugin.ReplyWriteError(0, "")
-		return nil
+	csvwriter = csv.NewWriter(wf)
+	return nil
+}
+
+
+func DoWriteEnd() error {
+        if nextcol == 0 {
+                if wf != nil {
+                        wf.Close()
+                }
+                plugin.DbgLog("OK.  Close writer,%s.", fnpath)
+                return nil
 	} else {
-		plugin.ReplyWriteError(-1, err.Error())
-		return err
-	}
+                if wf != nil {
+                        wf.Close()
+                }
+                plugin.DbgLog("Failed.   Close writer, %s", fnpath)
+                return fmt.Errorf("End in the middle of stream")
+        }
+
+
+
+}
+
+func DoWrite(col xdrive.XCol) error {
+        cols[nextcol] = col
+        nextcol++
+        if nextcol == ncol {
+		err := csvhandler.WritePart(wreq, csvwriter, cols)
+		if err != nil {
+			return err
+		}
+		nextcol = 0
+
+	} 
+
+	return nil
 }
