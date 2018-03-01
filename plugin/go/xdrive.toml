@@ -34,7 +34,7 @@ argv = ["esplugin_spq", "http://localhost:9200", "customer", "5", "access_key_id
 
 [[xdrive2.mount]]
 name = "hbase"
-argv = ["hbaseplugin_spq", "localhost", "hduser"]
+argv = ["hbaseplugin_spq", "localhost", "hduser", ",", "&"]
 
 [[xdrive2.mount]]
 name = "kafka"
