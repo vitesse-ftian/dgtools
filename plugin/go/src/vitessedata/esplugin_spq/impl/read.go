@@ -16,25 +16,18 @@ import (
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
 // trivial (Errcode == 0, but there is no data) message.
-func DoRead() error {
-	var req xdrive.ReadRequest
-	err := plugin.DelimRead(&req)
-	if err != nil {
-		plugin.DbgLogIfErr(err, "Delim read req failed.")
-		return err
-	}
+func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_access_id, aws_access_key string) error {
+	var err error
+	var es ESClient
 
+	es.Init(es_url, indexname, nshards, aws_access_id, aws_access_key)
 	// Check/validate frag info.  Again, not necessary, as xdriver server should always
 	// fill in good value.
 	if req.FragCnt <= 0 || req.FragId < 0 || req.FragId >= req.FragCnt {
 		plugin.DbgLog("Invalid read req %v", req)
-		plugin.ReplyError(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
+		plugin.DataReply(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
 		return fmt.Errorf("Invalid read request")
 	}
-
-	var es ESClient
-
-	es.CreateUsingRinfo()
 
 	shards := es.GetShards(req.FragId, req.FragCnt)
 
@@ -78,7 +71,7 @@ func DoRead() error {
 					case "size":
 						default_size, err = strconv.Atoi(ppp[1])
 						if err != nil {
-							plugin.ReplyError(-100, "Invalid size " + ppp[1])
+							plugin.DataReply(-100, "Invalid size " + ppp[1])
 							return err
 						}
 						params[ppp[0]] = ppp[1]
@@ -94,7 +87,7 @@ func DoRead() error {
 	body, err := es.Search(es.Index, _type, params)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "ElasticSearch failed. Error %v", err)
-		plugin.ReplyError(-2, "elasticSearch access failed: " + err.Error())
+		plugin.DataReply(-2, "elasticSearch access failed: " + err.Error())
 		return err
 	}
 /*
@@ -110,11 +103,11 @@ func DoRead() error {
 	err = reader.process(body, default_size)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "Parse Json result failed.")
-		plugin.ReplyError(-20, "JSON result has invalid data")
+		plugin.DataReply(-20, "JSON result has invalid data")
 		return err
 	}
 
 	// Done!   Fill in an empty reply, indicating end of stream.
-	plugin.ReplyError(0, "")
+	plugin.DataReply(0, "")
 	return nil
 }

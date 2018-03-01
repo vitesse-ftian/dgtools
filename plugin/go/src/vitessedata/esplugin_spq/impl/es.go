@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"bytes"
-	"strconv"
 	"vitessedata/plugin"
 	"errors"
 )
@@ -41,25 +40,13 @@ const CreateActionField string = "create"
 const DeleteActionField string = "delete"
 
 
-func (es *ESClient) CreateUsingRinfo() {
+func (es *ESClient) Init(es_url, index string, nshards int, aws_access_id, aws_access_key string) {
 	
-	rinfo := plugin.RInfo()
-	es.Uri = rinfo.Rpath
-	
-	conf := rinfo.GetConf()
-	for _, kv := range conf.GetKv() {
-		if kv.GetKey() == "index" {
-			es.Index = kv.GetValue()
-		} else if kv.GetKey() == "nshards" {
-			es.NShards, _ = strconv.Atoi(kv.GetValue())
-		} else if kv.GetKey() == "access_key_id" {
-			es.AccessKeyID = kv.GetValue()
-		} else if kv.GetKey() == "secret_access_key" {
-			es.SecretAccessKey = kv.GetValue()
-		} else if kv.GetKey() == "security_token" {
-			es.SecurityToken = kv.GetValue()
-		}
-	}	
+	es.Uri = es_url
+	es.Index = index
+	es.NShards = nshards
+	es.AccessKeyID = aws_access_id
+	es.SecretAccessKey = aws_access_key
 
 	plugin.DbgLog("URI = %s", es.Uri)
 	plugin.DbgLog("Index = %s", es.Index)

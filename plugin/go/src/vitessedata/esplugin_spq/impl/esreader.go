@@ -81,11 +81,11 @@ func (h *ESReader) Init(fspec *xdrive.FileSpec, coldesc []*xdrive.ColumnDesc, pr
 func (h* ESReader) process(json []byte, default_size int) error {
 
 	var rowidx int32 = 0
-	var dataReply xdrive.PluginDataReply
+	var coldatareply []xdrive.XColDataReply
 
 	var keyhandler = func(col int, value []byte, vt jsonparser.ValueType, err error) {
 
-		xcol := dataReply.Rowset.Columns[col]
+		xcol := coldatareply[col].Data
 		xcol.Nullmap[rowidx] = false
 		
 		switch xdrive.SpqType(h.typ[col]) {
@@ -93,7 +93,7 @@ func (h* ESReader) process(json []byte, default_size int) error {
 
 			iv, err := strconv.Atoi(string(value))
 			if err != nil {
-				plugin.ReplyError(-100, "Invalid int data " + string(value))
+				plugin.DataReply(-100, "Invalid int data " + string(value))
 				return
 			}
 			xcol.I32Data[rowidx] = int32(iv)
@@ -102,7 +102,7 @@ func (h* ESReader) process(json []byte, default_size int) error {
 		case xdrive.SpqType_INT64, xdrive.SpqType_TIMESTAMP_MILLIS, xdrive.SpqType_TIME_MICROS, xdrive.SpqType_TIMESTAMP_MICROS:
 			iv64, err := strconv.ParseInt(string(value), 0, 64)
 			if err != nil {
-				plugin.ReplyError(-100, "Invalid int64 data " + string(value))
+				plugin.DataReply(-100, "Invalid int64 data " + string(value))
 				return
 			}
 			xcol.I64Data[rowidx] = iv64
@@ -111,7 +111,7 @@ func (h* ESReader) process(json []byte, default_size int) error {
 
 			fv, err := strconv.ParseFloat(string(value), 32)
 			if err != nil {
-				plugin.ReplyError(-100, "Invliad float data " + string(value))
+				plugin.DataReply(-100, "Invliad float data " + string(value))
 				return
 			}
 			xcol.F32Data[rowidx] = float32(fv)
@@ -120,7 +120,7 @@ func (h* ESReader) process(json []byte, default_size int) error {
 			
 			xcol.F64Data[rowidx], err = strconv.ParseFloat(string(value), 64)
 			if err != nil {
-				plugin.ReplyError(-100, "Invalid float64 data " + string(value))
+				plugin.DataReply(-100, "Invalid float64 data " + string(value))
 				return
 			}
 			
@@ -147,7 +147,7 @@ func (h* ESReader) process(json []byte, default_size int) error {
 				return
 			}
 			if timed_out {
-				plugin.ReplyError(-100, "Connection timed out")
+				plugin.DataReply(-100, "Connection timed out")
 				return
 			}
 		} else if idx == 1 {
@@ -174,12 +174,11 @@ func (h* ESReader) process(json []byte, default_size int) error {
 			}
 
 			// Build reply message. Errcode initialized to 0, which is what we want.
-			dataReply.Rowset = new(xdrive.XRowSet)
-			dataReply.Rowset.Columns = make([]*xdrive.XCol, h.ncol)
+			coldatareply = make([]xdrive.XColDataReply, h.ncol)
 
 			for col := 0 ; col < h.ncol ; col++ {
 				xcol := new(xdrive.XCol)
-				dataReply.Rowset.Columns[col] = xcol
+				coldatareply[col].Data = xcol
 				xcol.Colname = h.collist[col]
 				xcol.Nrow = int32(h.RowCnt)
 				xcol.Nullmap = make([]bool, xcol.Nrow)
@@ -237,8 +236,8 @@ func (h* ESReader) process(json []byte, default_size int) error {
 
 	// total may not be equal to numbe of row if param size is specified in the URI request
 	for col := 0 ; col < h.ncol ; col++ {
-		xcol := dataReply.Rowset.Columns[col]
-		if rowidx < dataReply.Rowset.Columns[col].Nrow {
+		xcol := coldatareply[col].Data
+		if rowidx < xcol.Nrow {
 			xcol.Nrow = rowidx
 			xcol.Nullmap = xcol.Nullmap[:rowidx]
 			if xcol.Sdata != nil {
@@ -257,9 +256,13 @@ func (h* ESReader) process(json []byte, default_size int) error {
 				xcol.I64Data = xcol.I64Data[:rowidx]
 			}
 		}
+		err := plugin.ReplyXColData(coldatareply[col])
+		if err != nil {
+			plugin.DbgLogIfErr(err, "write data column failed")
+			return err
+		}
 	}
 
 	plugin.DbgLog("Done Building Rowset, %d rows, %d cols", rowidx, h.ncol)
-        err := plugin.DelimWrite(&dataReply)
-        return err
+        return nil
 }

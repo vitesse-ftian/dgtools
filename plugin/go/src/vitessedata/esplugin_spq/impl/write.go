@@ -10,33 +10,43 @@ import (
 	"github.com/buger/jsonparser"
 )
 
+var wreq xdrive.WriteRequest
+var ncol int = 0
+var cols []xdrive.XCol
+var nextcol int
+var es ESClient
 
 // DoWrite services xdrive write request.  It read a sequence of PluginWriteRequest
 // from stdin and write to file system.
-func DoWrite() error {
+func WriteRequest(req xdrive.WriteRequest, es_url, indexname string, nshards int, aws_access_id, aws_access_key string) error {
 
-	var es ESClient
-	es.CreateUsingRinfo()
+	wreq = req
+	ncol = len(wreq.Columndesc)
+	cols = make([]xdrive.XCol, ncol)
+	nextcol = 0
+	es.Init(es_url, indexname, nshards, aws_access_id, aws_access_key)
 
-	for {
-		var req xdrive.PluginWriteRequest
-		plugin.DelimRead(&req)
+	return nil
+}
 
-		if req.Rowset == nil {
-			plugin.DbgLog("Done writing")
-			plugin.ReplyWriteError(0, "")
-			return nil
-		}
+func DoWriteEnd() error {
+	if nextcol == 0 {
+		return nil
+	} else {
+		return fmt.Errorf("End in the middle of stream")
+	}
+	return nil
+}
 
-		ncol := len(req.Rowset.Columns)
-		if ncol == 0 {
-			plugin.DbgLog("Done writing")
-			plugin.ReplyWriteError(0, "")
-			return nil
-		}
+
+func DoWrite(col xdrive.XCol) error {
+
+	cols[nextcol] = col
+	nextcol++
+	if nextcol == ncol {
 		
-		nrow := req.Rowset.Columns[0].Nrow
-		coldesc := req.Columndesc
+		nrow := cols[0].Nrow
+		coldesc := wreq.Columndesc
 
 		plugin.DbgLog("nrow = %d", nrow)
 		var buf bytes.Buffer
@@ -53,38 +63,38 @@ func DoWrite() error {
 				colname := coldesc[col].Name
 
 				switch {
-				case req.Rowset.Columns[col].Sdata != nil:
+				case cols[col].Sdata != nil:
 					if colname == "_index" || colname == "_type" || colname == "_id" || colname =="_routing" {
 						// add to meta 
-						if req.Rowset.Columns[col].Nullmap[row] {
+						if cols[col].Nullmap[row] {
 							meta[colname] = ""
 						} else {
-							meta[colname] = req.Rowset.Columns[col].Sdata[row]
+							meta[colname] = cols[col].Sdata[row]
 						}
 					} else {
-						if req.Rowset.Columns[col].Nullmap[row] {
+						if cols[col].Nullmap[row] {
 							source[colname] = ""
 						} else {
-							source[colname] = req.Rowset.Columns[col].Sdata[row]
+							source[colname] = cols[col].Sdata[row]
 						}
 					}
 						
-				case req.Rowset.Columns[col].I32Data != nil:
-					if ! req.Rowset.Columns[col].Nullmap[row] {
-						source[colname] = req.Rowset.Columns[col].I32Data[row]
+				case cols[col].I32Data != nil:
+					if ! cols[col].Nullmap[row] {
+						source[colname] = cols[col].I32Data[row]
 					}
 					
-				case req.Rowset.Columns[col].I64Data != nil:
-					if ! req.Rowset.Columns[col].Nullmap[row] {
-						source[colname] = req.Rowset.Columns[col].I64Data[row]
+				case cols[col].I64Data != nil:
+					if ! cols[col].Nullmap[row] {
+						source[colname] = cols[col].I64Data[row]
 					}
-				case req.Rowset.Columns[col].F32Data != nil:
-					if ! req.Rowset.Columns[col].Nullmap[row] {
-                                                source[colname] = req.Rowset.Columns[col].F32Data[row]
+				case cols[col].F32Data != nil:
+					if ! cols[col].Nullmap[row] {
+                                                source[colname] = cols[col].F32Data[row]
                                         }
-				case req.Rowset.Columns[col].F64Data != nil:
-					if ! req.Rowset.Columns[col].Nullmap[row] {
-						source[colname] = req.Rowset.Columns[col].F64Data[row]
+				case cols[col].F64Data != nil:
+					if ! cols[col].Nullmap[row] {
+						source[colname] = cols[col].F64Data[row]
                                         }
 				default:
 					return fmt.Errorf("rowset with no data")
@@ -109,7 +119,6 @@ func DoWrite() error {
 		result, err := es.Bulk(es.Index, "", &buf)
 		plugin.DbgLog(string(result))
 		if err != nil {
-			plugin.ReplyWriteError(-2, err.Error())
 			return err
 		}
 
@@ -133,12 +142,11 @@ func DoWrite() error {
 				bulkerrors, err = jsonparser.ParseBoolean(value)
 				if err != nil {
 					plugin.DbgLog("Parse _bulk result errors failed. %v", err)
-					plugin.ReplyWriteError(-2, err.Error())
 					return
 				}
 				
 				if bulkerrors {
-					plugin.ReplyWriteError(-100, "Bulk operations has errors. " + string(result))
+					plugin.DbgLog("Bulk operations has errors. " + string(result))
 					return
 				}
 			} else if idx == 2 {
