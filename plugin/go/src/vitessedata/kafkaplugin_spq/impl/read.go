@@ -17,35 +17,21 @@ const (
 )
 
 
-func DoRead() error {
+func DoRead(req xdrive.ReadRequest, kafahost string, zkhost string) error {
 	var topic, zkString string
+	var err error
 
-	rinfo := plugin.RInfo()
-	ss := strings.Split(rinfo.Rpath, "/")
-	//brokerList := ss[0]
+	ss := strings.Split(req.Filespec.Path, "/")
 	topic = ss[1]
-
-	conf := rinfo.GetConf()
-	for _, kv := range conf.GetKv() {
-		if kv.GetKey() == "zookeeper" {
-			zkString = kv.GetValue()
-		}
-	}
+	zkString = zkhost
 
 	plugin.FatalIf(topic == "" || zkString == "", "Kafka requires topic and zookeeper")
 	
-	var req xdrive.ReadRequest
-        err := plugin.DelimRead(&req)
-        if err != nil {
-                plugin.DbgLogIfErr(err, "Delim read req failed.")
-                return err
-        }
-
         // Check/validate frag info.  Again, not necessary, as xdriver server should always
         // fill in good value.
         if req.FragCnt <= 0 || req.FragId < 0 || req.FragId >= req.FragCnt {
                 plugin.DbgLog("Invalid read req %v", req)
-                plugin.ReplyError(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
+                plugin.DataReply(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
                 return fmt.Errorf("Invalid read request")
         }
 
@@ -70,7 +56,7 @@ func DoRead() error {
 		//plugin.ReplyError(-4, "join consumer group error")
 		// return no error so that the other consumer can continue to work
 		// bug in kakfa -- there is race between consumers and kafka returns "zk node already exist"
-		plugin.ReplyError(0, "")
+		plugin.DataReply(0, "")
 		return nil
 	}
 
@@ -92,7 +78,7 @@ func DoRead() error {
 		select {
 		case err := <- consumer.Errors():
 			plugin.DbgLogIfErr(err, "consumer error")
-			plugin.ReplyError(-20, "Consumer Error")
+			plugin.DataReply(-20, "Consumer Error")
 			return err
 		case msg := <- consumer.Messages():
 			tStart = time.Now()
@@ -106,7 +92,7 @@ func DoRead() error {
 				err = js.processAll(messages)
 				if err != nil {
 					plugin.DbgLogIfErr(err, "failed to write to deepgreen")
-					plugin.ReplyError(-20, "Failed to write to deepgreen")
+					plugin.DataReply(-20, "Failed to write to deepgreen")
 					return err
 				}
 				plugin.DbgLog("%d rows read", len(messages))
@@ -127,13 +113,13 @@ func DoRead() error {
 		err = js.processAll(messages)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "failed to write to deepgreen")
-			plugin.ReplyError(-20, "Failed to write to deepgreen")
+			plugin.DataReply(-20, "Failed to write to deepgreen")
 			return err
 		}
 		consumer.FlushOffsets()
 		plugin.DbgLog("%d rows read", len(messages))
 	}
 
-	plugin.ReplyError(0, "")
+	plugin.DataReply(0, "")
 	return nil
 }

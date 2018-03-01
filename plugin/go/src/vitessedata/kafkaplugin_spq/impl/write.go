@@ -17,96 +17,102 @@ const (
 	batchSize     = 500 // Number of rows per batch
 )
 
+var wreq xdrive.WriteRequest
+var ncol int = 0
+var cols[]xdrive.XCol
+//var coldesc []xdrive.ColumnDesc
+var nextcol int
+var producer sarama.SyncProducer
+var topic string
+var nLines int = 0
+
+func WriteRequest(req xdrive.WriteRequest, brokerList string, zkhost string) error {
+
+	wreq = req
+	ncol = len(wreq.Columndesc)
+	cols = make([]xdrive.XCol, ncol)
+	//coldesc = make([]xdrive.ColumnDesc, ncol)
+	nextcol = 0
+
+	ss := strings.Split(req.Filespec.Path, "/")
+	topic = ss[1]
+
+	
+        partitionerConstructor := sarama.NewRandomPartitioner
+
+        config := sarama.NewConfig()
+        config.Producer.Partitioner = partitionerConstructor
+        // See https://github.com/Shopify/sarama/issues/816                                                                          
+        config.Producer.Return.Successes = true
+        //config.Producer.Flush.Messages = 5000         
+
+	var err error
+	producer, err = sarama.NewSyncProducer(strings.Split(brokerList, ","), config)
+        if err != nil {
+                return err
+        }
+
+	return nil
+}
+
+func DoWriteEnd() error {
+	if producer != nil {
+		producer.Close()
+	}
+	if nextcol == 0 {
+		plugin.DbgLog("Total number of rows = %d", nLines)
+		plugin.DbgLog("OK. Close producer.")
+		return nil
+	} else {
+		plugin.DbgLog("Failed. Close producer.")
+		return fmt.Errorf("End in the middle of stream")
+	}
+	return nil
+}
+
+
 // DoWrite services xdrive write request.  It read a sequence of PluginWriteRequest
 // from stdin and write to file system.
-func DoWrite() error {
-
-        rinfo := plugin.RInfo()
-	ss := strings.Split(rinfo.Rpath, "/")
-	brokerList := ss[0]
-	topic := ss[1]
-
-	plugin.DbgLog("brokerlist = %s\n", brokerList)
-	plugin.DbgLog("topic = %s\n", topic) 
-
-	/*
-        conf := rinfo.GetConf()
-        for _, kv := range conf.GetKv() {
-                if kv.GetKey() == "brokerList" {
-                        brokerList = kv.GetValue()
-                }
-        }
-*/
-
-        plugin.FatalIf(topic == "" || brokerList == "", "Kafka requires topic and brokerList")
-
-
-	partitionerConstructor := sarama.NewRandomPartitioner
-	
+func DoWrite(col xdrive.XCol) error {
 	var keyEncoder, valueEncoder sarama.Encoder
-	
-	config := sarama.NewConfig()
-	config.Producer.Partitioner = partitionerConstructor
-	// See https://github.com/Shopify/sarama/issues/816
-	config.Producer.Return.Successes = true
-	//config.Producer.Flush.Messages = 5000
-	producer, err := sarama.NewSyncProducer(strings.Split(brokerList, ","), config)
-	if err != nil {
-		return err
-	}
-	defer producer.Close()
 
-	nLines := 1
-	for {
-		var req xdrive.PluginWriteRequest
-		plugin.DelimRead(&req)
-		plugin.DbgLog("Reading from xdrive ...")
-		if req.Rowset == nil {
-			plugin.DbgLog("Done writing")
-			plugin.ReplyWriteError(0, "")
-			return nil
-		}
+	cols[nextcol] = col
+	nextcol++
+	if nextcol == ncol {
 
-		ncol := len(req.Rowset.Columns)
-		if ncol == 0 {
-			plugin.DbgLog("Done writing")
-			plugin.ReplyWriteError(0, "")
-			return nil
-		}
-
-		nrow := req.Rowset.Columns[0].Nrow
-		coldesc := req.Columndesc
-
+		nrow := cols[0].Nrow
+		coldesc := wreq.Columndesc
+		
 		plugin.DbgLog("nrow = %d", nrow)
-
+		
 		for row := int32(0) ; row < nrow ; row++ {
 			nLines++
 			source := make(map[string]interface{})
-
+			
 			var buf bytes.Buffer
 			for col := 0 ; col < ncol ; col++ {
 				colname := coldesc[col].Name
-
+				
 				switch {
-				case req.Rowset.Columns[col].Sdata != nil:
-					if ! req.Rowset.Columns[col].Nullmap[row] {
-						source[colname] = req.Rowset.Columns[col].Sdata[row]
+				case cols[col].Sdata != nil:
+					if ! cols[col].Nullmap[row] {
+						source[colname] = cols[col].Sdata[row]
 					}					
-				case req.Rowset.Columns[col].I32Data != nil:
-					if ! req.Rowset.Columns[col].Nullmap[row] {
-						source[colname] = req.Rowset.Columns[col].I32Data[row]
+				case cols[col].I32Data != nil:
+					if ! cols[col].Nullmap[row] {
+						source[colname] = cols[col].I32Data[row]
 					}                                        
-                                case req.Rowset.Columns[col].I64Data != nil:
-                                        if ! req.Rowset.Columns[col].Nullmap[row] {
-                                                source[colname] = req.Rowset.Columns[col].I64Data[row]
+                                case cols[col].I64Data != nil:
+                                        if ! cols[col].Nullmap[row] {
+                                                source[colname] = cols[col].I64Data[row]
                                         }
-                                case req.Rowset.Columns[col].F32Data != nil:
-                                        if ! req.Rowset.Columns[col].Nullmap[row] {
-                                                source[colname] = req.Rowset.Columns[col].F32Data[row]
+                                case cols[col].F32Data != nil:
+                                        if ! cols[col].Nullmap[row] {
+                                                source[colname] = cols[col].F32Data[row]
                                         }
-                                case req.Rowset.Columns[col].F64Data != nil:
-                                        if ! req.Rowset.Columns[col].Nullmap[row] {
-                                                source[colname] = req.Rowset.Columns[col].F64Data[row]
+                                case cols[col].F64Data != nil:
+                                        if ! cols[col].Nullmap[row] {
+                                                source[colname] = cols[col].F64Data[row]
                                         }
                                 default:
                                         return fmt.Errorf("rowset with no data")
@@ -118,7 +124,7 @@ func DoWrite() error {
 
 			//plugin.DbgLog(buf.String())
 			// write to kafka
-
+			
 			if nLines % batchSize == 0 {
 				time.Sleep(tSleepSeconds * time.Second)
 			}
@@ -135,10 +141,10 @@ func DoWrite() error {
 			}	
 		}
 		plugin.DbgLog("wrote %d rows done...", nrow)
-		
+
+		nextcol = 0
 	}
 
-	plugin.DbgLog("Total number of rows = %d", nLines)
 	return nil
 }	
 

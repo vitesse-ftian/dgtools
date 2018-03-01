@@ -57,10 +57,10 @@ func (js *JsonReader) Init(fspec *xdrive.FileSpec, coldesc[]*xdrive.ColumnDesc, 
 func (js *JsonReader) processAll(records [][]byte) error {
 	
 	var rowidx int32 = 0
-	var dataReply xdrive.PluginDataReply
+	var coldatareply []xdrive.XColDataReply
 
 	var keyhandler = func(col int, value []byte, vt jsonparser.ValueType, err error) {
-                xcol := dataReply.Rowset.Columns[col]
+                xcol := coldatareply[col].Data
                 xcol.Nullmap[rowidx] = false
                 
                 switch xdrive.SpqType(js.typ[col]) {
@@ -68,7 +68,7 @@ func (js *JsonReader) processAll(records [][]byte) error {
 
                         iv, err := strconv.Atoi(string(value))
                         if err != nil {
-                                plugin.ReplyError(-100, "Invalid int data " + string(value))
+                                plugin.DataReply(-100, "Invalid int data " + string(value))
                                 return
                         }
                         xcol.I32Data[rowidx] = int32(iv)
@@ -77,7 +77,7 @@ func (js *JsonReader) processAll(records [][]byte) error {
                 case xdrive.SpqType_INT64, xdrive.SpqType_TIMESTAMP_MILLIS, xdrive.SpqType_TIME_MICROS, xdrive.SpqType_TIMESTAMP_MICROS:
                         iv64, err := strconv.ParseInt(string(value), 0, 64)
                         if err != nil {
-                                plugin.ReplyError(-100, "Invalid int64 data " + string(value))
+                                plugin.DataReply(-100, "Invalid int64 data " + string(value))
                                 return
                         }
                         xcol.I64Data[rowidx] = iv64
@@ -86,7 +86,7 @@ func (js *JsonReader) processAll(records [][]byte) error {
 
                         fv, err := strconv.ParseFloat(string(value), 32)
                         if err != nil {
-                                plugin.ReplyError(-100, "Invliad float data " + string(value))
+                                plugin.DataReply(-100, "Invliad float data " + string(value))
                                 return
                         }
                         xcol.F32Data[rowidx] = float32(fv)
@@ -95,7 +95,7 @@ func (js *JsonReader) processAll(records [][]byte) error {
                         
                         xcol.F64Data[rowidx], err = strconv.ParseFloat(string(value), 64)
                         if err != nil {
-                                plugin.ReplyError(-100, "Invalid float64 data " + string(value))
+                                plugin.DataReply(-100, "Invalid float64 data " + string(value))
                                 return
                         }
                         
@@ -108,12 +108,11 @@ func (js *JsonReader) processAll(records [][]byte) error {
 
 	// build reply message
 	js.RowCnt = len(records)
-	dataReply.Rowset = new(xdrive.XRowSet)
-	dataReply.Rowset.Columns = make([]*xdrive.XCol, js.ncol)
+	coldatareply = make([]xdrive.XColDataReply, js.ncol)
 	
 	for col := 0 ; col < js.ncol ; col++ {
 		xcol := new(xdrive.XCol)
-		dataReply.Rowset.Columns[col] = xcol
+		coldatareply[col].Data = xcol
 		xcol.Colname = js.collist[col]
 		xcol.Nrow = int32(js.RowCnt)
 		xcol.Nullmap = make([]bool, xcol.Nrow)
@@ -169,7 +168,13 @@ func (js *JsonReader) processAll(records [][]byte) error {
 		rowidx++
 	}
 
+	for col := 0 ; col < js.ncol ; col++ {
+		err := plugin.ReplyXColData(coldatareply[col])
+		if err != nil {
+			plugin.DbgLogIfErr(err, "write data column failed");
+			return err
+		}
+	}
 
-	err := plugin.DelimWrite(&dataReply)
-	return err
+	return nil
 }
