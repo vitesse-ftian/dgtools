@@ -5,7 +5,7 @@ Hbase xdrive plugin is to connect hbase via hbase client API.  The plugin only s
 
 Sample configuration in xdrive.toml,
 ```
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "hbase"
 argv = ["hbaseplugin_spq", "hbasehost", "hduser", ",", "&"]
 

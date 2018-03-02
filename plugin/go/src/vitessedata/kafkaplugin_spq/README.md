@@ -10,7 +10,7 @@ setup the mount point in xdrive.toml as below,
 
 ```
 # kafka mount point
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "kafka"
 argv = ["kafkaplugin_spq", "localhost:9092,localhost:9093", "localhost:2181"]
 

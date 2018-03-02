@@ -21,7 +21,7 @@ For example, ES Cluster has single service endpoint esnode and have 4 elasticsea
 
 The configuration is specified in xdrive mount point (xdrive.toml).
 ```
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name="es" # mount point name
 argv = ["esplugin_spq", "es_endpoint", "index", "nshards", "aws_access_id", "aws_access_key"]
 # conf="index=indexname,nshards=5,access_key_id=key_id,secret_access_key=secret"  # fill in the index name and number of shards of the index and access key of AWS ES service
@@ -31,7 +31,7 @@ If using non-AWS ES cluster, you may ignore the setting of access_key_id and sec
 
 Sample xdrive.toml Configuration for all deepgreen nodes,
 ```
-[[xdrive.mount]]
+[[xdrive2.mount]]
 name = "es"
 argv = ["esplugin_spq", "http://localhost:9200", "index", "5", "aws_access_id", "aws_access_key"]
 ```
