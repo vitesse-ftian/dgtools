@@ -207,7 +207,7 @@ LOCATION ('xdrive://localhost:50051/eslocal/')
 FORMAT 'SPQ';
 
 DROP EXTERNAL TABLE IF EXISTS estest_write;
-CREATE EXTERNAL TABLE estest_write
+CREATE WRITABLE EXTERNAL TABLE estest_write
       (
         _id  text,
         _type text,

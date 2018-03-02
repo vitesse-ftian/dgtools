@@ -160,6 +160,7 @@ func DoWrite(col xdrive.XCol) error {
 			return fmt.Errorf("bulk operation error")
 		}
 
+		nextcol = 0
 	}
 
 	return nil
