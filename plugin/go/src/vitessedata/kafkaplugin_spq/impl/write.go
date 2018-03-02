@@ -34,10 +34,11 @@ func WriteRequest(req xdrive.WriteRequest, brokerList string, zkhost string) err
 	//coldesc = make([]xdrive.ColumnDesc, ncol)
 	nextcol = 0
 
-	ss := strings.Split(req.Filespec.Path, "/")
-	topic = ss[1]
+	idx := strings.LastIndex(req.Filespec.Path, "/")
+	topic = req.Filespec.Path[idx+1:]
+	plugin.DbgLog("path = %s, topic = %s", req.Filespec.Path, topic)
 
-	
+
         partitionerConstructor := sarama.NewRandomPartitioner
 
         config := sarama.NewConfig()
@@ -121,7 +122,7 @@ func DoWrite(col xdrive.XCol) error {
 
 			s, _ := json.Marshal(source)
 			buf.Write(s)
-
+			
 			//plugin.DbgLog(buf.String())
 			// write to kafka
 			

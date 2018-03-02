@@ -21,8 +21,9 @@ func DoRead(req xdrive.ReadRequest, kafahost string, zkhost string) error {
 	var topic, zkString string
 	var err error
 
-	ss := strings.Split(req.Filespec.Path, "/")
-	topic = ss[1]
+	idx := strings.LastIndex(req.Filespec.Path, "/")
+	topic = req.Filespec.Path[idx+1:]
+	plugin.DbgLog("path = %s, topic = %s", req.Filespec.Path, topic)
 	zkString = zkhost
 
 	plugin.FatalIf(topic == "" || zkString == "", "Kafka requires topic and zookeeper")
