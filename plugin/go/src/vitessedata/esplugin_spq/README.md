@@ -23,9 +23,8 @@ The configuration is specified in xdrive mount point (xdrive.toml).
 ```
 [[xdrive.mount]]
 name="es" # mount point name
-scheme="esplugin"
-root="http://esnode:9200" 
-conf="index=indexname,nshards=5,access_key_id=key_id,secret_access_key=secret"  # fill in the index name and number of shards of the index and access key of AWS ES service
+argv = ["esplugin_spq", "es_endpoint", "index", "nshards", "aws_access_id", "aws_access_key"]
+# conf="index=indexname,nshards=5,access_key_id=key_id,secret_access_key=secret"  # fill in the index name and number of shards of the index and access key of AWS ES service
 ```
 
 If using non-AWS ES cluster, you may ignore the setting of access_key_id and secret_access_key.
@@ -34,9 +33,7 @@ Sample xdrive.toml Configuration for all deepgreen nodes,
 ```
 [[xdrive.mount]]
 name = "es"
-scheme = "esplugin"
-root = "https://search-vitessedata-f25e2tplbjslk44nkmv3d2iszq.us-east-1.es.amazonaws.com"
-conf = "index=test_data,nshards=5,access_key_id=AWS_ID,secret_access_key=AWS_SECRET"
+argv = ["esplugin_spq", "http://localhost:9200", "index", "5", "aws_access_id", "aws_access_key"]
 ```
 
 

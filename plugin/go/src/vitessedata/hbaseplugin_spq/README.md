@@ -7,10 +7,10 @@ Sample configuration in xdrive.toml,
 ```
 [[xdrive.mount]]
 name = "hbase"
-scheme = "hbaseplugin"
-root = "localhost"
-conf = "user=hduser,field_separator=||,token_separator=&&"
+argv = ["hbaseplugin_spq", "hbasehost", "hduser", ",", "&"]
 
+# hbasehost is the hostname of the hbase
+# hduser is the username of the hdfs user
 # default field_separator is ",";
 # default token_separator is "&";
 ```

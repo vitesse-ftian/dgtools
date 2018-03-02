@@ -12,9 +12,11 @@ setup the mount point in xdrive.toml as below,
 # kafka mount point
 [[xdrive.mount]]
 name = "kafka"
-scheme = "kafkaplugin"
-root = "host1:9092,host2:9092"  
-conf = "zookeeper=zkhost:2181"
+argv = ["kafkaplugin_spq", "localhost:9092,localhost:9093", "localhost:2181"]
+
+#argv = ["kafkaplugin_spq", "broker1,broker2,broke3", "zkhost"]
+# kafka brokerlist is list of host separated with comma, e.g. host1:9092,host1:9093,host2:9092
+# zookeeper host, e.g. localhost:2181
 ```
 
 name - name of mountpoint, choose whatever you like
