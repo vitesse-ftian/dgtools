@@ -9,7 +9,8 @@ public class Main {
     public static void main(String[] args) { 
         try {
 
-            System.setErr(new PrintStream("/tmp/xdrive_csv.log"));                    
+            long ts = System.currentTimeMillis();
+            System.setErr(new PrintStream("/tmp/xdrive_csv-" + ts + ".log"));                    
             if (args.length != 1) {
                 System.err.println("usage: java com.vitessedata.xdrive.csv.Main rootpath");
                 System.exit(1);

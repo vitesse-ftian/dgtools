@@ -35,12 +35,12 @@ public class Csv {
         return path;
     }
 
-    private List<Path> glob(String localpath, String globpath) throws IOException {
-        String pattern = "regex:" + globpath;
+    private List<Path> glob(String rootpath, String globpath) throws IOException {
+        String pattern = "glob:" + globpath;
         final PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher(pattern);
         List<Path> paths = new ArrayList<Path>();
 
-        Files.walkFileTree(Paths.get(localpath), new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(Paths.get(rootpath), new SimpleFileVisitor<Path>() {
                 @Override public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                     if (pathMatcher.matches(path)) {
                         paths.add(path);
@@ -206,6 +206,7 @@ public class Csv {
                 } // for col
                 
                 if (nrow == 8192) {
+                    System.err.printf("READ: %d rows.\n", nrow);
                     for (int i = 0 ;i < xcolb.length; i++) {
                         xcolb[i].setNrow(nrow);
                         XdriveUtil.replyXColData(xcolb[i].build());
@@ -246,17 +247,19 @@ public class Csv {
             coldesc[j] = rreq.getColumndesc(j);
         }
 
-        String filepath = rreq.getFilespec().getPath();
-        int idx = filepath.indexOf("/", 1);
-        String globpath = filepath.substring(idx+1);
+        String globpath = configFilespec(rreq.getFilespec());
+
+        System.err.printf("basepath = %s\n", base_path);
+        System.err.printf("globpath = %s\n", globpath);
 
         List<Path> paths = glob(base_path, globpath);
 
         for (Path p: paths) {
-
+            System.err.println("path = " + p.toString());
             //Integer hashCode = Math.abs(CommonUtils.hash(fs.getPath().hashCode()));
             int hashCode = Math.abs(p.hashCode());
             if (hashCode % rreq.getFragCnt() == rreq.getFragId()) {
+                System.err.println("Read from File = " + p.toString());
                 readfile(rreq, p);
             }
         }
@@ -318,13 +321,14 @@ public class Csv {
 
     public void writeRequest(Xdrive2.WriteRequest req) throws Exception {
 
-        wreq = req;
-
         String rpath = configFilespec(req.getFilespec());
         String path = genParsedPath(rpath, req.getFragCnt(), req.getFragId());
 
+        wreq = req;
         ncol = req.getColumndescCount();
         coldesc = new Xdrive2.ColumnDesc[ncol];
+        cols = new Xdrive2.XCol[ncol];
+        nextcol = 0;
 
         out = new FileWriter(path);
         csvprinter = new CSVPrinter(out, CSVFormat.DEFAULT);
