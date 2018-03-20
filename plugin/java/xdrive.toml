@@ -1,0 +1,9 @@
+[xdrive2]
+dir = "/tmp/wetestdata/xdrive"
+host = [ "localhost:50051" ]
+pluginpath = ["/tmp/wetestdata/xdrive/plugin"]
+
+[[xdrive2.mount]]
+  name = "myx"
+  argv = ["/usr/bin/java", "-cp", "vitessedata-csv-plugin.jar",  "com.vitessedata.xdrive.csv.Main", "/tmp/wetestdata/xdrive/data"]
+

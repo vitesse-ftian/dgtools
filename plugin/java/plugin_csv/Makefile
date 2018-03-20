@@ -19,3 +19,8 @@ clean:
 
 cpbin:
 	cp package/jars/vitessedata-csv-plugin.jar /tmp/wetestdata/xdrive/plugin/jars
+
+deployplugin:
+	mkdir -p /tmp/wetestdata/xdrive/plugin/package
+	cp package/plugin_csv.tgz /tmp/wetestdata/xdrive/plugin/package
+	xdrctl deployplugin /tmp/wetestdata/xdrive/xdrive2.toml plugin_csv
