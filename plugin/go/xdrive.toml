@@ -17,6 +17,10 @@ argv = ["fsplugin_csv", "/tmp/wetestdata/xdrive/data"]
 env = ["poolwriter=true" ]
 
 [[xdrive2.mount]]
+name = "myls"
+argv = ["ls_file", "/tmp/wetestdata/xdrive/data"]
+
+[[xdrive2.mount]]
 name = "myexec"
 argv = ["fsplugin_csv", "/tmp/wetestdata/xdrive/data"]
 
