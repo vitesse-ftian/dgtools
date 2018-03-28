@@ -4,12 +4,14 @@ build:
 	(cd src/vitessedata/esplugin_spq && go get . && go install)
 	(cd src/vitessedata/hbaseplugin_spq && go get . && go install)
 	(cd src/vitessedata/kafkaplugin_spq && go get . && go install)
+	(cd src/vitessedata/esload_spq && go get . && go install)
 	rm -rf package ; mkdir package
 	(cd bin && tar -zcvf ../package/esplugin.tgz esplugin_spq)
 	(cd bin && tar -zcvf ../package/fsplugin.tgz fsplugin_csv)
 	(cd bin && tar -zcvf ../package/hbaseplugin.tgz hbaseplugin_spq)
 	(cd bin && tar -zcvf ../package/s3plugin.tgz s3plugin_csv)
 	(cd bin && tar -zcvf ../package/kafkaplugin.tgz kafkaplugin_spq)
+	(cd bin && tar -zcvf ../package/esload.tgz esload_spq)
 
 start:
 	echo "Setup/Deploy xdrive ..." 
@@ -47,11 +49,11 @@ wetestdata:
 
 cpbin:
 	echo "Start deploy plugin bits ... " 
-	cp bin/* /tmp/wetestdata/xdrive/xdrplugin
+	cp bin/* /tmp/wetestdata/xdrive/plugin
 
 cppkg:
 	echo "Copy package to xdrplugin ... " 
-	cp -r package /tmp/wetestdata/xdrive/xdrplugin
+	cp -r package /tmp/wetestdata/xdrive/plugin
 
 deploy:
 	echo "Start deply plugin bits ... "
@@ -60,3 +62,4 @@ deploy:
 	xdrctl deployplugin xdrive.toml hbaseplugin
 	xdrctl deployplugin xdrive.toml s3plugin
 	xdrctl deployplugin xdrive.toml kafkaplugin
+	xdrctl deployplugin xdrive.toml esload

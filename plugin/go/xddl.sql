@@ -219,6 +219,19 @@ CREATE WRITABLE EXTERNAL TABLE estest_write
 LOCATION ('xdrive://localhost:50051/eslocal/')
 FORMAT 'SPQ';
 
+DROP EXTERNAL TABLE IF EXISTS esload;
+CREATE EXTERNAL TABLE esload
+      (
+        _id  text,
+        _type text,
+        _routing text,
+        name text,
+        age int,
+        last_updated bigint
+        )
+LOCATION ('xdrive://localhost:50051/esload/')
+FORMAT 'SPQ';
+
 
 DROP EXTERNAL TABLE IF EXISTS hbr;
 CREATE EXTERNAL TABLE hbr

@@ -33,6 +33,11 @@ name = "eslocal"
 argv = ["esplugin_spq", "http://localhost:9200", "customer", "5", "access_key_id", "secret_access_key"]
 
 [[xdrive2.mount]]
+name = "esload"
+argv = ["esload_spq", "http://localhost:9200", "test_data", "5", "access_key_id", "secret_access_key"]
+
+
+[[xdrive2.mount]]
 name = "hbase"
 argv = ["hbaseplugin_spq", "localhost", "hduser", ",", "&"]
 
