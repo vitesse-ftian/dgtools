@@ -33,19 +33,28 @@ make load
 make run
 ```
 
-# GenData
+# Notes to Greenplum User
+Some deepgreen extensions are not available on opensource Greenplum DB.
+You need to edit bench.toml, esp, you should set the following two values.
+```
+DDL = "mktab-f.sql"
+Ext = "GPF"
+```
+
+# Manually (instead of using make)
+## GenData
 Generate data.   Costly.   Not timed/measured.
 ```
 go test -run GenData ./bench
 ```
 
-# Setup
+## Setup
 Setup ddl etc.   Cheap.    Not timed/measured.
 ```
 go test -run Setup ./bench
 ```
 
-# Load
+## Load
 Loading data.   Benchmarked.   Note that we used -benchtime=0s
 to disable golang test b.N loop.   We want to load/bench the 
 query only once, regardless how fast/slow etc.  
