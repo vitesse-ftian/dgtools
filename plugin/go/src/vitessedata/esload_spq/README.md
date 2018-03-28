@@ -63,7 +63,7 @@ Query SQL for query elasticsearch via deepgreen
 The query SQL contains the elasticsearch query string embedded with dg\_utils.xdrive\_query($$\*$$).  See the example below:
 
 ```
-SELECT name, email from esr where dg_utils.xdrive_query($$q=name:eric lam +email:eric*&_type=external&routing=offline$$);
+SELECT * from esload;
 ```
 
 
@@ -107,7 +107,7 @@ Query ElasticSearch via psql
 -----------------------------
 
 ```
-wetestdata=# select * from esr where dg_utils.xdrive_query($$q=name:Rh*&size=50$$) limit 10;
+wetestdata=# select * from esload;
          _id          |   _type   | _routing |   name    |  age  | last_updated  
 ----------------------+-----------+----------+-----------+-------+---------------
  AV8pQPeUGpZ_PbHsjbYB | test_type |          | rhFi      | 69362 | 1508168139000
