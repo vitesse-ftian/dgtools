@@ -226,7 +226,7 @@ func (es *ESClient) Scroll(index string, param map[string]string, json *bytes.Bu
 	plugin.DbgLog("response Status:", resp.Status)
         plugin.DbgLog("response Headers:", resp.Header)
         body, err2 := ioutil.ReadAll(resp.Body)
-        plugin.DbgLog("response Body:", string(body))
+        //plugin.DbgLog("response Body:", string(body))
 
         return resp.Status, body, err2
 

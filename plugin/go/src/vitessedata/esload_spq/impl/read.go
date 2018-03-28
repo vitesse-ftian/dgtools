@@ -104,7 +104,7 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 
 	body := []byte(`{"timed_out":false, "took":1, "_shards":{}, "hits":{ "total":1, "hits":[{"_id":"1", "_type":"online", "_score":"1", "_routing":"vip", "_source":{ "age":12, "gender":"female", "name":"eric"}}]}}`)
 */
-	plugin.DbgLog(string(body))
+	//plugin.DbgLog(string(body))
 	
 	var reader ESReader
 	reader.Init(req.Filespec, req.Columndesc, req.Columnlist)
@@ -137,7 +137,7 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 			break
 		}
 
-		plugin.DbgLog(string(body))
+		//plugin.DbgLog(string(body))
 		scroll_id, nrow, err = reader.process(body, default_size)
         	if err != nil {
                 	plugin.DbgLogIfErr(err, "Parse Json result failed.")
