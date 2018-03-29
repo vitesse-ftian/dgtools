@@ -102,10 +102,14 @@ func (es *ESClient) makeURL(action string, index string, _type string, params ma
 		endpoint = "/_count"
 	} else if (action == "bulk") {
 		endpoint = "/_bulk"
+	} else if (action == "scroll") {
+		endpoint = "/_search"
 	}
 
 	if (index == "") {
-		path = fmt.Sprintf("%s/scroll", endpoint)
+		if (action == "scroll") {
+			path = fmt.Sprintf("%s/scroll", endpoint)
+		}
 	} else {
 		if (_type == "") {
 			path = fmt.Sprintf("/%s%s", index, endpoint)	
@@ -208,9 +212,9 @@ func (es *ESClient) Bulk(index string, _type string, json *bytes.Buffer) ([] byt
 	return body, err2
 } 
 
-func (es *ESClient) Scroll(index string, param map[string]string, json *bytes.Buffer) ([] byte, error) {
+func (es *ESClient) Scroll(index string, _type string, param map[string]string, json *bytes.Buffer) ([] byte, error) {
 
-	urlStr, cred := es.makeURL("search", index, "", param)
+	urlStr, cred := es.makeURL("scroll", index, _type, param)
 	plugin.DbgLog("request URL:", urlStr)
 	plugin.DbgLog("request JSON:", json)
 	client := new(http.Client)

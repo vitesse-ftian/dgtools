@@ -32,14 +32,13 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 	}
 
 
-/*
 	var _type string
 	default_timeout := "30s"
-*/
-
 	default_size := 1024
 	params := make(map[string]string)
 	params["scroll"] = "1m"
+	params["timeout"] = default_timeout
+
 	//
 	// Filter:
 	// req may contains a list of Filters that got pushed down from XDrive server.
@@ -60,6 +59,8 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 				ppp := strings.SplitN(pp, "=", 2)
 				if len(ppp) == 2 {
 					switch ppp[0] {
+					case "_type":
+						_type = ppp[1]
 					case "size":
 						default_size, err = strconv.Atoi(ppp[1])
 						if err != nil {
@@ -88,7 +89,7 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 	s, _ := json.Marshal(searchbody)
 	buf.Write(s)
 
-	body, err := es.Scroll(es.Index, params, &buf)
+	body, err := es.Scroll(es.Index, _type, params, &buf)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "ElasticSearch failed. Error %v", err)
 		plugin.DataReply(-2, "elasticSearch access failed: " + err.Error())
@@ -120,7 +121,7 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 		s, _ := json.Marshal(searchbody)
 		buf.Write(s)
 
-		body, err := es.Scroll("", nil, &buf)
+		body, err := es.Scroll("", "", nil, &buf)
 		if err != nil {
                 	plugin.DbgLogIfErr(err, "ElasticSearch failed. Error %v", err)
                 	plugin.DataReply(-2, "elasticSearch access failed: " + err.Error())
