@@ -1,7 +1,7 @@
 ElasticSearch ESLOAD XDrive Plugin Documentation
 =========================================
 
-ElasticSearch Esload XDrive plugin is an interface between elasticsearch and deepgreen for bulk operations.  It is used to process large amount of data, e.g. data loading and bulk write.  The plugin queries the elasticsearch via the REST APIs and return the result to deepgreen via xdrive.  The read operation useis scroll API for fetching the data and the write operatio uses bulk write API.  For realtime operation, please use esplugin_spq instead.
+ElasticSearch Esload XDrive plugin is an interface between elasticsearch and deepgreen for bulk operations.  It is used to process large amount of data, e.g. data loading, data migration and bulk write.  The plugin queries the elasticsearch via the REST APIs and return the result to deepgreen via xdrive.  The read operation use scroll API for fetching the data and the write operation uses bulk write API.  For realtime operation, please use esplugin_spq instead.
 
 ElasticSearch supported versions
 --------------------------------
