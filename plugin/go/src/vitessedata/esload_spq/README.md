@@ -9,11 +9,11 @@ Elastic xdrive plugin supports elasticsearch v5.5 or above.  The plugin supports
 
 ElasticSearch Plugin deployment 
 -------------------------------
-We assume elasticsearch cluster is behind a load balancer with single access endpoint.  ElasticSearch plugin supports AWS ES cluster with authentication and open source ES cluster.
+We assume elasticsearch cluster is behind a load balancer with single access endpoint.  ElasticSearch esload plugin supports AWS ES cluster with authentication and open source ES cluster.
 
-To deploy esplugin, run xdrctl to deploy esplugin to each data nodes.
+To deploy esload, run xdrctl to deploy esload to each data nodes.
 
-	% xdrctl deployplugin xdrive.toml esplugin
+	% xdrctl deployplugin xdrive.toml esload
 
 ElasticSearch plugin configuration settings
 -------------------------------------------
@@ -23,7 +23,7 @@ The configuration is specified in xdrive mount point (xdrive.toml).
 ```
 [[xdrive2.mount]]
 name="es" # mount point name
-argv = ["esplugin_spq", "es_endpoint", "index", "nshards", "aws_access_id", "aws_access_key"]
+argv = ["esload_spq", "es_endpoint", "index", "nshards", "aws_access_id", "aws_access_key"]
 # conf="index=indexname,nshards=5,access_key_id=key_id,secret_access_key=secret"  # fill in the index name and number of shards of the index and access key of AWS ES service
 ```
 
@@ -33,7 +33,7 @@ Sample xdrive.toml Configuration for all deepgreen nodes,
 ```
 [[xdrive2.mount]]
 name = "es"
-argv = ["esplugin_spq", "http://localhost:9200", "index", "5", "aws_access_id", "aws_access_key"]
+argv = ["esload_spq", "http://localhost:9200", "index", "5", "aws_access_id", "aws_access_key"]
 ```
 
 
