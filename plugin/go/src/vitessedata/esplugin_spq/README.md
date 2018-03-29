@@ -1,7 +1,7 @@
 ElasticSearch XDrive Plugin Documentation
 =========================================
 
-ElasticSearch XDrive plugin is an interface between elasticsearch and deepgreen.  The plugin queries the elasticsearch via the REST APIs and return the result to deepgreen via xdrive.
+ElasticSearch XDrive plugin is an interface between elasticsearch and deepgreen for real-time operations.  It is used for real-time operation with fast and small dataset return from Elasticsearch.  The plugin queries the elasticsearch via the REST APIs and return the result to deepgreen via xdrive.  For data loading or bulk operation, please use esload_spq instead.
 
 ElasticSearch supported versions
 --------------------------------
