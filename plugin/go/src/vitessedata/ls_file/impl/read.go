@@ -8,8 +8,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
+	"time"
 	"vitessedata/plugin"
 )
 
@@ -139,13 +139,13 @@ func DoRead(req xdrive.ReadRequest, rootpath string) error {
 				// xcol.I64Data = make([]int64, 1)
 				// xcol.I64Data[0] = fi.Size()
 				xcol.Sdata = make([]string, 1)
-				xcol.Sdata[0] = strconv.Itoa(int(fi.Size()))
+				xcol.Sdata[0] = fmt.Sprintf("%d", fi.Size())
 			case "mode":
 				xcol.Sdata = make([]string, 1)
 				xcol.Sdata[0] = fi.Mode().String()
 			case "modtime":
 				xcol.Sdata = make([]string, 1)
-				xcol.Sdata[0] = fi.ModTime().String()
+				xcol.Sdata[0] = fi.ModTime().Format(time.RFC1123Z)
 			case "isdir":
 				// BUG BUG
 				// xcol.I32Data = make([]int32, 1)
