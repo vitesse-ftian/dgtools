@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"vitessedata/plugin"
 	"errors"
+	"strings"
 )
 
 type ESClient struct {
@@ -207,7 +208,7 @@ func (es *ESClient) Bulk(index string, _type string, json *bytes.Buffer) ([] byt
 	return body, err2
 } 
 
-func (es *ESClient) Scroll(index string, param map[string]string, json *bytes.Buffer) (string, [] byte, error) {
+func (es *ESClient) Scroll(index string, param map[string]string, json *bytes.Buffer) ([] byte, error) {
 
 	urlStr, cred := es.makeURL("search", index, "", param)
 	plugin.DbgLog("request URL:", urlStr)
@@ -218,7 +219,7 @@ func (es *ESClient) Scroll(index string, param map[string]string, json *bytes.Bu
 	awsauth.Sign4(req, cred)
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 	
 	defer resp.Body.Close()
@@ -228,6 +229,14 @@ func (es *ESClient) Scroll(index string, param map[string]string, json *bytes.Bu
         body, err2 := ioutil.ReadAll(resp.Body)
         //plugin.DbgLog("response Body:", string(body))
 
-        return resp.Status, body, err2
+	if err2 != nil {
+		return body, err2;
+	}
+
+	if ! strings.HasPrefix(resp.Status, "200") {
+		return body, errors.New(string(body))
+	}
+
+        return body, err2
 
 }

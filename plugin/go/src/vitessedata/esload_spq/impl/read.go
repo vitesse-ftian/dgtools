@@ -8,7 +8,7 @@ import (
 	//"os"
 	//"time"
 	"strings"
-//	"strconv"
+	"strconv"
 	"vitessedata/plugin"
 )
 
@@ -34,13 +34,12 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 
 /*
 	var _type string
-	default_size := 10
 	default_timeout := "30s"
 */
 
+	default_size := 1024
 	params := make(map[string]string)
 	params["scroll"] = "1m"
-
 	//
 	// Filter:
 	// req may contains a list of Filters that got pushed down from XDrive server.
@@ -51,7 +50,6 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 	// filter called "QUERY", which allow users to send any query to plugin.  Here as
 	// an example, we implement a poorman's fault injection.
 	//
-/*
 	for _, f := range req.Filter {
 		// f cannot be nil
 		if f.Op == "QUERY" {
@@ -62,15 +60,13 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 				ppp := strings.SplitN(pp, "=", 2)
 				if len(ppp) == 2 {
 					switch ppp[0] {
-					case "_type":
-						_type = ppp[1]
 					case "size":
 						default_size, err = strconv.Atoi(ppp[1])
 						if err != nil {
 							plugin.DataReply(-100, "Invalid size " + ppp[1])
 							return err
 						}
-						params[ppp[0]] = ppp[1]
+						//params[ppp[0]] = ppp[1]
 					default:
 						params[ppp[0]] = ppp[1]
 					}
@@ -79,10 +75,9 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 
 		} 
 	}
-*/
+
 	var buf bytes.Buffer
 	
-	default_size := 1024
 	searchbody := make(map[string]interface{})
 	slice := make(map[string]interface{})
 	slice["id"] = req.FragId
@@ -93,7 +88,7 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 	s, _ := json.Marshal(searchbody)
 	buf.Write(s)
 
-	_, body, err := es.Scroll(es.Index, params, &buf)
+	body, err := es.Scroll(es.Index, params, &buf)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "ElasticSearch failed. Error %v", err)
 		plugin.DataReply(-2, "elasticSearch access failed: " + err.Error())
@@ -125,17 +120,12 @@ func DoRead(req xdrive.ReadRequest, es_url, indexname string, nshards int, aws_a
 		s, _ := json.Marshal(searchbody)
 		buf.Write(s)
 
-		status, body, err := es.Scroll("", nil, &buf)
+		body, err := es.Scroll("", nil, &buf)
 		if err != nil {
                 	plugin.DbgLogIfErr(err, "ElasticSearch failed. Error %v", err)
                 	plugin.DataReply(-2, "elasticSearch access failed: " + err.Error())
                 	return err
         	}
-
-		if ! strings.HasPrefix(status, "200 ") {
-			plugin.DbgLog("ElasticSearch Error: " + status)
-			break
-		}
 
 		//plugin.DbgLog(string(body))
 		scroll_id, nrow, err = reader.process(body, default_size)
