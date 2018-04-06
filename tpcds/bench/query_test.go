@@ -26,25 +26,11 @@ func BenchmarkQuery(b *testing.B) {
 	}
 	defer conn.Disconnect()
 
-	// Gucs.
-	if conf.Orca != 0 {
-		err = conn.Execute("set optimizer = on")
+	// Gucs.   Only set if not default
+	for _, guc := range conf.Gucs {
+		err = conn.Execute(guc)
 		if err != nil {
-			b.Errorf("Cannot set guc optimizer = on.   error: %s", err.Error())
-		}
-	}
-
-	if conf.Vitesse == 0 {
-		err = conn.Execute("set vitesse.enable = 0")
-		if err != nil {
-			b.Errorf("Cannot set guc vitesse.enable to 0.  error: %s", err.Error())
-		}
-	}
-
-	if conf.StatementMem != 0 {
-		err = conn.Execute(fmt.Sprintf("set statement_mem = %d", conf.StatementMem))
-		if err != nil {
-			b.Errorf("Cannot set statement_mem = %d, error :%s", conf.StatementMem, err.Error())
+			b.Errorf("Cannot set guc %s.  error: %s", guc, err.Error())
 		}
 	}
 

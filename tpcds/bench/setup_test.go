@@ -36,14 +36,15 @@ func TestSetup(t *testing.T) {
 			return
 		}
 
-		tomlf := Dir() + "/gen/xdrive.toml"
+		tomlf := Dir() + "/gen/xdrive2.toml"
 		xf, err := os.Create(tomlf)
 		if err != nil {
-			t.Errorf("Cannot create xdrive.toml file.  error: %s", err.Error())
+			t.Errorf("Cannot create xdrive2.toml file.  error: %s", err.Error())
 		}
 
-		fmt.Fprintf(xf, "[xdrive]\n")
+		fmt.Fprintf(xf, "[xdrive2]\n")
 		fmt.Fprintf(xf, "dir = \"%s\"\n", conf.Staging)
+		fmt.Fprintf(xf, "pluginpath = [\"%s/plugin\"]\n", conf.Staging)
 		fmt.Fprintf(xf, "host = [")
 		prefix := " "
 		for k, _ := range seghosts {
@@ -52,12 +53,9 @@ func TestSetup(t *testing.T) {
 		}
 		fmt.Fprintf(xf, " ]\n\n")
 
-		fmt.Fprintf(xf, "[[xdrive.mount]]\n")
+		fmt.Fprintf(xf, "[[xdrive2.mount]]\n")
 		fmt.Fprintf(xf, "name = \"tpcds-scale-%d\"\n", conf.Scale)
-		fmt.Fprintf(xf, "scheme = \"nfs\"\n")
-		fmt.Fprintf(xf, "root = \"./tpcds/scale-%d\"\n", conf.Scale)
-		fmt.Fprintf(xf, "conf = \"\"\n")
-
+		fmt.Fprintf(xf, "argv = [\"xdr_fs\", \"csv\", \"./tpcds/scale-%d\"]\n", conf.Scale)
 		xf.Close()
 
 		err = exec.Command("xdrctl", "deploy", tomlf).Run()

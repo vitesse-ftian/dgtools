@@ -56,11 +56,6 @@ func TestSetup(t *testing.T) {
 		fmt.Fprintf(xf, "[[xdrive2.mount]]\n")
 		fmt.Fprintf(xf, "name = \"tpch-scale-%d\"\n", conf.Scale)
 		fmt.Fprintf(xf, "argv = [\"xdr_fs\", \"csv\", \"./tpch/scale-%d\"]\n", conf.Scale)
-
-		fmt.Fprintf(xf, "\n[[xdrive2.mount]]\n")
-		fmt.Fprintf(xf, "name = \"xdrive_pipe\"\n")
-		fmt.Fprintf(xf, "argv = [\"xdrive_pipe\"]\n")
-
 		xf.Close()
 
 		err = exec.Command("xdrctl", "deploy", tomlf).Run()
