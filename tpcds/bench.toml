@@ -6,4 +6,4 @@
 	Scale = 1
 	DDL = "tabf_aocslz4_part.sql"
 	Ext = "XDR"
-	Gucs = ["set vitesse.enable = 1", "set statement_mem = 1000000"] 
+	Gucs = ["set vitesse.enable = 1", "set statement_mem = 1000000", "set vitesse.xliw = 1"] 
