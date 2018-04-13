@@ -5,7 +5,7 @@ import java.util.*;
 import java.nio.file.*;
 import java.nio.file.attribute.*;
 
-import com.vitessedata.xdrive.Xdrive2 ;
+import com.vitessedata.xdrive.Xdrive ;
 import com.vitessedata.xdrive.XdriveUtil ;
 
 import org.apache.commons.csv.*;
@@ -14,10 +14,10 @@ public class Csv {
 
     private int ncol;
     private int nextcol;
-    private Xdrive2.ColumnDesc[] coldesc;
-    private Xdrive2.XCol[] cols;
+    private Xdrive.ColumnDesc[] coldesc;
+    private Xdrive.XCol[] cols;
 
-    private Xdrive2.WriteRequest wreq;
+    private Xdrive.WriteRequest wreq;
     private CSVPrinter csvprinter;
     private FileWriter out;
 
@@ -28,7 +28,7 @@ public class Csv {
         
     }
 
-    public String configFilespec(Xdrive2.FileSpec fspec) {
+    public String configFilespec(Xdrive.FileSpec fspec) {
         String filepath = fspec.getPath();
         int idx = filepath.indexOf("/", 1);
         String path = base_path + filepath.substring(idx);
@@ -58,13 +58,13 @@ public class Csv {
     }
 
 
-    public void readfile(Xdrive2.ReadRequest rreq, Path p) throws Exception {
+    public void readfile(Xdrive.ReadRequest rreq, Path p) throws Exception {
 
         Reader in = null;
 
-        Xdrive2.XCol.Builder[] xcolb = new Xdrive2.XCol.Builder[coldesc.length];
+        Xdrive.XCol.Builder[] xcolb = new Xdrive.XCol.Builder[coldesc.length];
         for (int i = 0; i < coldesc.length; i++) {
-            xcolb[i] = Xdrive2.XCol.newBuilder();
+            xcolb[i] = Xdrive.XCol.newBuilder();
             xcolb[i].setColname(coldesc[i].getName());
         }
 
@@ -75,8 +75,8 @@ public class Csv {
             for (CSVRecord record : records) {
                 nrow++;
                 for (int i = 0 ; i < ncol ; i++) {
-                    Xdrive2.ColumnDesc desc = coldesc[i];
-                    switch (Xdrive2.SpqType.forNumber(desc.getType())) {
+                    Xdrive.ColumnDesc desc = coldesc[i];
+                    switch (Xdrive.SpqType.forNumber(desc.getType())) {
                     case BOOL:
                         {
                             String str = record.get(i);
@@ -213,7 +213,7 @@ public class Csv {
                     }
                     nrow = 0;
                     for (int i = 0 ; i < xcolb.length ; i++) {
-                        xcolb[i] = Xdrive2.XCol.newBuilder();
+                        xcolb[i] = Xdrive.XCol.newBuilder();
                         xcolb[i].setColname(coldesc[i].getName());
                     }
                 }
@@ -239,9 +239,9 @@ public class Csv {
             }
         }
     }
-    public void read(Xdrive2.ReadRequest rreq) throws Exception {
+    public void read(Xdrive.ReadRequest rreq) throws Exception {
         ncol = rreq.getColumndescCount();
-        coldesc = new Xdrive2.ColumnDesc[ncol];
+        coldesc = new Xdrive.ColumnDesc[ncol];
 
         for (int j = 0 ; j < rreq.getColumndescCount() ; j++) {
             coldesc[j] = rreq.getColumndesc(j);
@@ -267,18 +267,18 @@ public class Csv {
         XdriveUtil.replyXColData(null);
     }
     
-    public void sizeMeta(Xdrive2.SizeMetaRequest szreq) throws Exception {
+    public void sizeMeta(Xdrive.SizeMetaRequest szreq) throws Exception {
 
 
     }
 
 
-    public void sample(Xdrive2.SampleRequest req) throws Exception {
+    public void sample(Xdrive.SampleRequest req) throws Exception {
 
 
     }
 
-    public int write(Xdrive2.XCol col) throws Exception {
+    public int write(Xdrive.XCol col) throws Exception {
 
 
         if (col == null) {
@@ -319,15 +319,15 @@ public class Csv {
         return path;
     }
 
-    public void writeRequest(Xdrive2.WriteRequest req) throws Exception {
+    public void writeRequest(Xdrive.WriteRequest req) throws Exception {
 
         String rpath = configFilespec(req.getFilespec());
         String path = genParsedPath(rpath, req.getFragCnt(), req.getFragId());
 
         wreq = req;
         ncol = req.getColumndescCount();
-        coldesc = new Xdrive2.ColumnDesc[ncol];
-        cols = new Xdrive2.XCol[ncol];
+        coldesc = new Xdrive.ColumnDesc[ncol];
+        cols = new Xdrive.XCol[ncol];
         nextcol = 0;
 
         out = new FileWriter(path);
@@ -348,10 +348,10 @@ public class Csv {
         List<String> data = new ArrayList<String>();
 
         for (int col = 0 ; col < ncol ; col++) {
-            Xdrive2.ColumnDesc desc = wreq.getColumndesc(col);
-            Xdrive2.XCol xcol = cols[col]; 
+            Xdrive.ColumnDesc desc = wreq.getColumndesc(col);
+            Xdrive.XCol xcol = cols[col]; 
 
-            switch (Xdrive2.SpqType.forNumber(desc.getType())) {
+            switch (Xdrive.SpqType.forNumber(desc.getType())) {
 
             case BOOL:
                 {

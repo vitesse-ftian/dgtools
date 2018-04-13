@@ -1,5 +1,5 @@
 CSVJAR=../jars/commons-csv-1.5.jar
-VITESSEJAR=$(GPHOME)/plugin/jars/vitessedata-xdrive2.jar
+VITESSEJAR=$(GPHOME)/plugin/jars/vitessedata-xdrive.jar
 PROTOBUFJAR=$(GPHOME)/plugin/jars/protobuf-java-3.4.0.jar
 PROTOBUFUTILJAR=$(GPHOME)/plugin/jars/protobuf-java-util-3.4.0.jar
 CP=$(PROTOBUFJAR):$(PROTOBUFUTILJAR):$(VITESSEJAR):$(CSVJAR):.
