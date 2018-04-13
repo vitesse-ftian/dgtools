@@ -1,40 +1,40 @@
 package plugin
 
 import (
-        "fmt"
-	"path/filepath"
+	"fmt"
 	"github.com/satori/go.uuid"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
-	"os"
-//	"net"
+	//	"net"
 )
 
 const OPSTATUS_FLAG_XCOL int32 = 1
 
 var g_xdrfile *os.File
+
 //var g_conn net.Conn
 
-
 func XdriveFd() (int, error) {
-	fd := os.Getenv("XDRIVE_FD");
-	return strconv.Atoi(fd);
+	fd := os.Getenv("XDRIVE_FD")
+	return strconv.Atoi(fd)
 }
 
 func OpenXdriveIO() error {
-	fdstr := os.Getenv("XDRIVE_FD");
+	fdstr := os.Getenv("XDRIVE_FD")
 	if len(fdstr) == 0 {
 		return fmt.Errorf("XDRIVE_FD is empty")
 	}
 
-	fd, err := strconv.Atoi(fdstr);
+	fd, err := strconv.Atoi(fdstr)
 	if err != nil {
 		return err
 	}
 	g_xdrfile = os.NewFile(uintptr(fd), "tcp")
 	//g_conn, err = net.FileConn(g_xdrfile)
-	
+
 	return err
 }
 
@@ -53,7 +53,6 @@ func DataReply(errcode int32, errmsg string) error {
 	return xdrive.ProtostreamWrite(g_xdrfile, &reply)
 }
 
-
 func WriteReply(errcode int32, errmsg string) error {
 	var reply xdrive.WriteReply
 	reply.Errcode = errcode
@@ -61,57 +60,58 @@ func WriteReply(errcode int32, errmsg string) error {
 	return xdrive.ProtostreamWrite(g_xdrfile, &reply)
 }
 
+func uuidv4() string {
+	u, _ := uuid.NewV4()
+	return fmt.Sprintf("%s", u)
+}
+
 func WritePath(req xdrive.WriteRequest, rootpath string) (string, error) {
-        idx := strings.Index(req.Filespec.Path[1:], "/")
+	idx := strings.Index(req.Filespec.Path[1:], "/")
 	str := req.Filespec.Path[idx+1:]
 	str = filepath.Join(rootpath, str)
-        str = strings.Replace(str, "#SEGCOUNT#", strconv.Itoa(int(req.FragCnt)), -1)
-        path := strings.Replace(str, "#SEGID#", strconv.Itoa(int(req.FragId)), -1)
-        path = strings.Replace(path, "#UUID#", fmt.Sprintf("%s", uuid.NewV4()), -1)
+	str = strings.Replace(str, "#SEGCOUNT#", strconv.Itoa(int(req.FragCnt)), -1)
+	path := strings.Replace(str, "#SEGID#", strconv.Itoa(int(req.FragId)), -1)
+	path = strings.Replace(path, "#UUID#", fmt.Sprintf("%s", uuidv4()), -1)
 
-        if path == str {
-                return path, fmt.Errorf("No #SEGID# or #UUID# substitution in write request.")
-        }
-        return path, nil
+	if path == str {
+		return path, fmt.Errorf("No #SEGID# or #UUID# substitution in write request.")
+	}
+	return path, nil
 }
 
 func ReplyXColData(coldatareply xdrive.XColDataReply) error {
 	err := xdrive.ProtostreamWrite(g_xdrfile, &coldatareply)
-	return err;
+	return err
 }
 
 func GetOpSpec() (xdrive.OpSpec, error) {
-	var opspec xdrive.OpSpec;
-	err := xdrive.ProtostreamRead(g_xdrfile, &opspec);
-	return opspec, err;
+	var opspec xdrive.OpSpec
+	err := xdrive.ProtostreamRead(g_xdrfile, &opspec)
+	return opspec, err
 }
 
 func GetReadRequest() (xdrive.ReadRequest, error) {
-	var rreq xdrive.ReadRequest;
-	err := xdrive.ProtostreamRead(g_xdrfile,&rreq);
-	return rreq, err;
+	var rreq xdrive.ReadRequest
+	err := xdrive.ProtostreamRead(g_xdrfile, &rreq)
+	return rreq, err
 }
-
 
 func GetSampleRequest() (xdrive.SampleRequest, error) {
-        var sreq xdrive.SampleRequest;
-        err := xdrive.ProtostreamRead(g_xdrfile,&sreq);
-	return sreq, err;
+	var sreq xdrive.SampleRequest
+	err := xdrive.ProtostreamRead(g_xdrfile, &sreq)
+	return sreq, err
 }
-
 
 func GetSizeMetaRequest() (xdrive.SizeMetaRequest, error) {
-        var req xdrive.SizeMetaRequest;
-        err := xdrive.ProtostreamRead(g_xdrfile,&req);
-        return req, err;
+	var req xdrive.SizeMetaRequest
+	err := xdrive.ProtostreamRead(g_xdrfile, &req)
+	return req, err
 }
 
-
-
 func GetWriteRequest() (xdrive.WriteRequest, error) {
-        var req xdrive.WriteRequest;
-        err := xdrive.ProtostreamRead(g_xdrfile,&req);
-        return req, err;
+	var req xdrive.WriteRequest
+	err := xdrive.ProtostreamRead(g_xdrfile, &req)
+	return req, err
 }
 
 func SizeMetaReply(nrow int64, nbyte int64) error {
@@ -127,4 +127,3 @@ func GetXCol() (xdrive.XCol, error) {
 	err := xdrive.ProtostreamRead(g_xdrfile, &col)
 	return col, err
 }
-

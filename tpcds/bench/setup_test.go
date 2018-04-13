@@ -44,6 +44,7 @@ func TestSetup(t *testing.T) {
 
 		fmt.Fprintf(xf, "[xdrive]\n")
 		fmt.Fprintf(xf, "dir = \"%s\"\n", conf.Staging)
+		fmt.Fprintf(xf, "pluginpath = [\"%s/plugin\"]\n", conf.Staging)
 		fmt.Fprintf(xf, "host = [")
 		prefix := " "
 		for k, _ := range seghosts {
@@ -54,10 +55,7 @@ func TestSetup(t *testing.T) {
 
 		fmt.Fprintf(xf, "[[xdrive.mount]]\n")
 		fmt.Fprintf(xf, "name = \"tpcds-scale-%d\"\n", conf.Scale)
-		fmt.Fprintf(xf, "scheme = \"nfs\"\n")
-		fmt.Fprintf(xf, "root = \"./tpcds/scale-%d\"\n", conf.Scale)
-		fmt.Fprintf(xf, "conf = \"\"\n")
-
+		fmt.Fprintf(xf, "argv = [\"xdr_fs\", \"csv\", \"./tpcds/scale-%d\"]\n", conf.Scale)
 		xf.Close()
 
 		err = exec.Command("xdrctl", "deploy", tomlf).Run()
@@ -125,7 +123,7 @@ func TestSetup(t *testing.T) {
 				prefix := ""
 				ret := ""
 				for h, _ := range seghosts {
-					ret = ret + prefix + fmt.Sprintf("'gpfdist://%s:22222/tpch/scale-%d/seg-*/%s_[0-9]*.dat'", h, conf.Scale, t)
+					ret = ret + prefix + fmt.Sprintf("'gpfdist://%s:22222/tpcds/scale-%d/seg-*/%s_[0-9]*.dat'", h, conf.Scale, t)
 					prefix = ","
 				}
 				return ret

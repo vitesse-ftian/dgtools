@@ -22,9 +22,7 @@ type Config struct {
 	Scale   int
 	DDL     string
 	Ext     string
-	Orca    int
-	Vitesse int
-	StatementMem int
+	Gucs    []string
 }
 
 type tomlConfig struct {
