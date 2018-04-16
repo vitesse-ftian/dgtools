@@ -23,4 +23,4 @@ cpbin:
 deployplugin:
 	mkdir -p /tmp/wetestdata/xdrive/plugin/package
 	cp package/plugin_csv.tgz /tmp/wetestdata/xdrive/plugin/package
-	xdrctl deployplugin /tmp/wetestdata/xdrive/xdrive2.toml plugin_csv
+	xdrctl deployplugin /tmp/wetestdata/xdrive/xdrive.toml plugin_csv
