@@ -20,8 +20,6 @@ start:
 	rm -fr /tmp/wetestdata/xdrive
 	mkdir -p /tmp/wetestdata/xdrive/data
 	xdrctl deploy ./xdrive.toml
-	echo "Start deploy plugin bits ... " 
-	cp -r package /tmp/wetestdata/xdrive/plugin
 	echo "Start xdrive ..."
 	xdrctl start ./xdrive.toml
 	echo "Copying some file ..."
@@ -59,10 +57,10 @@ cppkg:
 
 deploy:
 	echo "Start deply plugin bits ... "
-	xdrctl deployplugin xdrive.toml esplugin
-	xdrctl deployplugin xdrive.toml fsplugin
-	xdrctl deployplugin xdrive.toml hbaseplugin
-	xdrctl deployplugin xdrive.toml s3plugin
-	xdrctl deployplugin xdrive.toml kafkaplugin
-	xdrctl deployplugin xdrive.toml esload
-	xdrctl deployplugin xdrive.toml lsfile 
+	xdrctl deployplugin xdrive.toml package/esplugin.tgz
+	xdrctl deployplugin xdrive.toml package/fsplugin.tgz
+	xdrctl deployplugin xdrive.toml package/hbaseplugin.tgz
+	xdrctl deployplugin xdrive.toml package/s3plugin.tgz
+	xdrctl deployplugin xdrive.toml package/kafkaplugin.tgz
+	xdrctl deployplugin xdrive.toml package/esload.tgz
+	xdrctl deployplugin xdrive.toml package/lsfile.tgz

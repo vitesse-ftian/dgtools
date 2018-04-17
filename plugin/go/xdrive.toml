@@ -1,59 +1,59 @@
-[xdrive2]
+[xdrive]
 dir = "/tmp/wetestdata/xdrive"
 host = [ "localhost:50051" ]
 pluginpath = ["/tmp/wetestdata/xdrive/plugin"]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
 name = "fs" 
 argv = ["xdr_fs", "csv", "/tmp/wetestdata/xdrive/data"]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
 name = "myx"
 argv = ["fsplugin_csv", "/tmp/wetestdata/xdrive/data"]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
 name = "myxpw"
 argv = ["fsplugin_csv", "/tmp/wetestdata/xdrive/data"]
 env = ["poolwriter=true" ]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
 name = "myls"
 argv = ["ls_file", "/tmp/wetestdata/xdrive/data"]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
 name = "myexec"
 argv = ["fsplugin_csv", "/tmp/wetestdata/xdrive/data"]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
 name = "tpch1fs3"
 argv = ["s3plugin_csv", "/", "tpch1f", "us-west-1"]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
 name = "es"
 argv = ["esplugin_spq", "https://search-whaasa-f25e2tplbjslk44nkmv3d2iszq.us-east-1.es.amazonaws.com", "customer", "5", "access_key_id", "secret_access_key"]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
 name = "eslocal"
 argv = ["esplugin_spq", "http://localhost:9200", "customer", "5", "access_key_id", "secret_access_key"]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
 name = "esload"
 argv = ["esload_spq", "http://localhost:9200", "test_data", "5", "access_key_id", "secret_access_key"]
 
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
 name = "hbase"
 argv = ["hbaseplugin_spq", "localhost", "hduser", ",", "&"]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
 name = "kafka"
 argv = ["kafkaplugin_spq", "localhost:9092", "localhost:2181"]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
   name = "hive_orc"
   argv = ["/usr/bin/java", "-Xmx1G", "-cp", "vitessedata-file-plugin.jar",  "com.vitessedata.xdrive.orc.Main", "hdfs", "/user/hive/warehouse" , "localhost", "8020", "ericlam"]
 
-[[xdrive2.mount]]
+[[xdrive.mount]]
   name = "hive_parquet"
   argv = ["/usr/bin/java", "-Xmx1G", "-cp", "vitessedata-file-plugin.jar",  "com.vitessedata.xdrive.parquet.Main", "hdfs", "/user/hive/warehouse" , "localhost", "8020", "ericlam"]
 
