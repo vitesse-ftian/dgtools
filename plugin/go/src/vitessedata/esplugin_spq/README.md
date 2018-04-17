@@ -13,7 +13,7 @@ We assume elasticsearch cluster is behind a load balancer with single access end
 
 To deploy esplugin, run xdrctl to deploy esplugin to each data nodes.
 
-	% xdrctl deployplugin xdrive.toml esplugin
+	% xdrctl deployplugin xdrive.toml esplugin.tgz
 
 ElasticSearch plugin configuration settings
 -------------------------------------------

@@ -33,7 +33,7 @@ After started the xdrive, you have to deploy the plugin to all xdrive servers.
 
 run 'xdrctl deployplugin' command to deploy plugin to xdrive servers
 
-	% xdrctl deployplugin xdrive.toml kafkaplugin
+	% xdrctl deployplugin xdrive.toml kafkaplugin.tgz
  
 After deploying plugin to xdrive servers, you are ready to run SQL to transfer data between kafka and deepgreen.
  
