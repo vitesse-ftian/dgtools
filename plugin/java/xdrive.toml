@@ -1,6 +1,7 @@
 [xdrive]
 dir = "/tmp/wetestdata/xdrive"
-host = [ "localhost:50051" ]
+port = 50051
+host = [ "localhost" ]
 pluginpath = ["/tmp/wetestdata/xdrive/plugin"]
 
 [[xdrive.mount]]
