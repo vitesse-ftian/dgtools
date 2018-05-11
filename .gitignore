@@ -8,5 +8,6 @@ t.c
 GPATH
 GTAGS
 GRTAGS
+GSYMS
 *.out
 *.swp

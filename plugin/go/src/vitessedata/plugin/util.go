@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 	//	"net"
 )
 
@@ -126,4 +127,9 @@ func GetXCol() (xdrive.XCol, error) {
 	var col xdrive.XCol
 	err := xdrive.ProtostreamRead(g_xdrfile, &col)
 	return col, err
+}
+
+func EpochUs() int64 {
+	ns := time.Now().UnixNano()
+	return ns / 1000
 }

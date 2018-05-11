@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 	"time"
-//	"syscall"
+	//	"syscall"
 )
 
 // plugin is launched by xdrive.   The following code provides some simple debugging
@@ -15,17 +15,17 @@ var g_dbgLog *os.File
 func StartDbgLogWithPrefix(prefix string) {
 	var err error
 	fn := fmt.Sprintf("%s-%s.log", prefix, time.Now().Local().Format("2006-01-02"))
-//	fn := fmt.Sprintf("%s-%d.log", prefix, os.Getpid())
+	//	fn := fmt.Sprintf("%s-%d.log", prefix, os.Getpid())
 	g_dbgLog, err = os.OpenFile(fn, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("Cannot open log file for debugging outputs.")
 	}
-/*
-	err = syscall.Dup2(int(g_dbgLog.Fd()), int(os.Stderr.Fd()))
-	if err != nil {
-		log.Fatalf("Failed to redirect stderr to file: %v", err)
-	}
-*/
+	/*
+		err = syscall.Dup2(int(g_dbgLog.Fd()), int(os.Stderr.Fd()))
+		if err != nil {
+			log.Fatalf("Failed to redirect stderr to file: %v", err)
+		}
+	*/
 	log.SetOutput(g_dbgLog)
 	log.Printf("Switch log output to %s\n", fn)
 	log.Printf("PID=%d\n", os.Getpid())
@@ -79,4 +79,3 @@ func FatalIf(shouldDie bool, msg string, args ...interface{}) {
 		log.Fatalf(msg, args...)
 	}
 }
-

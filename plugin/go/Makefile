@@ -6,6 +6,7 @@ build:
 	(cd src/vitessedata/kafkaplugin_spq && go get . && go install)
 	(cd src/vitessedata/esload_spq && go get . && go install)
 	(cd src/vitessedata/ls_file && go get . && go install)
+	(cd src/vitessedata/fdb_spq && go get . && go install)
 	rm -rf package ; mkdir package
 	(cd bin && tar -zcvf ../package/esplugin.tgz esplugin_spq)
 	(cd bin && tar -zcvf ../package/fsplugin.tgz fsplugin_csv)
@@ -14,6 +15,7 @@ build:
 	(cd bin && tar -zcvf ../package/kafkaplugin.tgz kafkaplugin_spq)
 	(cd bin && tar -zcvf ../package/esload.tgz esload_spq)
 	(cd bin && tar -zcvf ../package/lsfile.tgz ls_file) 
+	(cd bin && tar -zcvf ../package/fdb.tgz fdb_spq)
 
 start:
 	echo "Setup/Deploy xdrive ..." 
@@ -64,3 +66,5 @@ deploy:
 	xdrctl deployplugin xdrive.toml package/kafkaplugin.tgz
 	xdrctl deployplugin xdrive.toml package/esload.tgz
 	xdrctl deployplugin xdrive.toml package/lsfile.tgz
+	xdrctl deployplugin xdrive.toml package/fdb.tgz 
+

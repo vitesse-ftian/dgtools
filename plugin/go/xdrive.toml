@@ -58,3 +58,6 @@ argv = ["kafkaplugin_spq", "localhost:9092", "localhost:2181"]
   name = "hive_parquet"
   argv = ["/usr/bin/java", "-Xmx1G", "-cp", "vitessedata-file-plugin.jar",  "com.vitessedata.xdrive.parquet.Main", "hdfs", "/user/hive/warehouse" , "localhost", "8020", "ericlam"]
 
+[[xdrive.mount]]
+name = "fdb"
+argv = ["fdb_spq"]

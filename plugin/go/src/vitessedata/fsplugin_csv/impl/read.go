@@ -2,11 +2,11 @@ package impl
 
 import (
 	"fmt"
-	"strings"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"hash/fnv"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 	"vitessedata/plugin"
 	"vitessedata/plugin/csvhandler"
@@ -69,7 +69,7 @@ func DoRead(req xdrive.ReadRequest, rootpath string) error {
 	}
 
 	// Glob:
-        idx := strings.Index(req.Filespec.Path[1:], "/")
+	idx := strings.Index(req.Filespec.Path[1:], "/")
 	path := req.Filespec.Path[idx+1:]
 	path = filepath.Join(rootpath, path)
 	plugin.DbgLog("path %s", path)
