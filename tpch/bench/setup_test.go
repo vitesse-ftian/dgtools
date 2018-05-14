@@ -103,7 +103,7 @@ func TestSetup(t *testing.T) {
 	t.Run("Step=extddl", func(t *testing.T) {
 		conn, err := Connect()
 		if err != nil {
-			t.Errorf("Cannot connect to database %s, error: %s", err.Error())
+			t.Errorf("Cannot connect to database, error: %s", err.Error())
 		}
 		defer conn.Disconnect()
 

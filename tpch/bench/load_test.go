@@ -13,7 +13,7 @@ func BenchmarkLoadData(b *testing.B) {
 
 	conn, err := Connect()
 	if err != nil {
-		b.Errorf("Cannot connect to database %s, error: %s", err.Error())
+		b.Errorf("Cannot connect to database, error: %s", err.Error())
 	}
 	defer conn.Disconnect()
 
