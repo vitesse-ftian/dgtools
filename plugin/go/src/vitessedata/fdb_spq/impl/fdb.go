@@ -26,9 +26,9 @@ func opendb(path []string) *fdbctxt {
 	cf := flag.String("clusterfile", "", "fdb cluster file.")
 	nhk := flag.Int("nh", 1, "number of hash bucket column")
 	flag.Parse()
-
 	ctxt.clusterFile = *cf
 	ctxt.nhk = *nhk
+	plugin.DbgLog("Opening database with cf %s, nhk %d.", *cf, *nhk)
 
 	fdb.MustAPIVersion(510)
 
@@ -69,7 +69,7 @@ func (ctxt *fdbctxt) buildKey(t tuple.Tuple) (fdb.Key, byte) {
 	bkt := byte(crc32.ChecksumIEEE(kb))
 	key := ctxt.subs[bkt].Pack(t)
 
-	plugin.DbgLog("Build key: %v -> %v, at bkt %d.", t, key, bkt)
+	// plugin.DbgLog("Build key: %v -> %v, at bkt %d.", t, key, bkt)
 	return key, bkt
 }
 
