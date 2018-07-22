@@ -19,7 +19,7 @@ func ConnectDb() (*dbCtxt, error) {
 	var db dbCtxt
 	conf, err := GetConfig()
 	if err != nil {
-		return &db, err
+		panic(err)
 	}
 
 	db.dg = &xtable.Deepgreen{
@@ -27,23 +27,27 @@ func ConnectDb() (*dbCtxt, error) {
 		Port: strconv.Itoa(conf.DGPort),
 		Db:   conf.Db,
 	}
+
 	err = db.dg.Connect()
 	if err != nil {
-		return &db, err
+		panic(err)
 	}
 
 	db.sel, err = db.dg.Conn.Prepare("select vc, vt from tinybench where ki = $1 and kt = $2")
 	if err != nil {
-		return &db, err
+		panic(err)
 	}
 
 	db.ins, err = db.dg.Conn.Prepare("insert into tinybench values ($1, $2, $3, $4)")
 	if err != nil {
-		return &db, err
+		panic(err)
 	}
 
 	db.upd, err = db.dg.Conn.Prepare("update tinybench set vc = vc + 1 where ki = $1 and kt = $2")
-	return &db, err
+	if err != nil {
+		panic(err)
+	}
+	return &db, nil
 }
 
 func (db *dbCtxt) Disconnect() {
