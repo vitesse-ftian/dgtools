@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
+	"vitessedata/plugin"
 )
 
 type wreqColMap struct {
@@ -29,6 +30,7 @@ func (cm *wreqColMap) init(req xdrive.WriteRequest) error {
 	if err != nil {
 		return err
 	}
+	plugin.DbgLog("Writer: decode req, cm.dirpath %v, keys %v, vals %v.\n", cm.dirpath, cm.keys, cm.vals)
 
 	cm.cols = make([]xdrive.XCol, len(req.Columndesc))
 	cm.colisk = make([]bool, len(req.Columndesc))
@@ -211,8 +213,10 @@ func DoWrite(col xdrive.XCol) error {
 		_, err := ctxt.db.Transact(func(tr fdb.Transaction) (interface{}, error) {
 			for r := int32(0); r < nrow; r++ {
 				if !opdel[r] {
+					plugin.DbgLog("Insert: keys %v, values %v", keys, vals)
 					ctxt.ins(tr, buildTuple(keys[r]), buildTuple(vals[r]))
 				} else {
+					plugin.DbgLog("Del: keys %v.", keys)
 					ctxt.del(tr, buildTuple(keys[r]))
 				}
 			}

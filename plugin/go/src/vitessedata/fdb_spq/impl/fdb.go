@@ -17,18 +17,15 @@ type fdbctxt struct {
 	dir         directory.DirectorySubspace
 	subs        [256]subspace.Subspace
 	clusterFile string
-	nhk         int
 }
 
 func opendb(path []string) *fdbctxt {
 	var ctxt fdbctxt
 
 	cf := flag.String("clusterfile", "", "fdb cluster file.")
-	nhk := flag.Int("nh", 1, "number of hash bucket column")
 	flag.Parse()
 	ctxt.clusterFile = *cf
-	ctxt.nhk = *nhk
-	plugin.DbgLog("Opening database with cf %s, nhk %d.", *cf, *nhk)
+	plugin.DbgLog("Opening database with cf %s.", *cf)
 
 	fdb.MustAPIVersion(510)
 
@@ -60,12 +57,7 @@ func buildTuple(vs []interface{}) tuple.Tuple {
 }
 
 func (ctxt *fdbctxt) buildKey(t tuple.Tuple) (fdb.Key, byte) {
-	nhk := ctxt.nhk
-	if nhk == 0 {
-		nhk = len(t)
-	}
-
-	kb := t[:nhk].Pack()
+	kb := t.Pack()
 	bkt := byte(crc32.ChecksumIEEE(kb))
 	key := ctxt.subs[bkt].Pack(t)
 
