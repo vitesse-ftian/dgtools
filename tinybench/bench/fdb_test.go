@@ -32,7 +32,7 @@ func opendb(b *testing.B) (*fdbCtxt, error) {
 	ctxt.db = fdb.MustOpenDefault()
 
 	b.Logf("Open directory %s.", conf.Db)
-	ctxt.dir, err = directory.CreateOrOpen(ctxt.db, []string{conf.Db}, nil)
+	ctxt.dir, err = directory.CreateOrOpen(ctxt.db, []string{conf.Db, conf.Table}, nil)
 	if err != nil {
 		panic(err)
 	}

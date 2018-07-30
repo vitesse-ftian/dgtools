@@ -14,6 +14,7 @@ type Config struct {
 	DGHost   string
 	DGPort   int
 	Db       string
+	Table    string
 	KiMax    int64
 	NOp      int
 	OpPerTx  int

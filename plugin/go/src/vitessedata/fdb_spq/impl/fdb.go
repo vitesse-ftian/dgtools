@@ -129,7 +129,12 @@ func decodeReqPath(path string) ([]string, []string, []string, error) {
 		return nil, nil, nil, fmt.Errorf("FDB path %v is not a valid format.", path)
 	}
 
-	dirpath := strs[:len(strs)-1]
+	dirpath := strs[1 : len(strs)-1]
+	plugin.DbgLog("Dir path: \n")
+	for ith, dp := range dirpath {
+		plugin.DbgLog("Dir path %d |%s|.\n", ith, dp)
+	}
+
 	kvstrs := strings.Split(strs[len(strs)-1], ":")
 	if len(kvstrs) != 2 {
 		return nil, nil, nil, fmt.Errorf("FDB path %v is not a valid format.", path)

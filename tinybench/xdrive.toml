@@ -1,0 +1,9 @@
+[xdrive]
+dir = "/tmp/wetestdata/xdrive"
+port = 30031
+host = [ "localhost" ]
+pluginpath = ["/tmp/wetestdata/xdrive/plugin"]
+
+[[xdrive.mount]]
+name = "fdb"
+argv = ["fdb_spq/fdb_spq"]
