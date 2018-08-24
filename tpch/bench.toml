@@ -1,9 +1,8 @@
 [TPCH]
 	DGHost = "localhost"
 	DGPort = 5432 
-	Db = "tpch1pax"
+	Db = "tpchpax"
 	Staging = "/home/ftian/oss/data/bench/staging"
-	Scale = 1
+	Scale = 10
 	DDL = "mktab-fao-pax.sql" 
 	Ext = "XDR"
-	Gucs = ["set statement_mem = 1000000"] 
