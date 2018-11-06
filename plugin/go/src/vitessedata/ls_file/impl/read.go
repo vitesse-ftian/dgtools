@@ -3,6 +3,7 @@ package impl
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/bmatcuk/doublestar"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"hash/fnv"
 	"io/ioutil"
@@ -49,7 +50,7 @@ func DoRead(req xdrive.ReadRequest, rootpath string) error {
 	path := req.Filespec.Path[idx+1:]
 	path = filepath.Join(rootpath, path)
 	plugin.DbgLog("path %s", path)
-	flist, err := filepath.Glob(path)
+	flist, err := doublestar.Glob(path)
 	if err != nil {
 		plugin.DbgLogIfErr(err, "Glob failed.  %s", path)
 		plugin.DataReply(-2, "rmgr glob failed: "+err.Error())
