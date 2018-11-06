@@ -14,10 +14,35 @@ import (
 	"vitessedata/plugin"
 )
 
+// evaluate QUERY= filters.   All the filters are AND-ed.
+func evalQuery(qstr []string, fn []string) []string {
+	if len(qstr) == 0 {
+		return fn
+	}
+
+	ret := make([]string, 0)
+	for _, filename := range fn {
+		ok := true
+		for _, qf := range qstr {
+			if len(qf) > 9 && qf[:9] == "fileglob=" {
+				matched, err := doublestar.PathMatch(qf[9:], filename)
+				if err != nil || !matched {
+					ok = false
+					break
+				}
+			}
+		}
+
+		if ok {
+			ret = append(ret, filename)
+		}
+	}
+	return ret
+}
+
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
 // trivial (Errcode == 0, but there is no data) message.
-
 func DoRead(req xdrive.ReadRequest, rootpath string) error {
 
 	// Check/validate frag info.  Again, not necessary, as xdriver server should always
@@ -37,13 +62,14 @@ func DoRead(req xdrive.ReadRequest, rootpath string) error {
 	// All filters are derived from SQL (where clause).  There is a special kind of
 	// filter called "QUERY", which allow users to send any query to plugin.
 	//
-	// var query string
-	// for _, f := range req.Filter {
-	// f cannot be nil
-	//		if f.Op == "QUERY" {
-	//			query = f.Args[0]
-	//		}
-	//	}
+	query := make([]string, 0)
+	for _, f := range req.Filter {
+		// f cannot be nil, we only do
+		plugin.DbgLog("xdrive_query: %s, %s.", f.Op, f.Args[0])
+		if f.Op == "QUERY" {
+			query = append(query, f.Args[0])
+		}
+	}
 
 	// Glob:
 	idx := strings.Index(req.Filespec.Path[1:], "/")
@@ -56,6 +82,8 @@ func DoRead(req xdrive.ReadRequest, rootpath string) error {
 		plugin.DataReply(-2, "rmgr glob failed: "+err.Error())
 		return err
 	}
+
+	flist = evalQuery(query, flist)
 
 	// There are many different ways to implement FragId/FragCnt.   Here we use filename.
 	// All data within one file go to one fragid.  We determine which files this call
@@ -72,15 +100,15 @@ func DoRead(req xdrive.ReadRequest, rootpath string) error {
 		}
 
 		if req.FragId == tmp {
-			plugin.DbgLog("Frag: file %s hash to %d, match frag (%d, %d)", f, hv, req.FragId, req.FragCnt)
+			// plugin.DbgLog("Frag: file %s hash to %d, match frag (%d, %d)", f, hv, req.FragId, req.FragCnt)
 			myflist = append(myflist, f)
 		} else {
-			plugin.DbgLog("Frag: file %s hash to %d, does not match frag (%d, %d)", f, hv, req.FragId, req.FragCnt)
+			// plugin.DbgLog("Frag: file %s hash to %d, does not match frag (%d, %d)", f, hv, req.FragId, req.FragCnt)
 		}
 	}
 
 	// Return each file.
-	plugin.DbgLog("fsplugin: path %s, frag (%d, %d) globed %v", path, req.FragId, req.FragCnt, myflist)
+	// plugin.DbgLog("fsplugin: path %s, frag (%d, %d) globed %v", path, req.FragId, req.FragCnt, myflist)
 
 	// ls_file columns:
 	//	dir,
