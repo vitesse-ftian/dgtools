@@ -6,3 +6,4 @@
 	Scale = 10
 	DDL = "mktab-faocs-lz4.sql" 
 	Ext = "XDR"
+	Cast = "float8"
