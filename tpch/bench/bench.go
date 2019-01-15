@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"testing"
 
 	"github.com/BurntSushi/toml"
 	"github.com/vitesse-ftian/dggo/vitessedata/ssh"
@@ -120,4 +121,10 @@ func PsqlCmd(fn string) (string, error) {
 	psql := ssh.BinAbs("psql")
 	cmd = fmt.Sprintf("%s -h %s -p %d -f %s %s", psql, conf.DGHost, conf.DGPort, fn, conf.Db)
 	return cmd, nil
+}
+
+func Check(t *testing.T, err error, msg string) {
+	if err != nil {
+		t.Errorf("%s.  Error: %s", msg, err.Error())
+	}
 }

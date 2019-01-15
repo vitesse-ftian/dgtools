@@ -268,12 +268,12 @@ func TestSetup(t *testing.T) {
 		}
 		defer conn.Disconnect()
 
-		conn.Execute("DROP SCHEMA IF EXISTS SPQ CASCADE")
-		conn.Execute("CREATE SCHEMA SPQ")
+		Check(t, conn.Execute("DROP SCHEMA IF EXISTS SPQ CASCADE"), "drop spq schema")
+		Check(t, conn.Execute("CREATE SCHEMA SPQ"), "create spq schema")
 
 		var locf func(string) string
 		locf = func(t string) string {
-			return fmt.Sprintf("'xdrive://localhost:31416/tpch-spq-%d/seg-#SEGID#/%s.spq", conf.Scale, t)
+			return fmt.Sprintf("'xdrive://localhost:31416/tpch-spq-%d/seg-#SEGID#/%s.spq'", conf.Scale, t)
 		}
 
 		// Create two set of external tables, one for xdrive, one for gpfdist.
@@ -284,17 +284,17 @@ func TestSetup(t *testing.T) {
                             N_REGIONKEY  INTEGER, 
                             N_COMMENT    VARCHAR(152))
 				   LOCATION (%s) FORMAT 'SPQ'
-				   DISTRIBUTED BY (N_NATIONKEY)
+				   -- DISTRIBUTED BY (N_NATIONKEY)
 				   `
-		conn.Execute(fmt.Sprintf(nation, "WRITABLE", "_W", locf("nation")))
-		conn.Execute(fmt.Sprintf(nation, "", "", locf("nation")))
+		Check(t, conn.Execute(fmt.Sprintf(nation, "WRITABLE", "_W", locf("nation"))), "create nation_w")
+		Check(t, conn.Execute(fmt.Sprintf(nation, "", "", locf("nation"))), "create nation")
 
 		// region
 		region := ` CREATE %s EXTERNAL TABLE SPQ.REGION%s  ( R_REGIONKEY  INTEGER, 
                             R_NAME       VARCHAR(25) /*CHAR(25)*/, 
                             R_COMMENT    VARCHAR(152)) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   DISTRIBUTED BY (R_REGIONKEY)
+				   -- DISTRIBUTED BY (R_REGIONKEY)
 				   `
 		conn.Execute(fmt.Sprintf(region, "WRITABLE", "_W", locf("region")))
 		conn.Execute(fmt.Sprintf(region, "", "", locf("region")))
@@ -310,7 +310,7 @@ func TestSetup(t *testing.T) {
                           P_RETAILPRICE DOUBLE PRECISION /*DECIMAL(15,2)*/, 
                           P_COMMENT     VARCHAR(23))
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   DISTRIBUTED BY (P_PARTKEY)
+				   -- DISTRIBUTED BY (P_PARTKEY)
 				   `
 		conn.Execute(fmt.Sprintf(part, "WRITABLE", "_W", locf("part")))
 		conn.Execute(fmt.Sprintf(part, "", "", locf("part")))
@@ -325,7 +325,7 @@ func TestSetup(t *testing.T) {
                              S_COMMENT     VARCHAR(101))
 							 DUMMY TEXT) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   DISTRIBUTED BY (S_SUPPKEY)
+				   -- DISTRIBUTED BY (S_SUPPKEY)
 				   `
 		conn.Execute(fmt.Sprintf(supplier, "WRITABLE", "_W", locf("supplier")))
 		conn.Execute(fmt.Sprintf(supplier, "", "", locf("supplier")))
@@ -336,7 +336,7 @@ func TestSetup(t *testing.T) {
                              PS_SUPPLYCOST  DOUBLE PRECISION /*DECIMAL(15,2)*/, 
                              PS_COMMENT     VARCHAR(199)) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   DISTRIBUTED BY (PS_PARTKEY)
+				   -- DISTRIBUTED BY (PS_PARTKEY)
 				   `
 		conn.Execute(fmt.Sprintf(partsupp, "WRITABLE", "_W", locf("partsupp")))
 		conn.Execute(fmt.Sprintf(partsupp, "", "", locf("partsupp")))
@@ -350,7 +350,7 @@ func TestSetup(t *testing.T) {
                              C_MKTSEGMENT  VARCHAR(10) /*CHAR(10)*/,
                              C_COMMENT     VARCHAR(117)) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   DISTRIBUTED BY (C_CUSTKEY)
+				   -- DISTRIBUTED BY (C_CUSTKEY)
 				   `
 		conn.Execute(fmt.Sprintf(customer, "WRITABLE", "_W", locf("customer")))
 		conn.Execute(fmt.Sprintf(customer, "", "", locf("customer")))
@@ -365,7 +365,7 @@ func TestSetup(t *testing.T) {
                            O_SHIPPRIORITY   INTEGER,
                            O_COMMENT        VARCHAR(79)) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   DISTRIBUTED BY (O_ORDERKEY)
+				   -- DISTRIBUTED BY (O_ORDERKEY)
 				   `
 		conn.Execute(fmt.Sprintf(orders, "WRITABLE", "_W", locf("orders")))
 		conn.Execute(fmt.Sprintf(orders, "", "", locf("orders")))
@@ -387,7 +387,7 @@ func TestSetup(t *testing.T) {
                              L_SHIPMODE     VARCHAR(10) /*CHAR(10)*/,
                              L_COMMENT      VARCHAR(44)) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   DISTRIBUTED BY (L_ORDERKEY)
+				   -- DISTRIBUTED BY (L_ORDERKEY)
 				   `
 		conn.Execute(fmt.Sprintf(lineitem, "WRITABLE", "_W", locf("lineitem")))
 		conn.Execute(fmt.Sprintf(lineitem, "", "", locf("lineitem")))
