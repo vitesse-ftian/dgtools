@@ -42,7 +42,8 @@ func TestGenData(t *testing.T) {
 		for i, seg := range segs {
 			hosts[i] = seg.Addr
 			datadir := fmt.Sprintf("%s/tpch/scale-%d/seg-%d", conf.Staging, conf.Scale, seg.Id)
-			cmds[i] = fmt.Sprintf("rm -fr %s; mkdir -p %s", datadir, datadir)
+			spqdir := fmt.Sprintf("%s/tpch/spq-%d/seg-%d", conf.Staging, conf.Scale, seg.Id)
+			cmds[i] = fmt.Sprintf("rm -fr %s; mkdir -p %s; rm -fr %s; mkdir -p %s", datadir, datadir, spqdir, spqdir)
 		}
 
 		if ssh.ExecAnyError(ssh.ExecOn(hosts, cmds)) != nil {

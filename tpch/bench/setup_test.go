@@ -57,6 +57,11 @@ func TestSetup(t *testing.T) {
 		fmt.Fprintf(xf, "[[xdrive.mount]]\n")
 		fmt.Fprintf(xf, "name = \"tpch-scale-%d\"\n", conf.Scale)
 		fmt.Fprintf(xf, "argv = [\"xdr_fs/xdr_fs\", \"csv\", \"./tpch/scale-%d\"]\n", conf.Scale)
+
+		fmt.Fprintf(xf, "[[xdrive.mount]]\n")
+		fmt.Fprintf(xf, "name = \"tpch-spq-%d\"\n", conf.Scale)
+		fmt.Fprintf(xf, "argv = [\"xdr_fs/xdr_fs\", \"spq\", \"./tpch/spq-%d\"]\n", conf.Scale)
+
 		xf.Close()
 
 		err = exec.Command("xdrctl", "deploy", tomlf).Run()
@@ -177,11 +182,7 @@ func TestSetup(t *testing.T) {
 				   LOCATION (%s) 
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
-		partsql := fmt.Sprintf(part, conf.Ext, locallf("part"))
-		err = conn.Execute(partsql)
-		if err != nil {
-			t.Errorf("Cannot create ext table part.   DDS is %s", partsql)
-		}
+		conn.Execute(fmt.Sprintf(part, conf.Ext, loc1f("part")))
 
 		// supplier
 		supplier := `CREATE EXTERNAL TABLE %s.SUPPLIER ( S_SUPPKEY     INTEGER, 
@@ -258,5 +259,137 @@ func TestSetup(t *testing.T) {
 				   FORMAT 'CSV' (DELIMITER '|') 
 				   `
 		conn.Execute(fmt.Sprintf(lineitem, conf.Ext, locallf("lineitem")))
+	})
+
+	t.Run("Step=spqddl", func(t *testing.T) {
+		conn, err := Connect()
+		if err != nil {
+			t.Errorf("Cannot connect to database, error: %s", err.Error())
+		}
+		defer conn.Disconnect()
+
+		conn.Execute("DROP SCHEMA IF EXISTS SPQ CASCADE")
+		conn.Execute("CREATE SCHEMA SPQ")
+
+		var locf func(string) string
+		locf = func(t string) string {
+			return fmt.Sprintf("'xdrive://localhost:31416/tpch-spq-%d/seg-#SEGID#/%s.spq", conf.Scale, t)
+		}
+
+		// Create two set of external tables, one for xdrive, one for gpfdist.
+		//
+		// nation.
+		nation := `CREATE %s EXTERNAL TABLE SPQ.NATION%s  ( N_NATIONKEY  INTEGER,
+                            N_NAME       VARCHAR(25) /*CHAR(25)*/, 
+                            N_REGIONKEY  INTEGER, 
+                            N_COMMENT    VARCHAR(152))
+				   LOCATION (%s) FORMAT 'SPQ'
+				   DISTRIBUTED BY (N_NATIONKEY)
+				   `
+		conn.Execute(fmt.Sprintf(nation, "WRITABLE", "_W", locf("nation")))
+		conn.Execute(fmt.Sprintf(nation, "", "", locf("nation")))
+
+		// region
+		region := ` CREATE %s EXTERNAL TABLE SPQ.REGION%s  ( R_REGIONKEY  INTEGER, 
+                            R_NAME       VARCHAR(25) /*CHAR(25)*/, 
+                            R_COMMENT    VARCHAR(152)) 
+				   LOCATION (%s) FORMAT 'SPQ' 
+				   DISTRIBUTED BY (R_REGIONKEY)
+				   `
+		conn.Execute(fmt.Sprintf(region, "WRITABLE", "_W", locf("region")))
+		conn.Execute(fmt.Sprintf(region, "", "", locf("region")))
+
+		// part
+		part := `CREATE %s EXTERNAL TABLE SPQ.PART%s  ( P_PARTKEY     INTEGER, 
+                          P_NAME        VARCHAR(55), 
+                          P_MFGR        VARCHAR(25) /*CHAR(25)*/, 
+                          P_BRAND       VARCHAR(10) /*CHAR(10)*/, 
+                          P_TYPE        VARCHAR(25), 
+                          P_SIZE        INTEGER, 
+                          P_CONTAINER   VARCHAR(10) /*CHAR(10)*/, 
+                          P_RETAILPRICE DOUBLE PRECISION /*DECIMAL(15,2)*/, 
+                          P_COMMENT     VARCHAR(23))
+				   LOCATION (%s) FORMAT 'SPQ' 
+				   DISTRIBUTED BY (P_PARTKEY)
+				   `
+		conn.Execute(fmt.Sprintf(part, "WRITABLE", "_W", locf("part")))
+		conn.Execute(fmt.Sprintf(part, "", "", locf("part")))
+
+		// supplier
+		supplier := `CREATE %s EXTERNAL TABLE SPQ.SUPPLIER%s ( S_SUPPKEY     INTEGER, 
+                             S_NAME        VARCHAR(25) /*CHAR(25)*/, 
+                             S_ADDRESS     VARCHAR(40), 
+                             S_NATIONKEY   INTEGER, 
+                             S_PHONE       VARCHAR(15) /*CHAR(15)*/, 
+                             S_ACCTBAL     DOUBLE PRECISION /*DECIMAL(15,2)*/, 
+                             S_COMMENT     VARCHAR(101))
+							 DUMMY TEXT) 
+				   LOCATION (%s) FORMAT 'SPQ' 
+				   DISTRIBUTED BY (S_SUPPKEY)
+				   `
+		conn.Execute(fmt.Sprintf(supplier, "WRITABLE", "_W", locf("supplier")))
+		conn.Execute(fmt.Sprintf(supplier, "", "", locf("supplier")))
+
+		partsupp := `CREATE %s EXTERNAL TABLE SPQ.PARTSUPP%s ( PS_PARTKEY     INTEGER, 
+                             PS_SUPPKEY     INTEGER, 
+                             PS_AVAILQTY    INTEGER,
+                             PS_SUPPLYCOST  DOUBLE PRECISION /*DECIMAL(15,2)*/, 
+                             PS_COMMENT     VARCHAR(199)) 
+				   LOCATION (%s) FORMAT 'SPQ' 
+				   DISTRIBUTED BY (PS_PARTKEY)
+				   `
+		conn.Execute(fmt.Sprintf(partsupp, "WRITABLE", "_W", locf("partsupp")))
+		conn.Execute(fmt.Sprintf(partsupp, "", "", locf("partsupp")))
+
+		customer := `CREATE %s EXTERNAL TABLE SPQ.CUSTOMER%s ( C_CUSTKEY     INTEGER, 
+                             C_NAME        VARCHAR(25),
+                             C_ADDRESS     VARCHAR(40),
+                             C_NATIONKEY   INTEGER,
+                             C_PHONE       VARCHAR(15) /*CHAR(15)*/,
+                             C_ACCTBAL     DOUBLE PRECISION/*DECIMAL(15,2)*/, 
+                             C_MKTSEGMENT  VARCHAR(10) /*CHAR(10)*/,
+                             C_COMMENT     VARCHAR(117)) 
+				   LOCATION (%s) FORMAT 'SPQ' 
+				   DISTRIBUTED BY (C_CUSTKEY)
+				   `
+		conn.Execute(fmt.Sprintf(customer, "WRITABLE", "_W", locf("customer")))
+		conn.Execute(fmt.Sprintf(customer, "", "", locf("customer")))
+
+		orders := `CREATE %s EXTERNAL TABLE SPQ.ORDERS%s  ( O_ORDERKEY       BIGINT, 
+                           O_CUSTKEY        INTEGER,
+                           O_ORDERSTATUS    VARCHAR(1)/*CHAR(1)*/,
+                           O_TOTALPRICE     DOUBLE PRECISION /*DECIMAL(15,2)*/,
+                           O_ORDERDATE      DATE,
+                           O_ORDERPRIORITY  VARCHAR(15) /*CHAR(15)*/,
+                           O_CLERK          VARCHAR(15) /*CHAR(15)*/,
+                           O_SHIPPRIORITY   INTEGER,
+                           O_COMMENT        VARCHAR(79)) 
+				   LOCATION (%s) FORMAT 'SPQ' 
+				   DISTRIBUTED BY (O_ORDERKEY)
+				   `
+		conn.Execute(fmt.Sprintf(orders, "WRITABLE", "_W", locf("orders")))
+		conn.Execute(fmt.Sprintf(orders, "", "", locf("orders")))
+
+		lineitem := `CREATE %s EXTERNAL TABLE SPQ.LINEITEM%s ( L_ORDERKEY BIGINT, 
+                             L_PARTKEY     INTEGER,
+                             L_SUPPKEY     INTEGER,
+                             L_LINENUMBER  INTEGER,
+                             L_QUANTITY    INTEGER /*DECIMAL(15,2)*/, 
+                             L_EXTENDEDPRICE  DOUBLE PRECISION/*DECIMAL(15,2)*/,
+                             L_DISCOUNT    DOUBLE PRECISION /*DECIMAL(15,2)*/,
+                             L_TAX         DOUBLE PRECISION /*DECIMAL(15,2)*/,
+                             L_RETURNFLAG  VARCHAR(1),
+                             L_LINESTATUS  VARCHAR(1),
+                             L_SHIPDATE    DATE,
+                             L_COMMITDATE  DATE,
+                             L_RECEIPTDATE DATE,
+                             L_SHIPINSTRUCT VARCHAR(25) /*CHAR(25)*/,
+                             L_SHIPMODE     VARCHAR(10) /*CHAR(10)*/,
+                             L_COMMENT      VARCHAR(44)) 
+				   LOCATION (%s) FORMAT 'SPQ' 
+				   DISTRIBUTED BY (L_ORDERKEY)
+				   `
+		conn.Execute(fmt.Sprintf(lineitem, "WRITABLE", "_W", locf("lineitem")))
+		conn.Execute(fmt.Sprintf(lineitem, "", "", locf("lineitem")))
 	})
 }
