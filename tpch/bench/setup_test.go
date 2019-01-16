@@ -284,7 +284,7 @@ func TestSetup(t *testing.T) {
                             N_REGIONKEY  INTEGER, 
                             N_COMMENT    VARCHAR(152))
 				   LOCATION (%s) FORMAT 'SPQ'
-				   -- DISTRIBUTED BY (N_NATIONKEY)
+				   DISTRIBUTED BY (N_NATIONKEY)
 				   `
 		Check(t, conn.Execute(fmt.Sprintf(nation, "WRITABLE", "_W", locf("nation"))), "create nation_w")
 		Check(t, conn.Execute(fmt.Sprintf(nation, "", "", locf("nation"))), "create nation")
@@ -294,10 +294,10 @@ func TestSetup(t *testing.T) {
                             R_NAME       VARCHAR(25) /*CHAR(25)*/, 
                             R_COMMENT    VARCHAR(152)) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   -- DISTRIBUTED BY (R_REGIONKEY)
+				   DISTRIBUTED BY (R_REGIONKEY)
 				   `
-		conn.Execute(fmt.Sprintf(region, "WRITABLE", "_W", locf("region")))
-		conn.Execute(fmt.Sprintf(region, "", "", locf("region")))
+		Check(t, conn.Execute(fmt.Sprintf(region, "WRITABLE", "_W", locf("region"))), "create region_w")
+		Check(t, conn.Execute(fmt.Sprintf(region, "", "", locf("region"))), "create region")
 
 		// part
 		part := `CREATE %s EXTERNAL TABLE SPQ.PART%s  ( P_PARTKEY     INTEGER, 
@@ -310,10 +310,10 @@ func TestSetup(t *testing.T) {
                           P_RETAILPRICE DOUBLE PRECISION /*DECIMAL(15,2)*/, 
                           P_COMMENT     VARCHAR(23))
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   -- DISTRIBUTED BY (P_PARTKEY)
+				   DISTRIBUTED BY (P_PARTKEY)
 				   `
-		conn.Execute(fmt.Sprintf(part, "WRITABLE", "_W", locf("part")))
-		conn.Execute(fmt.Sprintf(part, "", "", locf("part")))
+		Check(t, conn.Execute(fmt.Sprintf(part, "WRITABLE", "_W", locf("part"))), "create part_w")
+		Check(t, conn.Execute(fmt.Sprintf(part, "", "", locf("part"))), "create part")
 
 		// supplier
 		supplier := `CREATE %s EXTERNAL TABLE SPQ.SUPPLIER%s ( S_SUPPKEY     INTEGER, 
@@ -323,12 +323,11 @@ func TestSetup(t *testing.T) {
                              S_PHONE       VARCHAR(15) /*CHAR(15)*/, 
                              S_ACCTBAL     DOUBLE PRECISION /*DECIMAL(15,2)*/, 
                              S_COMMENT     VARCHAR(101))
-							 DUMMY TEXT) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   -- DISTRIBUTED BY (S_SUPPKEY)
+				   DISTRIBUTED BY (S_SUPPKEY)
 				   `
-		conn.Execute(fmt.Sprintf(supplier, "WRITABLE", "_W", locf("supplier")))
-		conn.Execute(fmt.Sprintf(supplier, "", "", locf("supplier")))
+		Check(t, conn.Execute(fmt.Sprintf(supplier, "WRITABLE", "_W", locf("supplier"))), "create supplier_w")
+		Check(t, conn.Execute(fmt.Sprintf(supplier, "", "", locf("supplier"))), "create supplier")
 
 		partsupp := `CREATE %s EXTERNAL TABLE SPQ.PARTSUPP%s ( PS_PARTKEY     INTEGER, 
                              PS_SUPPKEY     INTEGER, 
@@ -336,10 +335,10 @@ func TestSetup(t *testing.T) {
                              PS_SUPPLYCOST  DOUBLE PRECISION /*DECIMAL(15,2)*/, 
                              PS_COMMENT     VARCHAR(199)) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   -- DISTRIBUTED BY (PS_PARTKEY)
+				   DISTRIBUTED BY (PS_PARTKEY)
 				   `
-		conn.Execute(fmt.Sprintf(partsupp, "WRITABLE", "_W", locf("partsupp")))
-		conn.Execute(fmt.Sprintf(partsupp, "", "", locf("partsupp")))
+		Check(t, conn.Execute(fmt.Sprintf(partsupp, "WRITABLE", "_W", locf("partsupp"))), "create partsupp_w")
+		Check(t, conn.Execute(fmt.Sprintf(partsupp, "", "", locf("partsupp"))), "create partsupp")
 
 		customer := `CREATE %s EXTERNAL TABLE SPQ.CUSTOMER%s ( C_CUSTKEY     INTEGER, 
                              C_NAME        VARCHAR(25),
@@ -350,10 +349,10 @@ func TestSetup(t *testing.T) {
                              C_MKTSEGMENT  VARCHAR(10) /*CHAR(10)*/,
                              C_COMMENT     VARCHAR(117)) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   -- DISTRIBUTED BY (C_CUSTKEY)
+				   DISTRIBUTED BY (C_CUSTKEY)
 				   `
-		conn.Execute(fmt.Sprintf(customer, "WRITABLE", "_W", locf("customer")))
-		conn.Execute(fmt.Sprintf(customer, "", "", locf("customer")))
+		Check(t, conn.Execute(fmt.Sprintf(customer, "WRITABLE", "_W", locf("customer"))), "create customer_w")
+		Check(t, conn.Execute(fmt.Sprintf(customer, "", "", locf("customer"))), "create customer")
 
 		orders := `CREATE %s EXTERNAL TABLE SPQ.ORDERS%s  ( O_ORDERKEY       BIGINT, 
                            O_CUSTKEY        INTEGER,
@@ -365,10 +364,10 @@ func TestSetup(t *testing.T) {
                            O_SHIPPRIORITY   INTEGER,
                            O_COMMENT        VARCHAR(79)) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   -- DISTRIBUTED BY (O_ORDERKEY)
+				   DISTRIBUTED BY (O_ORDERKEY)
 				   `
-		conn.Execute(fmt.Sprintf(orders, "WRITABLE", "_W", locf("orders")))
-		conn.Execute(fmt.Sprintf(orders, "", "", locf("orders")))
+		Check(t, conn.Execute(fmt.Sprintf(orders, "WRITABLE", "_W", locf("orders"))), "create orders_w")
+		Check(t, conn.Execute(fmt.Sprintf(orders, "", "", locf("orders"))), "create orders")
 
 		lineitem := `CREATE %s EXTERNAL TABLE SPQ.LINEITEM%s ( L_ORDERKEY BIGINT, 
                              L_PARTKEY     INTEGER,
@@ -387,9 +386,9 @@ func TestSetup(t *testing.T) {
                              L_SHIPMODE     VARCHAR(10) /*CHAR(10)*/,
                              L_COMMENT      VARCHAR(44)) 
 				   LOCATION (%s) FORMAT 'SPQ' 
-				   -- DISTRIBUTED BY (L_ORDERKEY)
+				   DISTRIBUTED BY (L_ORDERKEY)
 				   `
-		conn.Execute(fmt.Sprintf(lineitem, "WRITABLE", "_W", locf("lineitem")))
-		conn.Execute(fmt.Sprintf(lineitem, "", "", locf("lineitem")))
+		Check(t, conn.Execute(fmt.Sprintf(lineitem, "WRITABLE", "_W", locf("lineitem"))), "create lineitem_w")
+		Check(t, conn.Execute(fmt.Sprintf(lineitem, "", "", locf("lineitem"))), "create lineitem")
 	})
 }
