@@ -68,7 +68,7 @@ func WriteRequest(req xdrive.WriteRequest) error {
 		return err
 	}
 
-	ctxt = opendb(cm.dirpath)
+	ctxt = opendb(cm.dirpath, req.FragId)
 	return nil
 }
 

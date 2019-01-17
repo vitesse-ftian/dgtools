@@ -7,7 +7,6 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
-	"hash/crc32"
 	"strings"
 	"vitessedata/plugin"
 )
@@ -15,11 +14,12 @@ import (
 type fdbctxt struct {
 	db          fdb.Database
 	dir         directory.DirectorySubspace
-	subs        [256]subspace.Subspace
+	seg         int32
+	sub         subspace.Subspace
 	clusterFile string
 }
 
-func opendb(path []string) *fdbctxt {
+func opendb(path []string, seg int32) *fdbctxt {
 	var ctxt fdbctxt
 
 	cf := flag.String("clusterfile", "", "fdb cluster file.")
@@ -27,7 +27,7 @@ func opendb(path []string) *fdbctxt {
 	ctxt.clusterFile = *cf
 	plugin.DbgLog("Opening database with cf %s.", *cf)
 
-	fdb.MustAPIVersion(510)
+	fdb.MustAPIVersion(600)
 
 	if ctxt.clusterFile != "" {
 		// For now, fdb only support one database "DB"
@@ -42,9 +42,8 @@ func opendb(path []string) *fdbctxt {
 		panic(err)
 	}
 
-	for i := 0; i < 256; i++ {
-		ctxt.subs[i] = ctxt.dir.Sub([]byte{byte(i)})
-	}
+	ctxt.seg = seg
+	ctxt.sub = ctxt.dir.Sub([]byte(fmt.Sprintf("%d", seg)))
 	return &ctxt
 }
 
@@ -56,24 +55,15 @@ func buildTuple(vs []interface{}) tuple.Tuple {
 	return tup
 }
 
-func (ctxt *fdbctxt) buildKey(t tuple.Tuple) (fdb.Key, byte) {
-	kb := t.Pack()
-	bkt := byte(crc32.ChecksumIEEE(kb))
-	key := ctxt.subs[bkt].Pack(t)
-
-	// plugin.DbgLog("Build key: %v -> %v, at bkt %d.", t, key, bkt)
-	return key, bkt
-}
-
-func (ctxt *fdbctxt) buildBktKey(bkt byte, t tuple.Tuple) fdb.Key {
+func (ctxt *fdbctxt) buildKey(t tuple.Tuple) fdb.Key {
 	if t == nil || len(t) == 0 {
-		return ctxt.subs[bkt].FDBKey()
+		return ctxt.sub.FDBKey()
 	}
-	return ctxt.subs[bkt].Pack(t)
+	return ctxt.sub.Pack(t)
 }
 
-func (ctxt *fdbctxt) parseKeyValue(bkt byte, kv fdb.KeyValue) (tuple.Tuple, tuple.Tuple, error) {
-	kt, err := ctxt.subs[bkt].Unpack(kv.Key)
+func (ctxt *fdbctxt) parseKeyValue(kv fdb.KeyValue) (tuple.Tuple, tuple.Tuple, error) {
+	kt, err := ctxt.sub.Unpack(kv.Key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -86,27 +76,27 @@ func (ctxt *fdbctxt) parseKeyValue(bkt byte, kv fdb.KeyValue) (tuple.Tuple, tupl
 	return kt, vt, nil
 }
 
-func (ctxt *fdbctxt) buildRange(bkt byte, ta, tz tuple.Tuple) fdb.KeyRange {
-	ka := ctxt.buildBktKey(bkt, ta)
+func (ctxt *fdbctxt) buildRange(ta, tz tuple.Tuple) fdb.KeyRange {
+	ka := ctxt.buildKey(ta)
 	kra, _ := fdb.PrefixRange(ka)
-	kz := ctxt.buildBktKey(bkt, tz)
+	kz := ctxt.buildKey(tz)
 	krz, _ := fdb.PrefixRange(kz)
 	return fdb.KeyRange{kra.Begin, krz.End}
 }
 
 func (ctxt *fdbctxt) ins(tr fdb.Transaction, kt, vt tuple.Tuple) {
-	k, _ := ctxt.buildKey(kt)
+	k := ctxt.buildKey(kt)
 	v := vt.Pack()
 	tr.Set(k, v)
 }
 
 func (ctxt *fdbctxt) del(tr fdb.Transaction, kt tuple.Tuple) {
-	k, _ := ctxt.buildKey(kt)
+	k := ctxt.buildKey(kt)
 	tr.Clear(k)
 }
 
 func (ctxt *fdbctxt) get(tr fdb.Transaction, kt tuple.Tuple) (tuple.Tuple, error) {
-	k, _ := ctxt.buildKey(kt)
+	k := ctxt.buildKey(kt)
 	ba := tr.Get(k).MustGet()
 	return tuple.Unpack(ba)
 }
