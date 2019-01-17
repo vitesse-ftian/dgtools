@@ -391,4 +391,17 @@ func TestSetup(t *testing.T) {
 		Check(t, conn.Execute(fmt.Sprintf(lineitem, "WRITABLE", "_W", locf("lineitem"))), "create lineitem_w")
 		Check(t, conn.Execute(fmt.Sprintf(lineitem, "", "", locf("lineitem"))), "create lineitem")
 	})
+
+	t.Run("Step=spqview", func(t *testing.T) {
+		qf := fmt.Sprintf("%s/sql/mkview-spq.sql", Dir())
+		cmd, err := PsqlCmd(qf)
+		if err != nil {
+			t.Errorf("Cannot build psql query command. error :%s", err.Error())
+		}
+
+		err = exec.Command("bash", "-c", cmd).Run()
+		if err != nil {
+			t.Errorf("Cannot run spq query view ddl.   error: %s", err.Error())
+		}
+	})
 }
