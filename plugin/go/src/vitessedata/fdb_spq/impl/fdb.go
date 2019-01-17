@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
-	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
+	"github.com/satori/go.uuid"
+	"strconv"
 	"strings"
 	"vitessedata/plugin"
 )
@@ -14,12 +15,10 @@ import (
 type fdbctxt struct {
 	db          fdb.Database
 	dir         directory.DirectorySubspace
-	seg         int32
-	sub         subspace.Subspace
 	clusterFile string
 }
 
-func opendb(path []string, seg int32) *fdbctxt {
+func opendb(path []string) *fdbctxt {
 	var ctxt fdbctxt
 
 	cf := flag.String("clusterfile", "", "fdb cluster file.")
@@ -41,9 +40,6 @@ func opendb(path []string, seg int32) *fdbctxt {
 	if err != nil {
 		panic(err)
 	}
-
-	ctxt.seg = seg
-	ctxt.sub = ctxt.dir.Sub([]byte(fmt.Sprintf("%d", seg)))
 	return &ctxt
 }
 
@@ -57,13 +53,13 @@ func buildTuple(vs []interface{}) tuple.Tuple {
 
 func (ctxt *fdbctxt) buildKey(t tuple.Tuple) fdb.Key {
 	if t == nil || len(t) == 0 {
-		return ctxt.sub.FDBKey()
+		return ctxt.dir.FDBKey()
 	}
-	return ctxt.sub.Pack(t)
+	return ctxt.dir.Pack(t)
 }
 
 func (ctxt *fdbctxt) parseKeyValue(kv fdb.KeyValue) (tuple.Tuple, tuple.Tuple, error) {
-	kt, err := ctxt.sub.Unpack(kv.Key)
+	kt, err := ctxt.dir.Unpack(kv.Key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -101,9 +97,18 @@ func (ctxt *fdbctxt) get(tr fdb.Transaction, kt tuple.Tuple) (tuple.Tuple, error
 	return tuple.Unpack(ba)
 }
 
-func decodeReqPath(path string) ([]string, []string, []string, error) {
+func uuidv4() string {
+	u, _ := uuid.NewV4()
+	return fmt.Sprintf("%s", u)
+}
+
+func decodeReqPath(reqpath string, segid, segcnt int32) ([]string, []string, []string, error) {
 	// path from request should be format mountpoint/dir/dir/key1,key2:val1,val2,val3
 	// remove mount point, then return path splited by "/"
+	path := strings.Replace(reqpath, "#SEGCOUNT#", strconv.Itoa(int(segcnt)), -1)
+	path = strings.Replace(path, "#SEGID#", strconv.Itoa(int(segid)), -1)
+	path = strings.Replace(path, "#UUID#", fmt.Sprintf("%s", uuidv4()), -1)
+
 	idx := strings.Index(path[1:], "/")
 	strs := strings.Split(path[idx+1:], "/")
 

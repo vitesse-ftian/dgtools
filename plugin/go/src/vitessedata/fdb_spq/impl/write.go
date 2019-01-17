@@ -26,7 +26,7 @@ var cm wreqColMap
 func (cm *wreqColMap) init(req xdrive.WriteRequest) error {
 	var err error
 	cm.wreq = req
-	cm.dirpath, cm.keys, cm.vals, err = decodeReqPath(req.Filespec.Path)
+	cm.dirpath, cm.keys, cm.vals, err = decodeReqPath(req.Filespec.Path, req.FragId, req.FragCnt)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func WriteRequest(req xdrive.WriteRequest) error {
 		return err
 	}
 
-	ctxt = opendb(cm.dirpath, req.FragId)
+	ctxt = opendb(cm.dirpath)
 	return nil
 }
 

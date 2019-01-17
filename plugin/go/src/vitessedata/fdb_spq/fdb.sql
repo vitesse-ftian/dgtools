@@ -6,7 +6,7 @@ create writable external table fdbw
     v text,
     __xdr_op int
 )
-location ('xdrive://127.0.0.1:50051/fdb/deepgreen/test/i,t:v')
+location ('xdrive://127.0.0.1:31416/fdb/deepgreen/test-#SEGID#/i,t:v')
 format 'spq'
 distributed by (i)
 ;
@@ -20,8 +20,8 @@ create external table fdbr
     t text,
     v text
 )
-location ('xdrive://127.0.0.1:50051/fdb/deepgreen/test/i,t:v')
+location ('xdrive://127.0.0.1:31416/fdb/deepgreen/test-#SEGID#/i,t:v')
 format 'spq'
--- distributed by (i)
+distributed by (i)
 ;
 

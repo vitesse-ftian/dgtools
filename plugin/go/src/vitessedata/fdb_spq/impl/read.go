@@ -60,12 +60,11 @@ func args2ifv(t int32, s string) (interface{}, error) {
 func (cm *rreqColMap) init(req xdrive.ReadRequest) error {
 	var err error
 
-	if req.FragCnt <= 0 || req.FragId < 0 || req.FragId >= req.FragCnt {
-		return fmt.Errorf("Invalid read request")
-	}
+	// server may not set fragid/fragcnt -- if server already did #SEGID# substitution.
+	plugin.DbgLog("FDB read: path %s, segid %d, segcnt %d.\n", req.Filespec.Path, req.FragId, req.FragCnt)
 
 	cm.rreq = req
-	cm.dirpath, cm.keys, cm.vals, err = decodeReqPath(req.Filespec.Path)
+	cm.dirpath, cm.keys, cm.vals, err = decodeReqPath(req.Filespec.Path, req.FragId, req.FragCnt)
 	if err != nil {
 		return err
 	}
@@ -193,7 +192,7 @@ func DoRead(req xdrive.ReadRequest) error {
 		return err
 	}
 
-	ctxt = opendb(cm.dirpath, req.FragId)
+	ctxt = opendb(cm.dirpath)
 	kr := ctxt.buildRange(cm.kta, cm.ktz)
 
 	// plugin.DbgLog("Scanning with [%v, %v]", cm.kta, cm.ktz)
