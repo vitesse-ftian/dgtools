@@ -20,7 +20,8 @@ CREATE WRITABLE EXTERNAL TABLE fdb_wli ( L_ORDERKEY    BIGINT ,
                             __xdr_op int
                         )
                         location ('xdrive://127.0.0.1:50051/fdb/tpch1/lineitem/l_orderkey,l_partkey,l_suppkey,l_linenumber:l_quantity,l_extendedprice,l_discount,l_tax,l_returnflag,l_linestatus,l_shipdate,l_commitdate,l_receiptdate,l_shipinstruct,l_shipmode,l_comment')
-                        format 'spq';
+                        format 'spq'
+                        distributed by (L_ORDERKEY);
 
 
 drop external table if exists fdb_rli;
@@ -42,7 +43,6 @@ CREATE EXTERNAL TABLE fdb_rli ( L_ORDERKEY    BIGINT ,
                              L_COMMENT      VARCHAR(44) 
                         )
                         location ('xdrive://127.0.0.1:50051/fdb/tpch1/lineitem/l_orderkey,l_partkey,l_suppkey,l_linenumber:l_quantity,l_extendedprice,l_discount,l_tax,l_returnflag,l_linestatus,l_shipdate,l_commitdate,l_receiptdate,l_shipinstruct,l_shipmode,l_comment')
-                        format 'spq';
-
-
+                        format 'spq'
+                        distributed by (L_ORDERKEY);
 
