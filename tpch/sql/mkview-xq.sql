@@ -1,6 +1,6 @@
 SET client_min_messages TO WARNING;
 
-set search_path = 'xdrive';
+set search_path = 'xdrqry';
 
 drop view if exists q0;
 create view q0 as
