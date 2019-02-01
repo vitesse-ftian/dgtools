@@ -128,7 +128,7 @@ func BenchmarkLoadSpq(b *testing.B) {
 	}
 
 	b.Run("Step=nation", func(b *testing.B) {
-		err := conn.Execute(fmt.Sprintf(`INSERT INTO SPQ.NATION_W SELECT 
+		err := conn.Execute(fmt.Sprintf(`INSERT INTO xdrive.NATION_W SELECT 
 			N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT 
 			FROM %s.NATION`, conf.Ext))
 		if err != nil {
@@ -137,7 +137,7 @@ func BenchmarkLoadSpq(b *testing.B) {
 	})
 
 	b.Run("Step=region", func(b *testing.B) {
-		err := conn.Execute(fmt.Sprintf(`INSERT INTO SPQ.REGION_W SELECT 
+		err := conn.Execute(fmt.Sprintf(`INSERT INTO xdrive.REGION_W SELECT 
 			R_REGIONKEY, R_NAME, R_COMMENT 
 			FROM %s.REGION`, conf.Ext))
 		if err != nil {
@@ -146,7 +146,7 @@ func BenchmarkLoadSpq(b *testing.B) {
 	})
 
 	b.Run("Step=part", func(b *testing.B) {
-		err := conn.Execute(fmt.Sprintf(`INSERT INTO SPQ.PART_W SELECT 
+		err := conn.Execute(fmt.Sprintf(`INSERT INTO xdrive.PART_W SELECT 
 			P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, 
 			P_SIZE, P_CONTAINER, P_RETAILPRICE::%s, P_COMMENT
 			FROM %s.PART`, conf.Cast, conf.Ext))
@@ -156,7 +156,7 @@ func BenchmarkLoadSpq(b *testing.B) {
 	})
 
 	b.Run("Step=supplier", func(b *testing.B) {
-		err := conn.Execute(fmt.Sprintf(`INSERT INTO SPQ.SUPPLIER_W SELECT 
+		err := conn.Execute(fmt.Sprintf(`INSERT INTO xdrive.SUPPLIER_W SELECT 
 			S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE,
 			S_ACCTBAL::%s, S_COMMENT
 			FROM %s.SUPPLIER`, conf.Cast, conf.Ext))
@@ -166,7 +166,7 @@ func BenchmarkLoadSpq(b *testing.B) {
 	})
 
 	b.Run("Step=partsupp", func(b *testing.B) {
-		err := conn.Execute(fmt.Sprintf(`INSERT INTO SPQ.PARTSUPP_W SELECT
+		err := conn.Execute(fmt.Sprintf(`INSERT INTO xdrive.PARTSUPP_W SELECT
 			PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST::%s, PS_COMMENT
 			FROM %s.PARTSUPP`, conf.Cast, conf.Ext))
 		if err != nil {
@@ -175,7 +175,7 @@ func BenchmarkLoadSpq(b *testing.B) {
 	})
 
 	b.Run("Step=customer", func(b *testing.B) {
-		err := conn.Execute(fmt.Sprintf(`INSERT INTO SPQ.CUSTOMER_W SELECT 
+		err := conn.Execute(fmt.Sprintf(`INSERT INTO xdrive.CUSTOMER_W SELECT 
 			C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, 
 			C_PHONE, C_ACCTBAL::%s, C_MKTSEGMENT, C_COMMENT
 			FROM %s.CUSTOMER`, conf.Cast, conf.Ext))
@@ -185,7 +185,7 @@ func BenchmarkLoadSpq(b *testing.B) {
 	})
 
 	b.Run("Step=orders", func(b *testing.B) {
-		err := conn.Execute(fmt.Sprintf(`INSERT INTO SPQ.ORDERS_W SELECT 
+		err := conn.Execute(fmt.Sprintf(`INSERT INTO xdrive.ORDERS_W SELECT 
 			O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE::%s,
 			O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT
 			FROM %s.ORDERS`, conf.Cast, conf.Ext))
@@ -195,7 +195,7 @@ func BenchmarkLoadSpq(b *testing.B) {
 	})
 
 	b.Run("Step=lineitem", func(b *testing.B) {
-		err := conn.Execute(fmt.Sprintf(`INSERT INTO SPQ.LINEITEM_W SELECT 
+		err := conn.Execute(fmt.Sprintf(`INSERT INTO xdrive.LINEITEM_W SELECT 
 			 L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER,
 			 L_QUANTITY, L_EXTENDEDPRICE::%s, L_DISCOUNT::%s, 
 			 L_TAX::%s, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, 
@@ -209,7 +209,12 @@ func BenchmarkLoadSpq(b *testing.B) {
 
 	b.Run("Step=analyze", func(b *testing.B) {
 		for _, tab := range []string{"nation", "region", "part", "supplier", "partsupp", "customer", "orders", "lineitem"} {
-			err := conn.Execute(fmt.Sprintf("ANALYZE SPQ.%s", tab))
+			err := conn.Execute(fmt.Sprintf("ANALYZE xdrive.%s", tab))
+			if err != nil {
+				b.Errorf("Cannot vacuum analyze database. error: %s", err.Error())
+			}
+
+			err = conn.Execute(fmt.Sprintf("ANALYZE xdrqry.%s", tab))
 			if err != nil {
 				b.Errorf("Cannot vacuum analyze database. error: %s", err.Error())
 			}

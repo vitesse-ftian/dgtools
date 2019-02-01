@@ -42,14 +42,14 @@ func BenchmarkQueryDb(b *testing.B) {
 	}
 }
 
-func runSpqQ(b *testing.B, conn *xtable.Deepgreen, n int) {
-	err := conn.Execute(fmt.Sprintf("select * from spq.q%d", n))
+func runSpqQ(b *testing.B, conn *xtable.Deepgreen, n int, sc string) {
+	err := conn.Execute(fmt.Sprintf("select * from %s.q%d", sc, n))
 	if err != nil {
 		b.Errorf("Cannot run query %d.  error: %s", n, err.Error())
 	}
 }
 
-func BenchmarkQuerySpq(b *testing.B) {
+func benchmarkXDriveQuery(b *testing.B, sc string) {
 	conf, err := GetConfig()
 	if err != nil {
 		b.Errorf("Configuration error: %s", err.Error())
@@ -72,7 +72,15 @@ func BenchmarkQuerySpq(b *testing.B) {
 	for i := 0; i <= 22; i++ {
 		runid := fmt.Sprintf("Step=q%d", i)
 		b.Run(runid, func(b *testing.B) {
-			runSpqQ(b, conn, i)
+			runSpqQ(b, conn, i, sc)
 		})
 	}
+}
+
+func BenchmarkQueryXdrive(b *testing.B) {
+	benchmarkXDriveQuery(b, "xdrive")
+}
+
+func BenchmarkQueryXdrqry(b *testing.B) {
+	benchmarkXDriveQuery(b, "xdrqry")
 }
