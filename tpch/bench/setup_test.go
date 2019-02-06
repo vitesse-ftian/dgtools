@@ -404,15 +404,18 @@ func TestSetup(t *testing.T) {
 	})
 
 	t.Run("Step=spqview", func(t *testing.T) {
-		qf := fmt.Sprintf("%s/sql/mkview-spq.sql", Dir())
-		cmd, err := PsqlCmd(qf)
-		if err != nil {
-			t.Errorf("Cannot build psql query command. error :%s", err.Error())
-		}
+		px := [2]string{"spq", "xq"}
+		for i := 0; i < 2; i++ {
+			qf := fmt.Sprintf("%s/sql/mkview-%s.sql", Dir(), px[i])
+			cmd, err := PsqlCmd(qf)
+			if err != nil {
+				t.Errorf("Cannot build psql query command. error :%s", err.Error())
+			}
 
-		err = exec.Command("bash", "-c", cmd).Run()
-		if err != nil {
-			t.Errorf("Cannot run spq query view ddl.   error: %s", err.Error())
+			err = exec.Command("bash", "-c", cmd).Run()
+			if err != nil {
+				t.Errorf("Cannot run spq query view ddl.   error: %s", err.Error())
+			}
 		}
 	})
 }

@@ -18,6 +18,11 @@ loadspq:
 	@echo "NOTE: Make sure you have started xdrive or gpfdist !!!" 
 	go test -run=NONO -bench=LoadSpq -benchtime=0s -timeout 24h ./bench
 
+analyzespq:
+	go test -run=NONO -bench=LoadSpq/Step=analyze -benchtime=0s -timeout 24h ./bench
+
+
+
 runxdrive:
 	go test -run=NONO -bench=QueryXdrive -benchtime=0s -timeout 24h ./bench
 
