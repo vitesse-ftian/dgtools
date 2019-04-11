@@ -274,9 +274,9 @@ func TestSetup(t *testing.T) {
 			Check(t, conn.Execute(fmt.Sprintf("CREATE SCHEMA %s", px[i])), "create spq schema")
 		}
 
-		var locf func(string) string
-		locf = func(t string) string {
-			return fmt.Sprintf("'xdrive://localhost:31416/tpch-spq-%d/seg-#SEGID#/%s.spq'", conf.Scale, t)
+		var locf func(string, string) string
+		locf = func(t, protocol string) string {
+			return fmt.Sprintf("'%s://localhost:31416/tpch-spq-%d/seg-#SEGID#/%s.spq'", protocol, conf.Scale, t)
 		}
 
 		// Create two set of external tables, one for xdrive, one for gpfdist.
