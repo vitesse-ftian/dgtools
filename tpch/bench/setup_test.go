@@ -400,7 +400,7 @@ func TestSetup(t *testing.T) {
 				   `
 		Check(t, conn.Execute(fmt.Sprintf(lineitem, "WRITABLE", px[0], "_W", locf("lineitem"), "")), "create lineitem_w")
 		Check(t, conn.Execute(fmt.Sprintf(lineitem, "", px[0], "", locf("lineitem"), "")), "create lineitem")
-		Check(t, conn.Execute(fmt.Sprintf(lineitem, "", px[1], "", locf("lineitem"), "")), "create lineitem")
+		Check(t, conn.Execute(fmt.Sprintf(lineitem, "", px[1], "", locf("lineitem"), "X")), "create lineitem")
 	})
 
 	t.Run("Step=spqview", func(t *testing.T) {
