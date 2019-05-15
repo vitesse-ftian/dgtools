@@ -9,23 +9,20 @@ ddl:
 
 load:
 	@echo "NOTE: Make sure you have started xdrive or gpfdist !!!" 
-	go test -run=NONO -bench=LoadData -benchtime=0s -timeout 24h ./bench
+	go test -run=NONO -bench=LoadData -benchtime=1ns -timeout 24h ./bench
 
 run:
-	go test -run=NONO -bench=QueryDb -benchtime=0s -timeout 24h ./bench
+	go test -run=NONO -bench=QueryDb -benchtime=1ns -timeout 24h ./bench
 
 loadspq:
 	@echo "NOTE: Make sure you have started xdrive or gpfdist !!!" 
-	go test -run=NONO -bench=LoadSpq -benchtime=0s -timeout 24h ./bench
+	go test -run=NONO -bench=LoadSpq -benchtime=1ns -timeout 24h ./bench
 
 analyzespq:
-	go test -run=NONO -bench=LoadSpq/Step=analyze -benchtime=0s -timeout 24h ./bench
-
-
+	go test -run=NONO -bench=LoadSpq/Step=analyze -benchtime=1ns -timeout 24h ./bench
 
 runxdrive:
-	go test -run=NONO -bench=QueryXdrive -benchtime=0s -timeout 24h ./bench
+	go test -run=NONO -bench=QueryXdrive -benchtime=1ns -timeout 24h ./bench
 
 runxdrqry:
-	go test -run=NONO -bench=QueryXdrqry -benchtime=0s -timeout 24h ./bench
-
+	go test -run=NONO -bench=QueryXdrqry -benchtime=1ns -timeout 24h ./bench

@@ -45,7 +45,7 @@ func TestSetup(t *testing.T) {
 		fmt.Fprintf(xf, "[xdrive]\n")
 		fmt.Fprintf(xf, "dir = \"%s\"\n", conf.Staging)
 		fmt.Fprintf(xf, "pluginpath = [\"%s/plugin\"]\n", conf.Staging)
-		fmt.Fprintf(xf, "port=31416\n")
+		fmt.Fprintf(xf, "port=27183\n")
 		fmt.Fprintf(xf, "host = [")
 		prefix := " "
 		for k, _ := range seghosts {
@@ -125,10 +125,10 @@ func TestSetup(t *testing.T) {
 				// xdrive syntax for nation, region is exactly the same as other tables.   In fact, for a
 				// cluster running xdrive as single cluster mode, we must add a * wildcard -- otherwise,
 				// if xdrive sees no wildcard, it will enforce the file exists, otherwise, error.
-				return fmt.Sprintf("'xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*'", conf.Scale, t)
+				return fmt.Sprintf("'xdrive://localhost:27183/tpch-scale-%d/seg-#SEGID#/%s.tbl*'", conf.Scale, t)
 			}
 			locallf = func(t string) string {
-				return fmt.Sprintf("'xdrive://localhost:31416/tpch-scale-%d/seg-#SEGID#/%s.tbl*'", conf.Scale, t)
+				return fmt.Sprintf("'xdrive://localhost:27183/tpch-scale-%d/seg-#SEGID#/%s.tbl*'", conf.Scale, t)
 			}
 		} else {
 			loc1f = func(t string) string {
@@ -276,7 +276,7 @@ func TestSetup(t *testing.T) {
 
 		var locf func(string) string
 		locf = func(t string) string {
-			return fmt.Sprintf("'xdrive://localhost:31416/tpch-spq-%d/seg-#SEGID#/%s.spq'", conf.Scale, t)
+			return fmt.Sprintf("'xdrive://localhost:27183/tpch-spq-%d/seg-#SEGID#/%s.spq'", conf.Scale, t)
 		}
 
 		// Create two set of external tables, one for xdrive, one for gpfdist.
