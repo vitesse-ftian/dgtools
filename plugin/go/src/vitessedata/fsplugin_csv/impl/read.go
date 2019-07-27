@@ -53,8 +53,16 @@ func processEachFile(csvh *csvhandler.CsvReader, fn, grep string) error {
 				return err
 			}
 
-			if err = lk.TryLock(); err != nil {
-				return err
+			for {
+				if err = lk.TryLock(); err != nil {
+					if _, ok := err.(interface{ Temporary() bool }); ok {
+						time.Sleep(10 * time.Millisecond)
+					} else {
+						return err
+					}
+				} else {
+					break
+				}
 			}
 			defer lk.Unlock()
 		}
