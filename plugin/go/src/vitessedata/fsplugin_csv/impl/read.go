@@ -72,7 +72,7 @@ func processEachFile(csvh *csvhandler.CsvReader, fn, grep string) error {
 		var args []string
 		if strings.HasPrefix(grep, "xgrep=") {
 			cmd = "./xgrep"
-			args = append(args, "-regexp", grep[6:], "-input", fn)
+			args = append(args, "-regex", grep[6:], "-input", fn)
 		} else if strings.HasPrefix(grep, "grep=") {
 			cmd = "/bin/grep"
 			args = append(args, "-e", grep[5:], fn)
@@ -86,6 +86,9 @@ func processEachFile(csvh *csvhandler.CsvReader, fn, grep string) error {
 		plugin.DbgLog("Running pipe: %s, %v", cmd, args)
 
 		xcmd := exec.Command(cmd, args...)
+		xcmd.Env = os.Environ()
+		// xcmd.Env = append(xcmd.Env, "XILINX_XRT=/opt/xilinx/xrt")
+
 		input, err := xcmd.StdoutPipe()
 		if err != nil {
 			plugin.DbgLogIfErr(err, "Pipe command failed to get pipe.")
