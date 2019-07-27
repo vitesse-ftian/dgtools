@@ -2,9 +2,12 @@ package impl
 
 import (
 	"fmt"
+	"github.com/nightlyone/lockfile"
 	"github.com/vitesse-ftian/dggo/vitessedata/proto/xdrive"
 	"hash/fnv"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -30,14 +33,87 @@ func inject_fault(fault string) error {
 	}
 }
 
+func processEachFile(csvh *csvhandler.CsvReader, fn, grep string) error {
+	var input io.ReadCloser
+	var err error
+
+	if grep == "" {
+		input, err = os.Open(fn)
+		if err != nil {
+			return err
+		}
+		err = csvh.ProcessEachFile(input)
+		return err
+	} else {
+		// Need to lock device.
+		if strings.HasPrefix(grep, "xgrep=") ||
+			strings.HasPrefix(grep, "grep1=") {
+			lk, err := lockfile.New("/tmp/xdrive.xgrep.lk")
+			if err != nil {
+				return err
+			}
+
+			if err = lk.TryLock(); err != nil {
+				return err
+			}
+			defer lk.Unlock()
+		}
+
+		// build cmd.
+		var cmd string
+		var args []string
+		if strings.HasPrefix(grep, "xgrep=") {
+			cmd = "./xgrep"
+			args = append(args, "-regexp", grep[6:], "-input", fn)
+		} else if strings.HasPrefix(grep, "grep=") {
+			cmd = "/bin/grep"
+			args = append(args, "-e", grep[5:], fn)
+		} else if strings.HasPrefix(grep, "grep1=") {
+			cmd = "/bin/grep"
+			args = append(args, "-e", grep[6:], fn)
+		} else {
+			return fmt.Errorf("Bad xgrep prefix.")
+		}
+
+		plugin.DbgLog("Running pipe: %s, %v", cmd, args)
+
+		xcmd := exec.Command(cmd, args...)
+		input, err := xcmd.StdoutPipe()
+		if err != nil {
+			plugin.DbgLogIfErr(err, "Pipe command failed to get pipe.")
+			return err
+		}
+
+		if err = xcmd.Start(); err != nil {
+			plugin.DbgLogIfErr(err, "Pipe command failed to start.")
+			return err
+		}
+
+		err = csvh.ProcessEachFile(input)
+
+		// ignore return error.   if grep found nothing, it return code 1 which
+		// is an "error" condition in unix shell world.
+		xcmd.Wait()
+
+		plugin.DbgLogIfErr(err, "CSV Pipe failed.")
+		return err
+	}
+}
+
 // DoRead servies XDrive read requests.   It read a ReadRequest from stdin and reply
 // a sequence of PluginDataReply to stdout.   It should end the data stream with a
 // trivial (Errcode == 0, but there is no data) message.
 func DoRead(req xdrive.ReadRequest, rootpath string) error {
 
 	// Check/validate frag info.  Again, not necessary, as xdriver server should always
-	// fill in good value.
-	if req.FragCnt <= 0 || req.FragId < 0 || req.FragId >= req.FragCnt {
+	// fill in good value.   FragCnt == 0 is consider OK -- which server should have set
+	// req.FragId == 0 as well, to indicate all files (this usually happens after #SEGID#
+	// substitution.)  We fix it to 1 here.
+	if req.FragCnt == 0 {
+		req.FragCnt = 1
+	}
+
+	if req.FragCnt < 0 || req.FragId < 0 || req.FragId >= req.FragCnt {
 		plugin.DbgLog("Invalid read req %v", req)
 		plugin.DataReply(-3, fmt.Sprintf("Read request frag (%d, %d) is not valid.", req.FragId, req.FragCnt))
 		return fmt.Errorf("Invalid read request")
@@ -54,10 +130,17 @@ func DoRead(req xdrive.ReadRequest, rootpath string) error {
 	// an example, we implement a poorman's fault injection.
 	//
 	var fault string
+	var grep string
 	for _, f := range req.Filter {
 		// f cannot be nil
 		if f.Op == "QUERY" {
-			fault = f.Args[0]
+			if strings.HasPrefix(f.Args[0], "xgrep=") ||
+				strings.HasPrefix(f.Args[0], "grep=") ||
+				strings.HasPrefix(f.Args[0], "grep1=") {
+				grep = f.Args[0]
+			} else {
+				fault = f.Args[0]
+			}
 		}
 	}
 
@@ -113,15 +196,7 @@ func DoRead(req xdrive.ReadRequest, rootpath string) error {
 
 	// Now process each file.
 	for _, f := range myflist {
-		file, err := os.Open(f)
-		if err != nil {
-			plugin.DbgLogIfErr(err, "Open csv file %s failed.", f)
-			plugin.DataReply(-10, "Cannot open file "+f)
-			return err
-		}
-
-		// csvh will close.
-		err = csvh.ProcessEachFile(file)
+		err = processEachFile(&csvh, f, grep)
 		if err != nil {
 			plugin.DbgLogIfErr(err, "Parse csv file %s failed.", f)
 			plugin.DataReply(-20, "CSV file "+f+" has invalid data")
