@@ -114,7 +114,7 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 			plugin.DbgLog("Col %d Buiding I32Data size %d\n", col, xcol.Nrow)
 			xcol.I32Data = make([]int32, xcol.Nrow)
 			for idx, rec := range records {
-				val := rec[col]
+				val := rec[h.colid[col]]
 				if val == "" {
 					// Trivial null, for better null handling, need to deal with the nullstr in csvspec.
 					xcol.Nullmap[idx] = true
@@ -135,7 +135,7 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 			plugin.DbgLog("Col %d Buiding I64Data size %d\n", col, xcol.Nrow)
 			xcol.I64Data = make([]int64, xcol.Nrow)
 			for idx, rec := range records {
-				val := rec[col]
+				val := rec[h.colid[col]]
 				if val == "" {
 					// Trivial null, for better null handling, need to deal with the nullstr in csvspec.
 					xcol.Nullmap[idx] = true
@@ -155,7 +155,7 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 			// These types are encoded as float32 in xcol
 			xcol.F32Data = make([]float32, xcol.Nrow)
 			for idx, rec := range records {
-				val := rec[col]
+				val := rec[h.colid[col]]
 				if val == "" {
 					// Trivial null, for better null handling, need to deal with the nullstr in csvspec.
 					xcol.Nullmap[idx] = true
@@ -176,7 +176,7 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 			// These types are encoded as float64 in xcol
 			xcol.F64Data = make([]float64, xcol.Nrow)
 			for idx, rec := range records {
-				val := rec[col]
+				val := rec[h.colid[col]]
 				if val == "" {
 					// Trivial null, for better null handling, need to deal with the nullstr in csvspec.
 					xcol.Nullmap[idx] = true
@@ -200,7 +200,7 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 			plugin.DbgLog("Buiding SData size %d\n", xcol.Nrow)
 			xcol.Sdata = make([]string, xcol.Nrow)
 			for idx, rec := range records {
-				val := rec[col]
+				val := rec[h.colid[col]]
 				if val == "" {
 					// Trivial null, for better null handling, need to deal with the nullstr in csvspec.
 					xcol.Nullmap[idx] = true
@@ -213,11 +213,10 @@ func (h *CsvReader) ProcessEachFile(file io.ReadCloser) error {
 		}
 	}
 
-	
 	for col := 0; col < h.ncol; col++ {
 		err = plugin.ReplyXColData(coldatareply[col])
 		if err != nil {
-			plugin.DbgLogIfErr(err, "write data column failed");
+			plugin.DbgLogIfErr(err, "write data column failed")
 			return err
 		}
 	}
