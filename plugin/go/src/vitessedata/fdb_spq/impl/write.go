@@ -37,7 +37,7 @@ func (cm *wreqColMap) init(req xdrive.WriteRequest) error {
 	cm.colpos = make([]int, len(req.Columndesc))
 
 	for idx, c := range req.Columndesc {
-		if c.Name == "__xdr_op" {
+		if c.Name == "__xdrive_op" {
 			cm.colisk[idx] = false
 			cm.colpos[idx] = -1
 		} else {
@@ -95,7 +95,7 @@ func DoWrite(col xdrive.XCol) error {
 
 		for c := 0; c < len(cm.cols); c++ {
 			if cm.colpos[c] < 0 {
-				// __xdr_op
+				// __xdrive_op
 				for r := int32(0); r < nrow; r++ {
 					if !cm.cols[c].Nullmap[r] && cm.cols[c].I32Data[r] < 0 {
 						opdel[r] = true

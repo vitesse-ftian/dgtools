@@ -4,7 +4,7 @@ create writable external table fdbw
     i int,
     t text,
     v text,
-    __xdr_op int
+    __xdrive_op int
 )
 location ('xdrive://127.0.0.1:31416/fdb/deepgreen/test-#SEGID#/i,t:v')
 format 'spq'

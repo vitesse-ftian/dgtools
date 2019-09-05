@@ -17,7 +17,7 @@ CREATE WRITABLE EXTERNAL TABLE fdb_wli ( L_ORDERKEY    BIGINT ,
                              L_SHIPINSTRUCT VARCHAR(25) /*CHAR(25)*/ ,
                              L_SHIPMODE     VARCHAR(10) /*CHAR(10)*/ ,
                              L_COMMENT      VARCHAR(44) ,
-                            __xdr_op int
+                            __xdrive_op int
                         )
                         location ('xdrive://127.0.0.1:50051/fdb/tpch1/lineitem/l_orderkey,l_partkey,l_suppkey,l_linenumber:l_quantity,l_extendedprice,l_discount,l_tax,l_returnflag,l_linestatus,l_shipdate,l_commitdate,l_receiptdate,l_shipinstruct,l_shipmode,l_comment')
                         format 'spq'
