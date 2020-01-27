@@ -1,4 +1,5 @@
-set search_path='tpcds';
+set search_path to tpcds,public;
+
 
 create view q0 as
 select 'call_center', count(*) from call_center UNION ALL
@@ -298,7 +299,7 @@ with ssr as
     select cr_catalog_page_sk as page_sk,
            cr_returned_date_sk as date_sk,
            cast(0 as smallnumber) as sales_price,
-           cast(0 as smallnumber)) as profit,
+           cast(0 as smallnumber) as profit,
            cr_return_amount as return_amt,
            cr_net_loss as net_loss
     from catalog_returns
@@ -329,7 +330,7 @@ with ssr as
     select ws_web_site_sk as wsr_web_site_sk,
            wr_returned_date_sk as date_sk,
            cast(0 as smallnumber) as sales_price,
-           cast(0 as smallnumber)) as profit,
+           cast(0 as smallnumber) as profit,
            wr_return_amt as return_amt,
            wr_net_loss as net_loss
     from web_returns left outer join web_sales on
@@ -1009,7 +1010,7 @@ with  cross_items as
  order by this_year.channel1, this_year.i_brand_id1, this_year.i_class_id1, this_year.i_category_id1
  limit 100;
 
-create view q14 as select * from q14_1; 
+create view q14 as select count(*) from q14_1 union all select count(*) from q14_2;
 
 -- end query 1 in stream 0 using template query14.tpl
 -- start query 1 in stream 0 using template query15.tpl
@@ -1364,8 +1365,7 @@ with frequent_ss_items as
        group by c_last_name,c_first_name)) y
      order by c_last_name,c_first_name,sales
   limit 100;
-
-create view q23 as select * from q23_1; 
+create view q23 as select count(*) from q23_1 UNION ALL select count(*) from q23_2;
 
 -- end query 1 in stream 0 using template query23.tpl
 -- start query 1 in stream 0 using template query24.tpl
@@ -1469,7 +1469,8 @@ having sum(netpaid) > (select 0.05*avg(netpaid)
                            from ssales)
 ;
 
-create view q24 as select * from q24_1; 
+create view q24 as 
+select count(*) from q24_1 UNION ALL select count(*) from q24_2;
 
 -- end query 1 in stream 0 using template query24.tpl
 -- start query 1 in stream 0 using template query25.tpl
@@ -2080,8 +2081,8 @@ where inv1.i_item_sk = inv2.i_item_sk
 order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
         ,inv2.d_moy,inv2.mean, inv2.cov
 ;
-
-create view q39 as select * from q39_1; 
+create view q39 as 
+select count(*) from q39_1 union all select count(*) from q39_2;
 
 -- end query 1 in stream 0 using template query39.tpl
 -- start query 1 in stream 0 using template query40.tpl
@@ -3408,53 +3409,53 @@ select
  	,'DIAMOND' || ',' || 'AIRBORNE' as ship_carriers
        ,d_year as year
  	,sum(case when d_moy = 1 
- 		then ws_sales_price* ws_quantity else 0 end) as jan_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as jan_sales
  	,sum(case when d_moy = 2 
- 		then ws_sales_price* ws_quantity else 0 end) as feb_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as feb_sales
  	,sum(case when d_moy = 3 
- 		then ws_sales_price* ws_quantity else 0 end) as mar_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as mar_sales
  	,sum(case when d_moy = 4 
- 		then ws_sales_price* ws_quantity else 0 end) as apr_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as apr_sales
  	,sum(case when d_moy = 5 
- 		then ws_sales_price* ws_quantity else 0 end) as may_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as may_sales
  	,sum(case when d_moy = 6 
- 		then ws_sales_price* ws_quantity else 0 end) as jun_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as jun_sales
  	,sum(case when d_moy = 7 
- 		then ws_sales_price* ws_quantity else 0 end) as jul_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as jul_sales
  	,sum(case when d_moy = 8 
- 		then ws_sales_price* ws_quantity else 0 end) as aug_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as aug_sales
  	,sum(case when d_moy = 9 
- 		then ws_sales_price* ws_quantity else 0 end) as sep_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as sep_sales
  	,sum(case when d_moy = 10 
- 		then ws_sales_price* ws_quantity else 0 end) as oct_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as oct_sales
  	,sum(case when d_moy = 11
- 		then ws_sales_price* ws_quantity else 0 end) as nov_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as nov_sales
  	,sum(case when d_moy = 12
- 		then ws_sales_price* ws_quantity else 0 end) as dec_sales
+ 		then ws_sales_price* ws_quantity else 0::smallnumber end) as dec_sales
  	,sum(case when d_moy = 1 
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jan_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as jan_net
  	,sum(case when d_moy = 2
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as feb_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as feb_net
  	,sum(case when d_moy = 3 
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as mar_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as mar_net
  	,sum(case when d_moy = 4 
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as apr_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as apr_net
  	,sum(case when d_moy = 5 
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as may_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as may_net
  	,sum(case when d_moy = 6 
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jun_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as jun_net
  	,sum(case when d_moy = 7 
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jul_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as jul_net
  	,sum(case when d_moy = 8 
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as aug_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as aug_net
  	,sum(case when d_moy = 9 
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as sep_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as sep_net
  	,sum(case when d_moy = 10 
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as oct_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as oct_net
  	,sum(case when d_moy = 11
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as nov_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as nov_net
  	,sum(case when d_moy = 12
- 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as dec_net
+ 		then ws_net_paid_inc_tax * ws_quantity else 0::smallnumber end) as dec_net
      from
           web_sales
          ,warehouse
@@ -3489,53 +3490,53 @@ select
  	,'DIAMOND' || ',' || 'AIRBORNE' as ship_carriers
        ,d_year as year
  	,sum(case when d_moy = 1 
- 		then cs_ext_sales_price* cs_quantity else 0 end) as jan_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as jan_sales
  	,sum(case when d_moy = 2 
- 		then cs_ext_sales_price* cs_quantity else 0 end) as feb_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as feb_sales
  	,sum(case when d_moy = 3 
- 		then cs_ext_sales_price* cs_quantity else 0 end) as mar_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as mar_sales
  	,sum(case when d_moy = 4 
- 		then cs_ext_sales_price* cs_quantity else 0 end) as apr_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as apr_sales
  	,sum(case when d_moy = 5 
- 		then cs_ext_sales_price* cs_quantity else 0 end) as may_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as may_sales
  	,sum(case when d_moy = 6 
- 		then cs_ext_sales_price* cs_quantity else 0 end) as jun_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as jun_sales
  	,sum(case when d_moy = 7 
- 		then cs_ext_sales_price* cs_quantity else 0 end) as jul_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as jul_sales
  	,sum(case when d_moy = 8 
- 		then cs_ext_sales_price* cs_quantity else 0 end) as aug_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as aug_sales
  	,sum(case when d_moy = 9 
- 		then cs_ext_sales_price* cs_quantity else 0 end) as sep_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as sep_sales
  	,sum(case when d_moy = 10 
- 		then cs_ext_sales_price* cs_quantity else 0 end) as oct_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as oct_sales
  	,sum(case when d_moy = 11
- 		then cs_ext_sales_price* cs_quantity else 0 end) as nov_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as nov_sales
  	,sum(case when d_moy = 12
- 		then cs_ext_sales_price* cs_quantity else 0 end) as dec_sales
+ 		then cs_ext_sales_price* cs_quantity else 0::smallnumber end) as dec_sales
  	,sum(case when d_moy = 1 
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jan_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as jan_net
  	,sum(case when d_moy = 2 
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as feb_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as feb_net
  	,sum(case when d_moy = 3 
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as mar_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as mar_net
  	,sum(case when d_moy = 4 
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as apr_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as apr_net
  	,sum(case when d_moy = 5 
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as may_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as may_net
  	,sum(case when d_moy = 6 
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jun_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as jun_net
  	,sum(case when d_moy = 7 
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jul_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as jul_net
  	,sum(case when d_moy = 8 
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as aug_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as aug_net
  	,sum(case when d_moy = 9 
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as sep_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as sep_net
  	,sum(case when d_moy = 10 
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as oct_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as oct_net
  	,sum(case when d_moy = 11
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as nov_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as nov_net
  	,sum(case when d_moy = 12
- 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as dec_net
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0::smallnumber end) as dec_net
      from
           catalog_sales
          ,warehouse
@@ -4052,7 +4053,7 @@ WITH all_sales AS (
    AND curr_yr.i_manufact_id=prev_yr.i_manufact_id
    AND curr_yr.d_year=2002
    AND prev_yr.d_year=2002-1
-   AND CAST(curr_yr.sales_cnt as smallnumber)/CAST(prev_yr.sales_cnt as smallnumber)<0.9
+   AND CAST(curr_yr.sales_cnt AS smallnumber)/CAST(prev_yr.sales_cnt AS smallnumber)<0.9
  ORDER BY sales_cnt_diff
  limit 100;
 
@@ -4163,7 +4164,7 @@ with ss as
  (select 'store channel' as channel
         , ss.s_store_sk as id
         , sales
-        , coalesce(returns, 0) as returns
+        , coalesce(returns, 0::smallnumber) as returns
         , (profit - coalesce(profit_loss,0::smallnumber)) as profit
  from   ss left join sr
         on  ss.s_store_sk = sr.s_store_sk
@@ -4179,7 +4180,7 @@ with ss as
  select 'web channel' as channel
         , ws.wp_web_page_sk as id
         , sales
-        , coalesce(returns, 0) returns
+        , coalesce(returns, 0::smallnumber) returns
         , (profit - coalesce(profit_loss,0::smallnumber)) as profit
  from   ws left join wr
         on  ws.wp_web_page_sk = wr.wp_web_page_sk
@@ -4246,7 +4247,7 @@ order by
   other_chan_qty,
   other_chan_wholesale_cost,
   other_chan_sales_price,
-  round(ss_qty/(coalesce(ws_qty+cs_qty,1)),2)
+  round((ss_qty/(coalesce(ws_qty+cs_qty,1)))::smallnumber,2)
 limit 100;
 
 -- end query 1 in stream 0 using template query78.tpl
