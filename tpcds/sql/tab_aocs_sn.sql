@@ -80,11 +80,11 @@ CREATE TABLE tpcds.catalog_returns (
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
-DISTRIBUTED BY (cr_returned_date_sk, cr_item_sk) 
+DISTRIBUTED BY (cr_item_sk, cr_order_number) 
 -- partition by range(cr_returned_date_sk)
 -- (start(2450815) INCLUSIVE end(2453005) INCLUSIVE every (28),
--- default partition outliers
-);
+-- default partition outliers)
+;
 
 
 CREATE TABLE tpcds.catalog_sales (
@@ -125,11 +125,11 @@ CREATE TABLE tpcds.catalog_sales (
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
-DISTRIBUTED BY (cs_sold_date_sk, cs_item_sk) 
+DISTRIBUTED BY (cs_item_sk, cs_order_number)
 -- partition by range(cs_sold_date_sk)
 -- (start(2450815) INCLUSIVE end(2453005) INCLUSIVE every (28),
--- default partition outliers
-);
+-- default partition outliers)
+;
 
 CREATE TABLE tpcds.customer (
     c_customer_sk integer NOT NULL,
@@ -247,8 +247,8 @@ WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
 DISTRIBUTED BY(inv_date_sk, inv_item_sk, inv_warehouse_sk)
 -- partition by range(inv_date_sk)
 -- (start(2450815) INCLUSIVE end(2453005) INCLUSIVE every (28),
--- default partition outliers
-);
+-- default partition outliers)
+;
 
 
 CREATE TABLE tpcds.item (
@@ -379,11 +379,11 @@ CREATE TABLE tpcds.store_returns (
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
-DISTRIBUTED BY (sr_returned_data_sk, sr_item_sk) 
+DISTRIBUTED BY (sr_item_sk, sr_ticket_number)
 -- partition by range(sr_returned_date_sk)
 -- (start(2450815) INCLUSIVE end(2453005) INCLUSIVE every (28),
--- default partition outliers
-);
+-- default partition outliers)
+;
 
 
 CREATE TABLE tpcds.store_sales (
@@ -413,11 +413,11 @@ CREATE TABLE tpcds.store_sales (
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
-DISTRIBUTED BY (ss_sold_data_sk, ss_item_sk)
+DISTRIBUTED BY (ss_item_sk, ss_ticket_number)
 -- partition by range(ss_sold_date_sk)
 -- (start(2450815) INCLUSIVE end(2453005) INCLUSIVE every (28),
--- default partition outliers
-);
+-- default partition outliers)
+;
 
 
 CREATE TABLE tpcds.time_dim (
@@ -502,13 +502,11 @@ CREATE TABLE tpcds.web_returns (
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
-DISTRIBUTED BY (wr_returned_date_sk, wr_item_sk)
+DISTRIBUTED BY (wr_order_number, wr_item_sk)
 -- partition by range(wr_returned_date_sk)
 -- (start(2450815) INCLUSIVE end(2453005) INCLUSIVE every (28),
--- default partition outliers
-);
-
-
+-- default partition outliers)
+;
 
 CREATE TABLE tpcds.web_sales (
     ws_sold_date_sk integer,
@@ -548,13 +546,11 @@ CREATE TABLE tpcds.web_sales (
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
-DISTRIBUTED BY (ws_sold_date_sk, ws_item_sk) 
+DISTRIBUTED BY (ws_item_sk, ws_order_number)
 -- partition by range(ws_sold_date_sk)
 -- (start(2450815) INCLUSIVE end(2453005) INCLUSIVE every (28),
--- default partition outliers
-);
-
-
+-- default partition outliers)
+;
 
 CREATE TABLE tpcds.web_site (
     web_site_sk integer NOT NULL,

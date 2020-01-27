@@ -7,6 +7,17 @@ import (
 	"testing"
 )
 
+func runDdlFile(dir string, ddlfn string) error {
+	ddlf := fmt.Sprintf("%s/sql/%s", dir, ddlfn)
+	cmd, err := PsqlCmd(ddlf)
+	if err != nil {
+		return err
+	}
+
+	err = exec.Command("bash", "-c", cmd).Run()
+	return err
+}
+
 func TestSetup(t *testing.T) {
 	conf, err := GetConfig()
 	if err != nil {
@@ -77,24 +88,12 @@ func TestSetup(t *testing.T) {
 	})
 
 	t.Run("Step=ddl", func(t *testing.T) {
-		ddlf := fmt.Sprintf("%s/sql/%s", Dir(), conf.DDL)
-		cmd, err := PsqlCmd(ddlf)
-		if err != nil {
-			t.Errorf("Cannot build psql ddl command. error :%s", err.Error())
-		}
-
-		err = exec.Command("bash", "-c", cmd).Run()
+		err := runDdlFile(Dir(), conf.DDL)
 		if err != nil {
 			t.Errorf("Cannot run ddl.   error: %s", err.Error())
 		}
 
-		qf := fmt.Sprintf("%s/sql/mkview.sql", Dir())
-		cmd, err = PsqlCmd(qf)
-		if err != nil {
-			t.Errorf("Cannot build psql query command. error :%s", err.Error())
-		}
-
-		err = exec.Command("bash", "-c", cmd).Run()
+		err = runDdlFile(Dir(), conf.VDDL)
 		if err != nil {
 			t.Errorf("Cannot run query view ddl.   error: %s", err.Error())
 		}

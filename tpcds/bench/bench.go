@@ -21,6 +21,7 @@ type Config struct {
 	Db      string
 	Scale   int
 	DDL     string
+	VDDL    string
 	Ext     string
 	Gucs    []string
 	Cast    string
