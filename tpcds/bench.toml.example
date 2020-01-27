@@ -4,7 +4,7 @@
 	Db = "tpcds1"
 	Staging = "/home/ftian/data/tpcds" 
 	Scale = 1
-	DDL = "tabf_aocslz4_part.sql"
+	DDL = "tabf_aocs_sn.sql"
 	Ext = "XDR"
 	Gucs = ["set vitesse.enable = 1", "set statement_mem = 1000000"]
 	Cast = "smallnumber"
