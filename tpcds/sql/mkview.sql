@@ -1,4 +1,4 @@
-set search_path='tpcds';
+set search_path=tpcds,public;
 
 create view q0 as
 select 'call_center', count(*) from call_center UNION ALL
@@ -1009,7 +1009,8 @@ with  cross_items as
  order by this_year.channel1, this_year.i_brand_id1, this_year.i_class_id1, this_year.i_category_id1
  limit 100;
 
-create view q14 as select count(*) from q14_1 union all select count(*) from q14_2;
+-- create view q14 as select count(*) from q14_1 union all select count(*) from q14_2;
+create view q14 as select * from q14_1; 
 
 -- end query 1 in stream 0 using template query14.tpl
 -- start query 1 in stream 0 using template query15.tpl
@@ -1364,7 +1365,9 @@ with frequent_ss_items as
        group by c_last_name,c_first_name)) y
      order by c_last_name,c_first_name,sales
   limit 100;
-create view q23 as select count(*) from q23_1 UNION ALL select count(*) from q23_2;
+
+-- create view q23 as select count(*) from q23_1 UNION ALL select count(*) from q23_2;
+create view q23 as select * from q23_1; 
 
 -- end query 1 in stream 0 using template query23.tpl
 -- start query 1 in stream 0 using template query24.tpl
@@ -1468,8 +1471,7 @@ having sum(netpaid) > (select 0.05*avg(netpaid)
                            from ssales)
 ;
 
-create view q24 as 
-select count(*) from q24_1 UNION ALL select count(*) from q24_2;
+create view q24 as select * from q24_1;  
 
 -- end query 1 in stream 0 using template query24.tpl
 -- start query 1 in stream 0 using template query25.tpl
@@ -2080,8 +2082,7 @@ where inv1.i_item_sk = inv2.i_item_sk
 order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
         ,inv2.d_moy,inv2.mean, inv2.cov
 ;
-create view q39 as 
-select count(*) from q39_1 union all select count(*) from q39_2;
+create view q39 as select * from q39_1;
 
 -- end query 1 in stream 0 using template query39.tpl
 -- start query 1 in stream 0 using template query40.tpl
