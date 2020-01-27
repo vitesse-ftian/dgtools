@@ -23,6 +23,7 @@ type Config struct {
 	DDL     string
 	Ext     string
 	Gucs    []string
+	Cast    string
 }
 
 type tomlConfig struct {
