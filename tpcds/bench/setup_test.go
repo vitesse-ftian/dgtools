@@ -45,10 +45,11 @@ func TestSetup(t *testing.T) {
 		fmt.Fprintf(xf, "[xdrive]\n")
 		fmt.Fprintf(xf, "dir = \"%s\"\n", conf.Staging)
 		fmt.Fprintf(xf, "pluginpath = [\"%s/plugin\"]\n", conf.Staging)
+		fmt.Fprintf(xf, "port=31416\n")
 		fmt.Fprintf(xf, "host = [")
 		prefix := " "
 		for k, _ := range seghosts {
-			fmt.Fprintf(xf, " %s\"%s:31416\" ", prefix, k)
+			fmt.Fprintf(xf, " %s\"%s\" ", prefix, k)
 			prefix = ","
 		}
 		fmt.Fprintf(xf, " ]\n\n")

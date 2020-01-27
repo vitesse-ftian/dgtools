@@ -7,4 +7,3 @@
 	DDL = "tabf_aocs_sn.sql"
 	Ext = "XDR"
 	Gucs = ["set vitesse.enable = 1", "set statement_mem = 1000000"]
-	Cast = "smallnumber"

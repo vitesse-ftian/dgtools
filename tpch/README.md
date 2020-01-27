@@ -5,6 +5,11 @@ Make sure dg, psql, xdrctl is in $PATH.   To test Greenplum, just
 put greenplumn bin before deepgreen bin in $PATH.   Test need to 
 set up two env variable.   Just source ./env.sh.
 
+Run the following, to setup decimal etc.
+```
+dg setup -all template1
+```
+
 You need to have go installed, plus all dependencies.  You need to
 have a directory $HOME/go, then the following should do.
 ```

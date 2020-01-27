@@ -2,8 +2,13 @@ Copyright (c) 2017, VitesseData Inc.
 
 # TPCDS Benchmark
 
-Just follow the instruction in tpch/README.   Basically source ./env.sh and 
-run
+Just follow the instruction in tpch/README.   Basically you need to run
+```
+dg setup -all template1
+go get -t ./bench
+```
+Copy/edit bench.toml.example to bench.toml.   Source ./env.sh.
+
 ```
 make gendata
 # start xdrive using xdrctl start gen/xdrive.toml
