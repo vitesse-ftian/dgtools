@@ -31,8 +31,8 @@ CREATE TABLE tpcds.call_center (
     cc_state text,
     cc_zip character varying(10),
     cc_country character varying(20),
-    cc_gmt_offset number, 
-    cc_tax_percentage number 
+    cc_gmt_offset smallnumber, 
+    cc_tax_percentage smallnumber 
 )
 DISTRIBUTED BY (cc_call_center_sk);
 
@@ -68,15 +68,15 @@ CREATE TABLE tpcds.catalog_returns (
     cr_reason_sk integer,
     cr_order_number bigint NOT NULL,
     cr_return_quantity integer,
-    cr_return_amount number, 
-    cr_return_tax number, 
-    cr_return_amt_inc_tax number, 
-    cr_fee number, 
-    cr_return_ship_cost number, 
-    cr_refunded_cash number, 
-    cr_reversed_charge number, 
-    cr_store_credit number, 
-    cr_net_loss number 
+    cr_return_amount smallnumber, 
+    cr_return_tax smallnumber, 
+    cr_return_amt_inc_tax smallnumber, 
+    cr_fee smallnumber, 
+    cr_return_ship_cost smallnumber, 
+    cr_refunded_cash smallnumber, 
+    cr_reversed_charge smallnumber, 
+    cr_store_credit smallnumber, 
+    cr_net_loss smallnumber 
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
@@ -107,21 +107,21 @@ CREATE TABLE tpcds.catalog_sales (
     cs_promo_sk integer,
     cs_order_number bigint NOT NULL,
     cs_quantity integer,
-    cs_wholesale_cost number,
-    cs_list_price number,
-    cs_sales_price number,
-    cs_ext_discount_amt number,
-    cs_ext_sales_price number,
-    cs_ext_wholesale_cost number,
-    cs_ext_list_price number,
-    cs_ext_tax number,
-    cs_coupon_amt number,
-    cs_ext_ship_cost number,
-    cs_net_paid number,
-    cs_net_paid_inc_tax number,
-    cs_net_paid_inc_ship number,
-    cs_net_paid_inc_ship_tax number,
-    cs_net_profit number
+    cs_wholesale_cost smallnumber,
+    cs_list_price smallnumber,
+    cs_sales_price smallnumber,
+    cs_ext_discount_amt smallnumber,
+    cs_ext_sales_price smallnumber,
+    cs_ext_wholesale_cost smallnumber,
+    cs_ext_list_price smallnumber,
+    cs_ext_tax smallnumber,
+    cs_coupon_amt smallnumber,
+    cs_ext_ship_cost smallnumber,
+    cs_net_paid smallnumber,
+    cs_net_paid_inc_tax smallnumber,
+    cs_net_paid_inc_ship smallnumber,
+    cs_net_paid_inc_ship_tax smallnumber,
+    cs_net_profit smallnumber
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
@@ -257,8 +257,8 @@ CREATE TABLE tpcds.item (
     i_rec_start_date date,
     i_rec_end_date date,
     i_item_desc character varying(200),
-    i_current_price number,
-    i_wholesale_cost number,
+    i_current_price smallnumber,
+    i_wholesale_cost smallnumber,
     i_brand_id integer,
     i_brand character varying(50),
     i_class_id integer,
@@ -349,8 +349,8 @@ CREATE TABLE tpcds.store (
     s_state character varying(2),
     s_zip character varying(10),
     s_country character varying(20),
-    s_gmt_offset number, 
-    s_tax_precentage number 
+    s_gmt_offset smallnumber, 
+    s_tax_precentage smallnumber 
 )
 DISTRIBUTED BY (s_store_sk);
 
@@ -367,15 +367,15 @@ CREATE TABLE tpcds.store_returns (
     sr_reason_sk integer,
     sr_ticket_number bigint NOT NULL,
     sr_return_quantity integer,
-    sr_return_amt number,
-    sr_return_tax number,
-    sr_return_amt_inc_tax number,
-    sr_fee number,
-    sr_return_ship_cost number,
-    sr_refunded_cash number,
-    sr_reversed_charge number,
-    sr_store_credit number,
-    sr_net_loss number
+    sr_return_amt smallnumber,
+    sr_return_tax smallnumber,
+    sr_return_amt_inc_tax smallnumber,
+    sr_fee smallnumber,
+    sr_return_ship_cost smallnumber,
+    sr_refunded_cash smallnumber,
+    sr_reversed_charge smallnumber,
+    sr_store_credit smallnumber,
+    sr_net_loss smallnumber
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
@@ -398,18 +398,18 @@ CREATE TABLE tpcds.store_sales (
     ss_promo_sk integer,
     ss_ticket_number bigint NOT NULL,
     ss_quantity integer,
-    ss_wholesale_cost number,
-    ss_list_price number,
-    ss_sales_price number,
-    ss_ext_discount_amt number,
-    ss_ext_sales_price number,
-    ss_ext_wholesale_cost number,
-    ss_ext_list_price number,
-    ss_ext_tax number,
-    ss_coupon_amt number,
-    ss_net_paid number,
-    ss_net_paid_inc_tax number,
-    ss_net_profit number
+    ss_wholesale_cost smallnumber,
+    ss_list_price smallnumber,
+    ss_sales_price smallnumber,
+    ss_ext_discount_amt smallnumber,
+    ss_ext_sales_price smallnumber,
+    ss_ext_wholesale_cost smallnumber,
+    ss_ext_list_price smallnumber,
+    ss_ext_tax smallnumber,
+    ss_coupon_amt smallnumber,
+    ss_net_paid smallnumber,
+    ss_net_paid_inc_tax smallnumber,
+    ss_net_profit smallnumber
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
@@ -449,7 +449,7 @@ CREATE TABLE tpcds.warehouse (
     w_state character varying(2),
     w_zip character varying(10),
     w_country character varying(20),
-    w_gmt_offset number 
+    w_gmt_offset smallnumber 
 )
 DISTRIBUTED BY (w_warehouse_sk);
 
@@ -490,15 +490,15 @@ CREATE TABLE tpcds.web_returns (
     wr_reason_sk integer,
     wr_order_number integer NOT NULL,
     wr_return_quantity integer,
-    wr_return_amt number,
-    wr_return_tax number,
-    wr_return_amt_inc_tax number,
-    wr_fee number,
-    wr_return_ship_cost number,
-    wr_refunded_cash number,
-    wr_reversed_charge number,
-    wr_account_credit number,
-    wr_net_loss number
+    wr_return_amt smallnumber,
+    wr_return_tax smallnumber,
+    wr_return_amt_inc_tax smallnumber,
+    wr_fee smallnumber,
+    wr_return_ship_cost smallnumber,
+    wr_refunded_cash smallnumber,
+    wr_reversed_charge smallnumber,
+    wr_account_credit smallnumber,
+    wr_net_loss smallnumber
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
@@ -530,21 +530,21 @@ CREATE TABLE tpcds.web_sales (
     ws_promo_sk integer,
     ws_order_number integer NOT NULL,
     ws_quantity integer,
-    ws_wholesale_cost number,
-    ws_list_price number,
-    ws_sales_price number,
-    ws_ext_discount_amt number,
-    ws_ext_sales_price number,
-    ws_ext_wholesale_cost number,
-    ws_ext_list_price number,
-    ws_ext_tax number,
-    ws_coupon_amt number,
-    ws_ext_ship_cost number,
-    ws_net_paid number,
-    ws_net_paid_inc_tax number,
-    ws_net_paid_inc_ship number,
-    ws_net_paid_inc_ship_tax number,
-    ws_net_profit number
+    ws_wholesale_cost smallnumber,
+    ws_list_price smallnumber,
+    ws_sales_price smallnumber,
+    ws_ext_discount_amt smallnumber,
+    ws_ext_sales_price smallnumber,
+    ws_ext_wholesale_cost smallnumber,
+    ws_ext_list_price smallnumber,
+    ws_ext_tax smallnumber,
+    ws_coupon_amt smallnumber,
+    ws_ext_ship_cost smallnumber,
+    ws_net_paid smallnumber,
+    ws_net_paid_inc_tax smallnumber,
+    ws_net_paid_inc_ship smallnumber,
+    ws_net_paid_inc_ship_tax smallnumber,
+    ws_net_profit smallnumber
 )
 -- WITH (:E9_LARGE_STORAGE)
 WITH (APPENDONLY=true, orientation=column, compresstype=lz4)
@@ -581,7 +581,7 @@ CREATE TABLE tpcds.web_site (
     web_state character varying(2),
     web_zip character varying(10),
     web_country character varying(20),
-    web_gmt_offset number, 
-    web_tax_percentage number 
+    web_gmt_offset smallnumber, 
+    web_tax_percentage smallnumber 
 )
 DISTRIBUTED BY (web_site_sk);

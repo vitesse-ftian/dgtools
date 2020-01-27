@@ -80,13 +80,13 @@ with wscs as
  where d_date_sk = sold_date_sk
  group by d_week_seq)
  select d_week_seq1
-       ,round((sun_sales1/sun_sales2)::number,2) as r1
-       ,round((mon_sales1/mon_sales2)::number,2) as r2
-       ,round((tue_sales1/tue_sales2)::number,2) as r3
-       ,round((wed_sales1/wed_sales2)::number,2) as r4
-       ,round((thu_sales1/thu_sales2)::number,2) as r5
-       ,round((fri_sales1/fri_sales2)::number,2) as r6
-       ,round((sat_sales1/sat_sales2)::number,2) as r7
+       ,round((sun_sales1/sun_sales2)::smallnumber,2) as r1
+       ,round((mon_sales1/mon_sales2)::smallnumber,2) as r2
+       ,round((tue_sales1/tue_sales2)::smallnumber,2) as r3
+       ,round((wed_sales1/wed_sales2)::smallnumber,2) as r4
+       ,round((thu_sales1/thu_sales2)::smallnumber,2) as r5
+       ,round((fri_sales1/fri_sales2)::smallnumber,2) as r6
+       ,round((sat_sales1/sat_sales2)::smallnumber,2) as r7
  from
  (select wswscs.d_week_seq d_week_seq1
         ,sun_sales sun_sales1
@@ -260,14 +260,14 @@ with ssr as
             ss_sold_date_sk  as date_sk,
             ss_ext_sales_price as sales_price,
             ss_net_profit as profit,
-            cast(0 as number) as return_amt,
-            cast(0 as number) as net_loss
+            cast(0 as smallnumber) as return_amt,
+            cast(0 as smallnumber) as net_loss
     from store_sales
     union all
     select sr_store_sk as store_sk,
            sr_returned_date_sk as date_sk,
-           cast(0 as number) as sales_price,
-           cast(0 as number) as profit,
+           cast(0 as smallnumber) as sales_price,
+           cast(0 as smallnumber) as profit,
            sr_return_amt as return_amt,
            sr_net_loss as net_loss
     from store_returns
@@ -291,14 +291,14 @@ with ssr as
             cs_sold_date_sk  as date_sk,
             cs_ext_sales_price as sales_price,
             cs_net_profit as profit,
-            cast(0 as number) as return_amt,
-            cast(0 as number) as net_loss
+            cast(0 as smallnumber) as return_amt,
+            cast(0 as smallnumber) as net_loss
     from catalog_sales
     union all
     select cr_catalog_page_sk as page_sk,
            cr_returned_date_sk as date_sk,
-           cast(0 as number) as sales_price,
-           cast(0 as number)) as profit,
+           cast(0 as smallnumber) as sales_price,
+           cast(0 as smallnumber)) as profit,
            cr_return_amount as return_amt,
            cr_net_loss as net_loss
     from catalog_returns
@@ -322,14 +322,14 @@ with ssr as
             ws_sold_date_sk  as date_sk,
             ws_ext_sales_price as sales_price,
             ws_net_profit as profit,
-            cast(0 as number) as return_amt,
-            cast(0 as number) as net_loss
+            cast(0 as smallnumber) as return_amt,
+            cast(0 as smallnumber) as net_loss
     from web_sales
     union all
     select ws_web_site_sk as wsr_web_site_sk,
            wr_returned_date_sk as date_sk,
-           cast(0 as number) as sales_price,
-           cast(0 as number)) as profit,
+           cast(0 as smallnumber) as sales_price,
+           cast(0 as smallnumber)) as profit,
            wr_return_amt as return_amt,
            wr_net_loss as net_loss
     from web_returns left outer join web_sales on
@@ -1117,13 +1117,13 @@ select  i_item_id,
         ca_country,
         ca_state, 
         ca_county,
-        avg( cast(cs_quantity as number)) agg1,
-        avg( cast(cs_list_price as number)) agg2,
-        avg( cast(cs_coupon_amt as number)) agg3,
-        avg( cast(cs_sales_price as number)) agg4,
-        avg( cast(cs_net_profit as number)) agg5,
-        avg( cast(c_birth_year as number)) agg6,
-        avg( cast(cd1.cd_dep_count as number)) agg7
+        avg( cast(cs_quantity as smallnumber)) agg1,
+        avg( cast(cs_list_price as smallnumber)) agg2,
+        avg( cast(cs_coupon_amt as smallnumber)) agg3,
+        avg( cast(cs_sales_price as smallnumber)) agg4,
+        avg( cast(cs_net_profit as smallnumber)) agg5,
+        avg( cast(c_birth_year as smallnumber)) agg6,
+        avg( cast(cd1.cd_dep_count as smallnumber)) agg7
  from catalog_sales, customer_demographics cd1, 
       customer_demographics cd2, customer, customer_address, date_dim, item
  where cs_sold_date_sk = d_date_sk and
@@ -2090,9 +2090,9 @@ select
    w_state
   ,i_item_id
   ,sum(case when (cast(d_date as date) < cast ('1998-04-08' as date)) 
- 		then cs_sales_price - coalesce(cr_refunded_cash,0::number) else 0::number end) as sales_before
+ 		then cs_sales_price - coalesce(cr_refunded_cash,0::smallnumber) else 0::smallnumber end) as sales_before
   ,sum(case when (cast(d_date as date) >= cast ('1998-04-08' as date)) 
- 		then cs_sales_price - coalesce(cr_refunded_cash,0::number) else 0::number end) as sales_after
+ 		then cs_sales_price - coalesce(cr_refunded_cash,0::smallnumber) else 0::smallnumber end) as sales_after
  from
    catalog_sales left outer join catalog_returns on
        (cs_order_number = cr_order_number 
@@ -2439,10 +2439,10 @@ select
  	,rank() over (order by currency_ratio) as currency_rank
  	from
  	(	select ws.ws_item_sk as item
- 		,(cast(sum(coalesce(wr.wr_return_quantity,0)) as number)/
- 		cast(sum(coalesce(ws.ws_quantity,0)) as number)) as return_ratio
- 		,(cast(sum(coalesce(wr.wr_return_amt,0::number)) as number)/
- 		cast(sum(coalesce(ws.ws_net_paid,0::number)) as number)) as currency_ratio
+ 		,(cast(sum(coalesce(wr.wr_return_quantity,0)) as smallnumber)/
+ 		cast(sum(coalesce(ws.ws_quantity,0)) as smallnumber)) as return_ratio
+ 		,(cast(sum(coalesce(wr.wr_return_amt,0::smallnumber)) as smallnumber)/
+ 		cast(sum(coalesce(ws.ws_net_paid,0::smallnumber)) as smallnumber)) as currency_ratio
  		from 
  		 web_sales ws left outer join web_returns wr 
  			on (ws.ws_order_number = wr.wr_order_number and 
@@ -2482,10 +2482,10 @@ select
  	from
  	(	select 
  		cs.cs_item_sk as item
- 		,(cast(sum(coalesce(cr.cr_return_quantity,0)) as number)/
- 		cast(sum(coalesce(cs.cs_quantity,0)) as number )) as return_ratio
- 		,(cast(sum(coalesce(cr.cr_return_amount,0::number)) as number)/
- 		cast(sum(coalesce(cs.cs_net_paid,0::number)) as number)) as currency_ratio
+ 		,(cast(sum(coalesce(cr.cr_return_quantity,0)) as smallnumber)/
+ 		cast(sum(coalesce(cs.cs_quantity,0)) as smallnumber )) as return_ratio
+ 		,(cast(sum(coalesce(cr.cr_return_amount,0::smallnumber)) as smallnumber)/
+ 		cast(sum(coalesce(cs.cs_net_paid,0::smallnumber)) as smallnumber)) as currency_ratio
  		from 
  		catalog_sales cs left outer join catalog_returns cr
  			on (cs.cs_order_number = cr.cr_order_number and 
@@ -2524,8 +2524,8 @@ select
  	,rank() over (order by currency_ratio) as currency_rank
  	from
  	(	select sts.ss_item_sk as item
- 		,(cast(sum(coalesce(sr.sr_return_quantity,0)) as number)/cast(sum(coalesce(sts.ss_quantity,0)) as number)) as return_ratio
- 		,(cast(sum(coalesce(sr.sr_return_amt,0::number)) as number)/cast(sum(coalesce(sts.ss_net_paid,0::number)) as number)) as currency_ratio
+ 		,(cast(sum(coalesce(sr.sr_return_quantity,0)) as smallnumber)/cast(sum(coalesce(sts.ss_quantity,0)) as smallnumber)) as return_ratio
+ 		,(cast(sum(coalesce(sr.sr_return_amt,0::smallnumber)) as smallnumber)/cast(sum(coalesce(sts.ss_net_paid,0::smallnumber)) as smallnumber)) as currency_ratio
  		from 
  		store_sales sts left outer join store_returns sr
  			on (sts.ss_ticket_number = sr.sr_ticket_number and sts.ss_item_sk = sr.sr_item_sk)
@@ -3090,7 +3090,7 @@ where i_category in ('Children'))
 -- end query 1 in stream 0 using template query60.tpl
 -- start query 1 in stream 0 using template query61.tpl
 create view q61 as
-select  promotions,total,cast(promotions as number)/cast(total as number)*100
+select  promotions,total,cast(promotions as smallnumber)/cast(total as smallnumber)*100
 from
   (select sum(ss_ext_sales_price) promotions
    from  store_sales
@@ -3631,7 +3631,7 @@ from (select i_category
                   ,d_moy
                   ,s_store_id
                   ,mod((random()*1000)::int,1000) as tempval
-                  ,sum(coalesce(ss_sales_price*ss_quantity,0::number)) sumsales
+                  ,sum(coalesce(ss_sales_price*ss_quantity,0::smallnumber)) sumsales
             from store_sales
                 ,date_dim
                 ,store
@@ -4002,7 +4002,7 @@ WITH all_sales AS (
              ,i_category_id
              ,i_manufact_id
              ,cs_quantity - COALESCE(cr_return_quantity,0) AS sales_cnt
-             ,cs_ext_sales_price - COALESCE(cr_return_amount,0::number) AS sales_amt
+             ,cs_ext_sales_price - COALESCE(cr_return_amount,0::smallnumber) AS sales_amt
        FROM catalog_sales JOIN item ON i_item_sk=cs_item_sk
                           JOIN date_dim ON d_date_sk=cs_sold_date_sk
                           LEFT JOIN catalog_returns ON (cs_order_number=cr_order_number 
@@ -4015,7 +4015,7 @@ WITH all_sales AS (
              ,i_category_id
              ,i_manufact_id
              ,ss_quantity - COALESCE(sr_return_quantity,0) AS sales_cnt
-             ,ss_ext_sales_price - COALESCE(sr_return_amt,0::number) AS sales_amt
+             ,ss_ext_sales_price - COALESCE(sr_return_amt,0::smallnumber) AS sales_amt
        FROM store_sales JOIN item ON i_item_sk=ss_item_sk
                         JOIN date_dim ON d_date_sk=ss_sold_date_sk
                         LEFT JOIN store_returns ON (ss_ticket_number=sr_ticket_number 
@@ -4028,7 +4028,7 @@ WITH all_sales AS (
              ,i_category_id
              ,i_manufact_id
              ,ws_quantity - COALESCE(wr_return_quantity,0) AS sales_cnt
-             ,ws_ext_sales_price - COALESCE(wr_return_amt,0::number) AS sales_amt
+             ,ws_ext_sales_price - COALESCE(wr_return_amt,0::smallnumber) AS sales_amt
        FROM web_sales JOIN item ON i_item_sk=ws_item_sk
                       JOIN date_dim ON d_date_sk=ws_sold_date_sk
                       LEFT JOIN web_returns ON (ws_order_number=wr_order_number 
@@ -4052,7 +4052,7 @@ WITH all_sales AS (
    AND curr_yr.i_manufact_id=prev_yr.i_manufact_id
    AND curr_yr.d_year=2002
    AND prev_yr.d_year=2002-1
-   AND CAST(curr_yr.sales_cnt AS number)/CAST(prev_yr.sales_cnt AS number)<0.9
+   AND CAST(curr_yr.sales_cnt as smallnumber)/CAST(prev_yr.sales_cnt as smallnumber)<0.9
  ORDER BY sales_cnt_diff
  limit 100;
 
@@ -4164,7 +4164,7 @@ with ss as
         , ss.s_store_sk as id
         , sales
         , coalesce(returns, 0) as returns
-        , (profit - coalesce(profit_loss,0::number)) as profit
+        , (profit - coalesce(profit_loss,0::smallnumber)) as profit
  from   ss left join sr
         on  ss.s_store_sk = sr.s_store_sk
  union all
@@ -4180,7 +4180,7 @@ with ss as
         , ws.wp_web_page_sk as id
         , sales
         , coalesce(returns, 0) returns
-        , (profit - coalesce(profit_loss,0::number)) as profit
+        , (profit - coalesce(profit_loss,0::smallnumber)) as profit
  from   ws left join wr
         on  ws.wp_web_page_sk = wr.wp_web_page_sk
  ) x
@@ -4231,11 +4231,11 @@ ss as
    )
  select 
 ss_sold_year, ss_item_sk, ss_customer_sk,
-round((ss_qty/(coalesce(ws_qty+cs_qty,1)))::number,2) ratio,
+round((ss_qty/(coalesce(ws_qty+cs_qty,1)))::smallnumber,2) ratio,
 ss_qty store_qty, ss_wc store_wholesale_cost, ss_sp store_sales_price,
 coalesce(ws_qty,0)+coalesce(cs_qty,0) other_chan_qty,
-coalesce(ws_wc,0::number)+coalesce(cs_wc,0::number) other_chan_wholesale_cost,
-coalesce(ws_sp,0::number)+coalesce(cs_sp,0::number) other_chan_sales_price
+coalesce(ws_wc,0::smallnumber)+coalesce(cs_wc,0::smallnumber) other_chan_wholesale_cost,
+coalesce(ws_sp,0::smallnumber)+coalesce(cs_sp,0::smallnumber) other_chan_sales_price
 from ss
 left join ws on (ws_sold_year=ss_sold_year and ws_item_sk=ss_item_sk and ws_customer_sk=ss_customer_sk)
 left join cs on (cs_sold_year=ss_sold_year and cs_item_sk=cs_item_sk and cs_customer_sk=ss_customer_sk)
@@ -4279,8 +4279,8 @@ create view q80 as
 with ssr as
  (select  s_store_id as store_id,
           sum(ss_ext_sales_price) as sales,
-          sum(coalesce(sr_return_amt, 0::number)) as returns,
-          sum(ss_net_profit - coalesce(sr_net_loss, 0::number)) as profit
+          sum(coalesce(sr_return_amt, 0::smallnumber)) as returns,
+          sum(ss_net_profit - coalesce(sr_net_loss, 0::smallnumber)) as profit
   from store_sales left outer join store_returns on
          (ss_item_sk = sr_item_sk and ss_ticket_number = sr_ticket_number),
      date_dim,
@@ -4300,8 +4300,8 @@ with ssr as
  csr as
  (select  cp_catalog_page_id as catalog_page_id,
           sum(cs_ext_sales_price) as sales,
-          sum(coalesce(cr_return_amount, 0::number)) as returns,
-          sum(cs_net_profit - coalesce(cr_net_loss, 0::number)) as profit
+          sum(coalesce(cr_return_amount, 0::smallnumber)) as returns,
+          sum(cs_net_profit - coalesce(cr_net_loss, 0::smallnumber)) as profit
   from catalog_sales left outer join catalog_returns on
          (cs_item_sk = cr_item_sk and cs_order_number = cr_order_number),
      date_dim,
@@ -4321,8 +4321,8 @@ group by cp_catalog_page_id)
  wsr as
  (select  web_site_id,
           sum(ws_ext_sales_price) as sales,
-          sum(coalesce(wr_return_amt, 0::number)) as returns,
-          sum(ws_net_profit - coalesce(wr_net_loss, 0::number)) as profit
+          sum(coalesce(wr_return_amt, 0::smallnumber)) as returns,
+          sum(ws_net_profit - coalesce(wr_net_loss, 0::smallnumber)) as profit
   from web_sales left outer join web_returns on
          (ws_item_sk = wr_item_sk and ws_order_number = wr_order_number),
      date_dim,
@@ -4775,7 +4775,7 @@ limit 100;
 -- end query 1 in stream 0 using template query89.tpl
 -- start query 1 in stream 0 using template query90.tpl
 create view q90 as
-select  cast(amc as number)/cast(pmc as number) am_pm_ratio
+select  cast(amc as smallnumber)/cast(pmc as smallnumber) am_pm_ratio
  from ( select count(*) amc
        from web_sales, household_demographics , time_dim, web_page
        where ws_sold_time_sk = time_dim.t_time_sk
