@@ -1,3 +1,14 @@
+DROP CAST (numeric as smallnumber);
+DROP CAST (float8 as smallnumber);
+
+CREATE CAST (numeric as smallnumber) 
+WITH FUNCTION numeric_smallnumber(numeric, int)
+AS IMPLICIT;
+
+CREATE CAST (float8 as smallnumber) 
+WITH FUNCTION float8_smallnumber(float8)
+AS IMPLICIT;
+
 DROP SCHEMA IF EXISTS tpcds CASCADE;
 CREATE SCHEMA tpcds;
 
